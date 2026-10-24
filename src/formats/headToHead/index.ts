@@ -77,7 +77,22 @@ export const headToHead: FormatDefinition = {
   nextRound(t) {
     const done = regular(t).length;
     if (done < t.settings.rounds) {
-      const { pairs } = scheduleRound(t.playerIds, done);
+      // De rondes van het schema mogen in elke volgorde (iedereen speelt toch 1× tegen iedereen). Kies de eerste
+      // nog niet gespeelde ronde; bij vooruit indelen de ronde met de meeste potjes die meteen kunnen beginnen.
+      const key = (ids: Id[]) => ids.slice().sort().join('|');
+      const used = new Set(regular(t).flatMap((r) => r.games.map((g) => key(g.playerIds))));
+      const busy = new Set(t.rounds.flatMap((r) => r.games.filter((g) => !g.result).flatMap((g) => g.playerIds)));
+      let pairs: [Id, Id][] = [];
+      let bestScore = -1;
+      for (let r = 0; r < t.settings.rounds; r++) {
+        const candidate = scheduleRound(t.playerIds, r).pairs;
+        if (candidate.some((p) => used.has(key(p)))) continue;
+        const score = candidate.filter(([a, b]) => !busy.has(a) && !busy.has(b)).length;
+        if (score > bestScore) {
+          bestScore = score;
+          pairs = candidate;
+        }
+      }
       const machines = assignMachines(pairs, t.machineIds, t.rounds.flatMap((r) => r.games));
       return pairs.map((pair, i) => ({ id: newId(), machineId: machines[i], playerIds: [...pair] }));
     }

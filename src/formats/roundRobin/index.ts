@@ -12,6 +12,7 @@ export const roundRobin: FormatDefinition = {
       maxGroupSize: t.settings.maxGroupSize,
       history: t.rounds.flatMap((r) => r.games),
       rng,
+      busy: t.rounds.flatMap((r) => r.games.filter((g) => !g.result).flatMap((g) => g.playerIds)),
     });
   },
   standings,

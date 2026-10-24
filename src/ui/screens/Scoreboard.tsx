@@ -2,6 +2,7 @@ import { useEffect } from 'preact/hooks';
 import { machineName, playerName, state } from '../../app/state';
 import { formatOf } from '../../formats';
 import { isTiebreakRound, waitingPlayers } from '../../formats/headToHead';
+import { gameStatus, openRounds } from '../../formats/progress';
 import { UndoRedo } from '../components/Shell';
 
 /** Grote weergave voor een tablet aan de muur. Scherm blijft aan (waar de browser dat toestaat). */
@@ -23,8 +24,10 @@ export function ScoreboardScreen({ id }: { id: string }) {
 
   if (!t) return <p class="empty">Toernooi niet gevonden.</p>;
   const rows = formatOf(t.format).standings(t);
-  const round = t.rounds[t.rounds.length - 1];
-  const open = round?.games.filter((g) => !g.result) ?? [];
+  // Bij vooruit spelen lopen er twee rondes; "Nu spelen" = de potjes die nu echt gespeeld kunnen worden.
+  const running = openRounds(t);
+  const round = running[0] ?? t.rounds[t.rounds.length - 1];
+  const open = running.flatMap((r) => r.games).filter((g) => gameStatus(t, g).state === 'ready');
 
   return (
     <div class="scoreboard">
@@ -44,7 +47,7 @@ export function ScoreboardScreen({ id }: { id: string }) {
           : isTiebreakRound(round)
             ? '⚔️ Tie-breaker'
             : round
-              ? `Ronde ${round.index + 1} van ${Math.max(t.settings.rounds, t.rounds.length)}`
+              ? `Ronde ${running.length > 1 ? `${round.index + 1}–${running[running.length - 1].index + 1}` : round.index + 1} van ${Math.max(t.settings.rounds, t.rounds.length)}`
               : ''}
       </div>
       <div class={'sb-cols' + (open.length ? ' two' : '')}>

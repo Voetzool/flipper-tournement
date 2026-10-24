@@ -66,6 +66,14 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - `src/events/ranks.ts`: `ranksOf(game)` (plek per speler; teams delen hun plek), `areOpponents`, `placesOf`.
   Rating (`ratings.ts`), `playerStats` en `machineStats` gebruiken dit: teamgenoten zijn geen tegenstanders.
 
+- **Vooruit spelen** (`src/formats/progress.ts`): de volgende ronde mag al ingedeeld worden zodra in de (enige) lopende
+  ronde minstens één potje klaar is (max. één ronde vooruit, nooit naar een tie-breaker; `canLookAhead`). Indeling hangt
+  niet af van uitslagen. `gameStatus` = done/ready/busy ("speel nu" / "wacht op X" / "kast nog bezet"), puur ter info.
+  `RoundTab` toont alle open rondes; verder-knoppen gebruiken `allRoundsComplete`. Scorebord "Nu spelen" = ready-potjes.
+  Slimmer vooruit indelen: Groepsrondes `PairingInput.busy` + `W_BUSY` (250, net meer dan één eerste herhaling);
+  Round Robin kiest uit de nog niet gespeelde schema-rondes die met de meeste direct speelbare potjes.
+- Eerste tab heet "Spelen" (🎮), want bevat toernooien én losse potjes.
+
 ## Rating & statistieken (fase 2)
 - `src/rating/glicko2.ts`: Glicko-2 (Glickman 2013; getest tegen zijn rekenvoorbeeld). τ = 0.5, start 1500/350/0.06.
   `inflate()` laat RD groeien bij inactiviteit (geeft altijd een kopie terug — aliasing gaf eerder een bug).
@@ -158,6 +166,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
+- [x] Vooruit spelen in de volgende ronde + tab "Spelen".
 - [x] Losse ranked pot (iedereen voor zich of teams, kast zelf of willekeurig uit selectie).
 - [x] Nieuwe spelvorm Round Robin 1-tegen-1 met tie-breaker (stap 3 van 4). Volgende: Engels (stap 4).
 - [x] Speelveldfoto bij spelregels (stap 2 van 4).

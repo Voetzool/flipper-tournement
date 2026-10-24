@@ -1388,3 +1388,13 @@ textarea.input.notes {
   flex: 1;
   font-size: 18px;
 }
+
+/* Vooruit spelen: potje dat nog moet wachten */
+.game.busy {
+  border-left-color: var(--line);
+  opacity: 0.8;
+}
+
+.wait-reason {
+  margin: -4px 0 6px;
+}

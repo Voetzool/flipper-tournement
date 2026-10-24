@@ -45,6 +45,11 @@ export interface PairingInput {
   history: PastGame[];
   rng: Rng;
   attempts?: number;
+  /**
+   * Vooruit indelen: spelers die nog een potje bezig zijn. Groepen met zowel vrije als bezige spelers kosten iets
+   * extra, zodat wie al klaar is liefst samen meteen kan beginnen (zonder herhaalde tegenstanders te forceren).
+   */
+  busy?: Id[];
 }
 
 // Gewichten van de strafscore. Samen spelen weegt het zwaarst.
@@ -52,6 +57,11 @@ const W_MEET = 100;
 const W_MACHINE = 10;
 const W_SIZE = 60;
 const W_MACHINE_TOTAL = 1;
+/**
+ * Gemengde groep (vrij + nog bezig) bij vooruit indelen. Iets zwaarder dan één eerste herhaling van een tegenstander
+ * (2 × W_MEET = 200), zodat wie klaar is liefst meteen door kan; een tweede herhaling (600) weegt veel zwaarder.
+ */
+const W_BUSY = 250;
 
 class History {
   meet = new Map<string, number>();
@@ -62,7 +72,10 @@ class History {
   /** Laagste aantal potjes in een groep van grootte s, onder de huidige spelers. */
   minSize = new Map<number, number>();
 
-  constructor(games: PastGame[], players: Id[]) {
+  busy: Set<Id>;
+
+  constructor(games: PastGame[], players: Id[], busy: Id[] = []) {
+    this.busy = new Set(busy);
     for (const g of games) {
       const ps = g.playerIds;
       for (let i = 0; i < ps.length; i++) {
@@ -105,6 +118,10 @@ function groupCost(group: Id[], h: History): number {
     }
     const x = h.sizeExcess(group[i], group.length);
     c += W_SIZE * x * x;
+  }
+  if (h.busy.size) {
+    const busyCount = group.filter((p) => h.busy.has(p)).length;
+    if (busyCount && busyCount < group.length) c += W_BUSY;
   }
   return c;
 }
@@ -218,7 +235,7 @@ export function generateRound(input: PairingInput): GameDraft[] {
       .slice(0, free);
     playerIds = playerIds.filter((p) => !waiters.includes(p));
   }
-  const h = new History(input.history, playerIds);
+  const h = new History(input.history, playerIds, input.busy);
   // Minder pogingen bij veel spelers (elke poging is dan duurder), zodat het op een telefoon vlot blijft.
   const attempts = input.attempts ?? Math.min(80, Math.max(20, Math.round(1000 / playerIds.length)));
 
