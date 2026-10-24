@@ -1294,3 +1294,9 @@ textarea.input.notes {
   border-color: #22e4ff;
   color: #22e4ff;
 }
+
+.banner.winner {
+  border-color: var(--gold);
+  background: rgba(255, 214, 10, 0.12);
+  font-size: 20px;
+}

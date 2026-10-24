@@ -1,6 +1,7 @@
 import { state } from '../../app/state';
 import { go } from '../../app/router';
 import type { Tournament } from '../../events/types';
+import { formatOf } from '../../formats';
 import { BackupBanner } from '../components/BackupBanner';
 import { Shell } from '../components/Shell';
 
@@ -45,7 +46,8 @@ function Item({ t }: { t: Tournament }) {
       <div class="name">
         {t.name}
         <div class="small muted">
-          {date} · {t.playerIds.length} spelers · ronde {t.rounds.length}/{t.settings.rounds}
+          {formatOf(t.format).label} · {date} · {t.playerIds.length} spelers · ronde {Math.min(t.rounds.length, t.settings.rounds)}/
+          {t.settings.rounds}
         </div>
       </div>
       {t.status === 'active' ? <span class="badge live">live</span> : <span class="badge">klaar</span>}

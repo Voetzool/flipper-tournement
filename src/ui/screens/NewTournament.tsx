@@ -1,11 +1,13 @@
 import { useState } from 'preact/hooks';
 import { dispatch, state } from '../../app/state';
 import { go } from '../../app/router';
-import type { RoundRobinSettings } from '../../events/types';
-import { roundRobin } from '../../formats/roundRobin';
+import type { FormatId, RoundRobinSettings } from '../../events/types';
+import { formatOf } from '../../formats';
+import { headToHeadSettings } from '../../formats/headToHead';
 import { groupSizes } from '../../formats/roundRobin/pairing';
 import { defaultSettings } from '../../formats/roundRobin/scoring';
 import { newId } from '../../lib/id';
+import { shuffle } from '../../lib/rng';
 import { Shell } from '../components/Shell';
 
 function defaultName() {
@@ -21,6 +23,8 @@ export function NewTournamentScreen() {
   const [selPlayers, setSelPlayers] = useState<Set<string>>(new Set());
   const [selMachines, setSelMachines] = useState<Set<string>>(() => new Set(machines.map((m) => m.id)));
   const [settings, setSettings] = useState<RoundRobinSettings>(defaultSettings);
+  const [format, setFormat] = useState<FormatId>('roundRobin');
+  const h2h = format === 'headToHead';
 
   const toggle = (set: Set<string>, id: string, fn: (s: Set<string>) => void) => {
     const n = new Set(set);
@@ -33,21 +37,19 @@ export function NewTournamentScreen() {
 
   const start = () => {
     const tournamentId = newId();
-    const base = {
-      playerIds: [...selPlayers],
-      machineIds: [...selMachines],
-      settings,
-      rounds: [],
-    };
+    // Round Robin: willekeurige volgorde vastleggen, daaruit volgt het hele schema.
+    const playerIds = h2h ? shuffle([...selPlayers], Math.random) : [...selPlayers];
+    const chosen = h2h ? headToHeadSettings(playerIds.length) : settings;
+    const base = { playerIds, machineIds: [...selMachines], settings: chosen, rounds: [] };
     dispatch({
       type: 'TournamentCreated',
       tournamentId,
       name: name.trim() || defaultName(),
-      format: 'roundRobin',
-      settings,
-      playerIds: base.playerIds,
+      format,
+      settings: chosen,
+      playerIds,
       machineIds: base.machineIds,
-      firstRound: roundRobin.nextRound(base),
+      firstRound: formatOf(format).nextRound(base),
     });
     go('t/' + tournamentId);
   };
@@ -65,6 +67,18 @@ export function NewTournamentScreen() {
           <label for="tname">Naam</label>
           <input id="tname" class="input" value={name} onInput={(e) => setName(e.currentTarget.value)} />
         </div>
+
+        <h2>Spelvorm</h2>
+        <div class="seg">
+          {(['roundRobin', 'headToHead'] as FormatId[]).map((f) => (
+            <button key={f} class={format === f ? 'on' : ''} onClick={() => setFormat(f)}>
+              {formatOf(f).label}
+            </button>
+          ))}
+        </div>
+        <p class="small muted" style="margin:4px 0 0">
+          {h2h ? '1-tegen-1, iedereen één keer tegen iedereen.' : 'Groepjes van 2–4 per kast, punten per plek, eerlijk ingedeeld.'}
+        </p>
 
         <h2>
           Spelers ({selPlayers.size}){' '}
@@ -105,6 +119,20 @@ export function NewTournamentScreen() {
         </div>
 
         <h2>Instellingen</h2>
+        {h2h ? (
+          <div class="card stack">
+            <p style="margin:0">
+              Iedereen speelt één keer 1-tegen-1 tegen iedereen. Winst = 1 punt, verlies = 0. Bij gelijke stand bovenaan volgt een
+              tie-breaker.
+            </p>
+            {selPlayers.size >= 2 && (
+              <p class="small muted" style="margin:0">
+                {headToHeadSettings(selPlayers.size).rounds} rondes; iedereen speelt {selPlayers.size - 1} potjes.
+                {selPlayers.size % 2 === 1 && ' Oneven aantal: elke ronde wacht één speler.'}
+              </p>
+            )}
+          </div>
+        ) : (
         <div class="card stack">
           <div class="row">
             <span class="grow">Aantal rondes</span>
@@ -153,6 +181,7 @@ export function NewTournamentScreen() {
             ))}
           </div>
         </div>
+        )}
 
         <button class="btn primary block big" disabled={selPlayers.size < 2} onClick={start}>
           Start toernooi

@@ -3,7 +3,8 @@
 
 export type Id = string;
 
-export type FormatId = 'roundRobin';
+/** roundRobin = "Groepsrondes" (2–4 per kast, punten per plek); headToHead = "Round Robin" (iedereen 1× tegen iedereen). */
+export type FormatId = 'roundRobin' | 'headToHead';
 
 export interface RoundRobinSettings {
   rounds: number;
@@ -16,6 +17,8 @@ export interface GameDraft {
   id: Id;
   machineId: Id | null;
   playerIds: Id[];
+  /** Beslissingspotje bij een gedeelde eerste plaats (alleen Round Robin); telt niet voor punten. */
+  tiebreak?: true;
 }
 
 export type EventBody =

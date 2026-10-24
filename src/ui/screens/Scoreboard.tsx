@@ -1,6 +1,7 @@
 import { useEffect } from 'preact/hooks';
 import { machineName, playerName, state } from '../../app/state';
 import { formatOf } from '../../formats';
+import { isTiebreakRound } from '../../formats/headToHead';
 import { UndoRedo } from '../components/Shell';
 
 /** Grote weergave voor een tablet aan de muur. Scherm blijft aan (waar de browser dat toestaat). */
@@ -38,7 +39,13 @@ export function ScoreboardScreen({ id }: { id: string }) {
         </button>
       </header>
       <div class="sub" style="margin-bottom:2vh">
-        {t.status === 'finished' ? 'Eindstand' : round ? `Ronde ${round.index + 1} van ${Math.max(t.settings.rounds, t.rounds.length)}` : ''}
+        {t.status === 'finished'
+          ? 'Eindstand'
+          : isTiebreakRound(round)
+            ? '⚔️ Tie-breaker'
+            : round
+              ? `Ronde ${round.index + 1} van ${Math.max(t.settings.rounds, t.rounds.length)}`
+              : ''}
       </div>
       <div class={'sb-cols' + (open.length ? ' two' : '')}>
         {/* Rijen krimpen mee zodat de hele stand op één scherm past. */}

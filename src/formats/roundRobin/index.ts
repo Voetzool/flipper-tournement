@@ -4,7 +4,7 @@ import { standings } from './scoring';
 
 export const roundRobin: FormatDefinition = {
   id: 'roundRobin',
-  label: 'Round Robin',
+  label: 'Groepsrondes',
   nextRound(t, rng = Math.random) {
     return generateRound({
       playerIds: t.playerIds,

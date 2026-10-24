@@ -3,6 +3,7 @@ import { dispatch, machineName, playerName, showToast, state, undo } from '../..
 import { go } from '../../app/router';
 import type { Game, Tournament } from '../../events/types';
 import { formatOf } from '../../formats';
+import { isTiebreakRound, tiebreakGame, tiebreakPlayers, waitingPlayers } from '../../formats/headToHead';
 import { pointsFor, roundComplete } from '../../formats/roundRobin/scoring';
 import { Shell, UndoRedo } from '../components/Shell';
 import { Sheet } from '../components/Sheet';
@@ -73,7 +74,8 @@ function GameCard({ t, game, onClick }: { t: Tournament; game: Game; onClick: ()
   return (
     <div class={'card tap game' + (done ? ' done' : '')} onClick={onClick}>
       <div class="machine">
-        {machineName(s, game.machineId)} {game.corrected && <span class="badge warn">gecorrigeerd</span>}
+        {machineName(s, game.machineId)} {game.tiebreak && <span class="badge live">tie-breaker</span>}{' '}
+        {game.corrected && <span class="badge warn">gecorrigeerd</span>}
       </div>
       <ol>
         {list.map((pid, i) => (
@@ -82,7 +84,7 @@ function GameCard({ t, game, onClick }: { t: Tournament; game: Game; onClick: ()
               {done ? `${i + 1}. ` : ''}
               {playerName(s, pid)}
             </span>
-            {done && <span class="pts">{pointsFor(t.settings.pointsTable, list.length, i)}</span>}
+            {done && !game.tiebreak && <span class="pts">{pointsFor(t.settings.pointsTable, list.length, i)}</span>}
           </li>
         ))}
       </ol>
@@ -94,12 +96,18 @@ function GameCard({ t, game, onClick }: { t: Tournament; game: Game; onClick: ()
 function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
   const round = t.rounds[t.rounds.length - 1];
   const fmt = formatOf(t.format);
+  const h2h = t.format === 'headToHead';
   const complete = roundComplete(t);
   const doneCount = round ? round.games.filter((g) => g.result).length : 0;
   const finished = t.status === 'finished';
   const target = t.settings.rounds;
+  const regularCount = t.rounds.filter((r) => !isTiebreakRound(r)).length;
+  const tied = h2h ? tiebreakPlayers(t) : [];
+  const needsTiebreak = h2h && tied.length > 0 && !tiebreakGame(t);
+  const s = state.value;
 
   const nextRound = () => dispatch({ type: 'RoundGenerated', tournamentId: t.id, games: fmt.nextRound(t) });
+  const finish = () => dispatch({ type: 'TournamentFinished', tournamentId: t.id });
   const regenerate = () =>
     dispatch({ type: 'RoundRegenerated', tournamentId: t.id, games: fmt.nextRound({ ...t, rounds: t.rounds.slice(0, -1) }) });
 
@@ -114,35 +122,73 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
     );
   }
 
+  const waiting = h2h ? waitingPlayers(t, round) : [];
+  const standings = fmt.standings(t);
+  const winner = finished && standings.filter((r) => r.rank === 1).length === 1 ? standings[0] : null;
+
   return (
     <div class="stack">
+      {winner && (
+        <div class="banner winner">
+          <span class="grow">
+            🏆 Winnaar: <b>{playerName(s, winner.playerId)}</b>
+            {winner.note ? ` (${winner.note})` : ''}
+          </span>
+        </div>
+      )}
       <div class="row">
         <h2 class="grow" style="margin:0">
-          Ronde {round.index + 1} van {Math.max(target, t.rounds.length)}
+          {isTiebreakRound(round) ? '⚔️ Tie-breaker' : `Ronde ${round.index + 1} van ${Math.max(target, regularCount)}`}
         </h2>
         {finished ? <span class="badge">afgerond</span> : <span class="badge live">{doneCount}/{round.games.length} ingevoerd</span>}
       </div>
+      {isTiebreakRound(round) && (
+        <p class="small muted" style="margin:0">
+          {round.games[0].playerIds.length > 2
+            ? 'Alle spelers met evenveel punten spelen op dezelfde kast. De winnaar wint het toernooi.'
+            : 'Eén potje: de winnaar wint het toernooi.'}
+        </p>
+      )}
       <div class="games">
         {round.games.map((g) => (
           <GameCard key={g.id} t={t} game={g} onClick={() => onGame(g)} />
         ))}
       </div>
-      {!finished && complete && t.rounds.length < target && (
+      {waiting.length > 0 && (
+        <div class="card small">
+          ⏸ Wacht deze ronde: <b>{waiting.map((id) => playerName(s, id)).join(', ')}</b>
+        </div>
+      )}
+      {!finished && complete && regularCount < target && (
         <button class="btn primary block big" onClick={nextRound}>
           Ronde {t.rounds.length + 1} indelen
         </button>
       )}
-      {!finished && complete && t.rounds.length >= target && (
+      {!finished && complete && regularCount >= target && needsTiebreak && (
         <>
-          <button class="btn primary block big" onClick={() => dispatch({ type: 'TournamentFinished', tournamentId: t.id })}>
-            🏁 Toernooi afronden
-          </button>
-          <button class="btn block" onClick={nextRound}>
-            Extra ronde
+          <div class="banner">
+            <span class="grow">
+              Gelijke stand bovenaan: <b>{tied.map((id) => playerName(s, id)).join(', ')}</b>
+            </span>
+          </div>
+          <button class="btn primary block big" onClick={nextRound}>
+            ⚔️ Tie-breaker starten
           </button>
         </>
       )}
-      {!finished && doneCount === 0 && (
+      {!finished && complete && regularCount >= target && !needsTiebreak && (
+        <>
+          <button class="btn primary block big" onClick={finish}>
+            🏁 Toernooi afronden
+          </button>
+          {!h2h && (
+            <button class="btn block" onClick={nextRound}>
+              Extra ronde
+            </button>
+          )}
+        </>
+      )}
+      {!finished && !h2h && doneCount === 0 && (
         <button class="btn ghost block" onClick={regenerate}>
           🔀 Deze ronde opnieuw indelen
         </button>
@@ -285,7 +331,7 @@ function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; on
             <button key={pid} class={'order-btn' + (pos >= 0 ? ' set' : '')} onClick={() => tap(pid)}>
               <span class="pos">{pos >= 0 ? pos + 1 : ''}</span>
               {playerName(s, pid)}
-              {pos >= 0 && <span class="pts">{pointsFor(t.settings.pointsTable, n, pos)} ptn</span>}
+              {pos >= 0 && !game.tiebreak && <span class="pts">{pointsFor(t.settings.pointsTable, n, pos)} ptn</span>}
             </button>
           );
         })}
@@ -314,7 +360,7 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
     <Sheet onClose={onClose}>
       <div class="stack">
         <h3>{t.name}</h3>
-        {t.status === 'active' && (
+        {t.status === 'active' && t.format !== 'headToHead' && (
           <button class="btn block" onClick={() => setPlayers(true)}>
             👤 Deelnemers aan-/afmelden
           </button>

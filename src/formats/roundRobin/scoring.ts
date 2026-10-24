@@ -24,6 +24,8 @@ export interface StandingRow {
   wins: number;
   /** Gemiddelde plek (1 = altijd eerste). */
   avgPosition: number;
+  /** Extra toelichting, bijv. "wint tie-breaker". */
+  note?: string;
 }
 
 /** Live stand: punten ↓, dan aantal overwinningen ↓, dan gemiddelde plek ↑. Gelijke stand = gelijke rang. */

@@ -47,6 +47,15 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
     helemaal gelijk = gelijke rang.
   - Minder kasten dan groepen → groep krijgt `machineId: null` ("Vrije kast").
 
+- **Round Robin** (intern `headToHead`, `src/formats/headToHead/`): iedereen 1× 1-tegen-1 tegen iedereen.
+  Spelersvolgorde wordt bij aanmaken geschud en in `TournamentCreated.playerIds` vastgelegd; schema via cirkelmethode
+  (`scheduleRound`, n−1 rondes bij even, n bij oneven → elke ronde één speler "wacht"). Settings hergebruiken
+  `RoundRobinSettings` (`maxGroupSize 2`, `pointsTable {2:[1,0]}`). Kasten per ronde: elke kast max 1×, voorkeur voor
+  kasten die beide spelers nog niet speelden. Na alle rondes bij gedeelde 1e plaats: één tie-breakpotje
+  (`GameDraft.tiebreak: true`) met alle gelijke koplopers op de eerste gekozen kast; telt niet voor punten (wel voor
+  rating); de volgorde daarin bepaalt de rangen binnen die groep (`note: 'wint tie-breaker'`). Deelnemers wijzigen,
+  extra ronde en opnieuw indelen zijn uitgeschakeld voor deze vorm. Bestaande vorm heet in de UI "Groepsrondes".
+
 ## Rating & statistieken (fase 2)
 - `src/rating/glicko2.ts`: Glicko-2 (Glickman 2013; getest tegen zijn rekenvoorbeeld). τ = 0.5, start 1500/350/0.06.
   `inflate()` laat RD groeien bij inactiviteit (geeft altijd een kopie terug — aliasing gaf eerder een bug).
@@ -134,6 +143,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
+- [x] Nieuwe spelvorm Round Robin 1-tegen-1 met tie-breaker (stap 3 van 4). Volgende: Engels (stap 4).
 - [x] Speelveldfoto bij spelregels (stap 2 van 4).
 - [x] Lichte modus (stap 1 van 4 uit feedback-ronde; volgende: nieuwe 1-tegen-1
       "Round Robin" (bestaande vorm heet dan "Groepsrondes", interne id blijft `roundRobin`), Engels).

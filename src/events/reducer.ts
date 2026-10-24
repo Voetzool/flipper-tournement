@@ -1,4 +1,4 @@
-import type { AppState, Game, StoredEvent, Tournament } from './types';
+import type { AppState, Game, GameDraft, StoredEvent, Tournament } from './types';
 
 export function emptyState(): AppState {
   return { players: new Map(), machines: new Map(), tournaments: new Map() };
@@ -133,8 +133,10 @@ export function apply(state: AppState, e: StoredEvent): void {
   }
 }
 
-function cloneGame(g: { id: string; machineId: string | null; playerIds: string[] }): Game {
-  return { id: g.id, machineId: g.machineId, playerIds: g.playerIds.slice() };
+function cloneGame(g: GameDraft): Game {
+  const game: Game = { id: g.id, machineId: g.machineId, playerIds: g.playerIds.slice() };
+  if (g.tiebreak) game.tiebreak = true;
+  return game;
 }
 
 /** Komt deze speler voor in een toernooi (als deelnemer of in een potje)? */

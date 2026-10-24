@@ -25,6 +25,7 @@ export function StandingsTable({ t }: { t: Tournament }) {
                 {playerName(s, r.playerId)}
               </a>
               {!t.playerIds.includes(r.playerId) && <span class="badge" style="margin-left:6px">afgemeld</span>}
+              {r.note && <span class="badge live" style="margin-left:6px">{r.note}</span>}
             </td>
             <td class="num muted">{r.played}</td>
             <td class="num muted">{r.wins}</td>
