@@ -3,15 +3,20 @@ import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../
 import { offlineReady } from '../../app/pwa';
 import { backupFileName, makeBackup, parseBackup } from '../../backup/backup';
 import { requestPersistence } from '../../db/db';
+import { catalog, catalogError, catalogStatus, catalogVersion, fetchRemoteMeta, loadStoredCatalog, updateCatalog } from '../../catalog/catalog';
+import type { CatalogMeta } from '../../catalog/types';
 import { BackupBanner } from '../components/BackupBanner';
 import { Shell } from '../components/Shell';
 
 export function MoreScreen() {
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
+  const [remote, setRemote] = useState<CatalogMeta | null | undefined>(undefined);
 
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(false));
+    loadStoredCatalog();
+    fetchRemoteMeta().then(setRemote);
     navigator.storage?.estimate?.().then((e) => e.usage !== undefined && setUsage(`${Math.round(e.usage / 1024)} KB gebruikt`));
   }, []);
 
@@ -78,6 +83,32 @@ export function MoreScreen() {
           📂 Back-up terugzetten
           <input type="file" accept="application/json,.json" style="display:none" onChange={importData} />
         </label>
+      </div>
+
+      <h2>Kastencatalogus (OPDB)</h2>
+      <div class="card stack">
+        <div>
+          {catalog.value
+            ? `${catalog.value.e.length} kasten offline beschikbaar · versie van ${new Date(catalog.value.generatedAt).toLocaleDateString('nl-NL')}`
+            : 'Nog niet gedownload.'}
+        </div>
+        {remote && remote.version !== catalogVersion.value && (
+          <div class="small muted">
+            {catalog.value ? 'Er is een nieuwere versie' : 'Beschikbaar'}: {remote.count} kasten, ±{Math.max(1, Math.round(remote.gzipBytes / 1024))} KB downloaden.
+          </div>
+        )}
+        {remote === null && <div class="small muted">Server niet bereikbaar (geen internet?).</div>}
+        {catalogStatus.value === 'error' && <div class="small" style="color:var(--yellow)">{catalogError.value}</div>}
+        <button
+          class="btn block"
+          disabled={catalogStatus.value === 'loading' || !remote || remote.version === catalogVersion.value}
+          onClick={() => updateCatalog(true)}
+        >
+          {catalogStatus.value === 'loading' ? 'Downloaden…' : catalog.value ? '⟳ Catalogus bijwerken' : '⬇ Catalogus downloaden'}
+        </button>
+        <p class="small muted" style="margin:0">
+          Kastgegevens en afbeeldingen: OPDB (opdb.org), via Match Play. De catalogus wordt wekelijks ververst.
+        </p>
       </div>
 
       <h2>Opslag</h2>

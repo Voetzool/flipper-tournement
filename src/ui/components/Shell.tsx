@@ -65,7 +65,7 @@ const tabs = [
   { path: '', match: ['', 't', 'nieuw'], ico: '🏆', label: 'Toernooien' },
   { path: 'ranglijst', match: ['ranglijst'], ico: '📈', label: 'Ranglijst' },
   { path: 'spelers', match: ['spelers', 'speler'], ico: '👤', label: 'Spelers' },
-  { path: 'kasten', match: ['kasten'], ico: '🕹️', label: 'Kasten' },
+  { path: 'kasten', match: ['kasten', 'kast'], ico: '🕹️', label: 'Kasten' },
   { path: 'meer', match: ['meer'], ico: '⚙️', label: 'Meer' },
 ];
 

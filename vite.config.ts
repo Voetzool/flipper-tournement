@@ -37,6 +37,20 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
         navigateFallback: 'index.html',
+        // De kastencatalogus staat niet in de precache; die downloadt de app zelf als hij nodig is.
+        globIgnores: ['catalog/**'],
+        runtimeCaching: [
+          {
+            // Kastafbeeldingen (OPDB): na één keer tonen ook offline beschikbaar.
+            urlPattern: ({ request, sameOrigin }) => !sameOrigin && request.destination === 'image',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'kast-afbeeldingen',
+              expiration: { maxEntries: 400, maxAgeSeconds: 365 * 24 * 3600 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

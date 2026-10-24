@@ -99,7 +99,7 @@ export function describeEvent(b: EventBody, s: AppState): string {
     case 'MachineAdded':
       return `kast ${b.name} toegevoegd`;
     case 'MachineUpdated':
-      return `kast hernoemd naar ${b.name}`;
+      return b.name ? `kast hernoemd naar ${b.name}` : `${machineName(s, b.machineId)} bijgewerkt`;
     case 'MachineDeleted':
       return `${machineName(s, b.machineId)} definitief verwijderd`;
     case 'MachineRemoved':

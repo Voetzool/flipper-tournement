@@ -25,8 +25,9 @@ export type EventBody =
   | { type: 'PlayerDeleted'; playerId: Id }
   | { type: 'PlayerArchived'; playerId: Id }
   | { type: 'PlayerRestored'; playerId: Id }
-  | { type: 'MachineAdded'; machineId: Id; name: string }
-  | { type: 'MachineUpdated'; machineId: Id; name: string }
+  | ({ type: 'MachineAdded'; machineId: Id; name: string } & MachineDetails)
+  /** Alleen de meegegeven velden veranderen; `null` maakt een veld leeg. */
+  | ({ type: 'MachineUpdated'; machineId: Id; name?: string } & MachinePatch)
   /** Alleen voor kasten die nog nooit in een toernooi zaten. */
   | { type: 'MachineDeleted'; machineId: Id }
   | { type: 'MachineRemoved'; machineId: Id }
@@ -55,6 +56,24 @@ export type EventBody =
 
 export type EventType = EventBody['type'];
 
+/** Extra kastgegevens (fase 3). Allemaal optioneel, zodat oude events en back-ups geldig blijven. */
+export interface MachineDetails {
+  manufacturer?: string;
+  year?: number;
+  /** em = elektromechanisch, ss = solid state, me = mechanisch */
+  kind?: 'em' | 'ss' | 'me';
+  notes?: string;
+  rulesheetUrl?: string;
+  primerUrl?: string;
+  ipdbId?: number;
+  /** Koppeling met de catalogus (OPDB-id, bijv. "GrqZX-MLWo1"). */
+  opdbId?: string;
+  imageSmall?: string;
+  imageMedium?: string;
+}
+
+export type MachinePatch = { [K in keyof MachineDetails]?: MachineDetails[K] | null };
+
 export interface StoredEvent {
   /** Volgnummer (oplopend). */
   seq: number;
@@ -75,10 +94,9 @@ export interface Player {
   createdAt: number;
 }
 
-export interface Machine {
+export interface Machine extends MachineDetails {
   id: Id;
   name: string;
-  // Fase 3: manufacturer, year, notes, rulesheetUrl, externalIds { opdb, pinballMap }
   active: boolean;
 }
 

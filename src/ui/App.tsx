@@ -1,6 +1,7 @@
 import { loaded } from '../app/state';
 import { route } from '../app/router';
 import { Toast } from './components/Toast';
+import { MachineDetailScreen } from './screens/MachineDetail';
 import { MachinesScreen } from './screens/Machines';
 import { MoreScreen } from './screens/More';
 import { NewTournamentScreen } from './screens/NewTournament';
@@ -30,6 +31,8 @@ function Screen() {
       return <PlayerProfileScreen key={b} id={b} />;
     case 'ranglijst':
       return <RankingScreen />;
+    case 'kast':
+      return <MachineDetailScreen key={b} id={b} />;
     case 'kasten':
       return <MachinesScreen />;
     case 'meer':
@@ -38,7 +41,7 @@ function Screen() {
       return <NewTournamentScreen />;
     case 't':
       if (c === 'scorebord') return <ScoreboardScreen id={b} />;
-      return <TournamentScreen key={b} id={b} tab={c === 'stand' || c === 'geschiedenis' ? c : 'ronde'} />;
+      return <TournamentScreen key={b} id={b} tab={c === 'stand' || c === 'kasten' || c === 'geschiedenis' ? c : 'ronde'} />;
     default:
       return <TournamentsScreen />;
   }

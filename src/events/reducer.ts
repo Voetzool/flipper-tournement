@@ -42,12 +42,19 @@ export function apply(state: AppState, e: StoredEvent): void {
       if (p) p.archived = b.type === 'PlayerArchived';
       break;
     }
-    case 'MachineAdded':
-      state.machines.set(b.machineId, { id: b.machineId, name: b.name, active: true });
+    case 'MachineAdded': {
+      const { type: _t, machineId, ...details } = b;
+      state.machines.set(machineId, { ...details, id: machineId, active: true });
       break;
+    }
     case 'MachineUpdated': {
       const m = state.machines.get(b.machineId);
-      if (m) m.name = b.name;
+      if (!m) break;
+      const { type: _t, machineId: _id, ...patch } = b;
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null || v === '') delete (m as unknown as Record<string, unknown>)[k];
+        else if (v !== undefined) (m as unknown as Record<string, unknown>)[k] = v;
+      }
       break;
     }
     case 'MachineDeleted':

@@ -11,7 +11,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
 - Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
 - `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
-- Bundle-doel: < ~60 KB gzip JS (nu ~55 KB, waarvan Dexie het grootste deel).
+- Bundle-doel: < ~60 KB gzip JS (nu ~59 KB, waarvan Dexie het grootste deel).
 
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
@@ -60,8 +60,29 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - `RatingChart` (eigen SVG): lijn #0e9cbc (gevalideerd met de dataviz-validator op kaartkleur #1b1b2e), band = ±RD,
   tik/beweeg voor tooltip per potje.
 
+## Kasten & catalogus (fase 3)
+- **OPDB heeft zijn eigen API op 1 okt 2026 uitgezet.** Data komt nu via Match Play. De bulk-export is gratis en zonder
+  token: `https://mp-data.sfo3.cdn.digitaloceanspaces.com/opdb-v2.json` (bron: README van edgiardina/PinballApi en
+  dgolja/opdb-to-psql; Match Play vraagt de export te gebruiken i.p.v. per-entry API-calls). Geen GitHub secret nodig.
+- `scripts/build-catalog.mjs` (in CI vóór de build) downloadt de export en schrijft via `scripts/catalog-transform.mjs`
+  een compacte `public/catalog/opdb.json` + `opdb-meta.json` (versie = hash). Faalt het, dan bouwt de app gewoon
+  zonder (nieuwe) catalogus (warning in de log). `public/catalog` staat in .gitignore. Workflow draait ook wekelijks
+  (cron, alleen vanaf de standaardbranch).
+- Exportformaat (onofficieel schema): `entries[]` met o.a. `opdbId`, `name`, `shortName`, `year`, `type` (em/ss/me),
+  `entryType` (machine/alias/machineGroup), `physicalMachine`, `manufacturer.name`, `ipdbId`, `pinballRulesUrl`,
+  `pinballPrimerUrl`, `images[].urls.{small,medium,large}`, `keywords`. Groepen en virtuele tafels worden overgeslagen.
+- App: `src/catalog/` — catalogus wordt NIET geprecachet (`globIgnores`), maar pas bij gebruik gedownload en in
+  IndexedDB (meta-key `catalog`) bewaard → offline zoeken (`searchCatalog`: alle woorden, exacte naam/korte naam eerst).
+  Bijwerken via Meer. Kastafbeeldingen (cross-origin) via Workbox runtime cache `kast-afbeeldingen` (CacheFirst).
+- `Machine` heeft optioneel: manufacturer, year, kind, notes, rulesheetUrl, primerUrl, ipdbId, opdbId, imageSmall/Medium.
+  `MachineUpdated` is een patch (alleen meegegeven velden; `null`/'' = leegmaken). Oude events blijven geldig.
+- Schermen: Kasten (zoeken in catalogus of handmatig), `#/kast/:id` (plaatje, rulesheet/Tilt Forums-zoeklink,
+  PinballPrimer, IPDB, eigen notities, beste spelers op de kast), toernooi-tab "Kasten" (notities + rulesheet).
+- Bronvermelding in de app: "Kastgegevens: OPDB (opdb.org), via Match Play". Licentie van de OPDB-data is niet
+  expliciet gevonden; bij twijfel navragen bij OPDB/Match Play.
+
 ## Schermen (`src/ui/screens/`)
-Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Geschiedenis, uitslag-sheet,
+Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Kasten/Uitslagen, uitslag-sheet,
 menu: deelnemers aan/afmelden, afronden/heropenen, verwijderen; "ronde opnieuw indelen" zolang er geen uitslag is) ·
 Scorebord (`#/t/:id/scorebord`, wake lock, schaalt met aantal spelers) · Ranglijst (`#/ranglijst`) ·
 Spelers (tik → profiel `#/speler/:id`, bewerken via ✎ op het profiel) · Kasten · Meer (back-up
@@ -80,9 +101,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 1** — PWA/offline, eventlog + undo/redo, spelers, simpele kasten (alleen naam), Round Robin, stand,
       geschiedenis/correctie, scorebord, back-up, GitHub Pages-deploy, unit tests.
 - [x] **Fase 2** — Glicko-2 rating, ranglijst, spelersprofiel met statistieken en ratingverloop. Logo (icon.svg) i.p.v. 🎰.
-- [ ] **Fase 3** — kasten uitgebreid (fabrikant, jaar, notities/spelregels, rulesheet-link Tilt Forums), info-tab,
-      catalogus (OPDB of Pinball Map, nog kiezen) via GitHub Action + token in GitHub Secrets, offline doorzoekbaar.
-      `Machine` krijgt dan o.a. `externalIds { opdb?, pinballMap? }` (nieuwe optionele velden in `MachineAdded/Updated`).
+- [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
 - [x] Undo alleen per toernooi + echt verwijderen van ongebruikte spelers/kasten (feedback na fase 2).

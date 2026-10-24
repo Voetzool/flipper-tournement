@@ -7,8 +7,11 @@ import { pointsFor, roundComplete } from '../../formats/roundRobin/scoring';
 import { Shell, UndoRedo } from '../components/Shell';
 import { Sheet } from '../components/Sheet';
 import { StandingsTable } from '../components/Standings';
+import { Thumb } from '../components/Thumb';
+import { tiltForumsSearch } from './MachineDetail';
+import { machineSubtitle } from './Machines';
 
-type Tab = 'ronde' | 'stand' | 'geschiedenis';
+type Tab = 'ronde' | 'stand' | 'kasten' | 'geschiedenis';
 
 export function TournamentScreen({ id, tab }: { id: string; tab: Tab }) {
   const t = state.value.tournaments.get(id);
@@ -47,12 +50,16 @@ export function TournamentScreen({ id, tab }: { id: string; tab: Tab }) {
         <a href={`#/${base}/stand`} class={tab === 'stand' ? 'on' : ''}>
           Stand
         </a>
+        <a href={`#/${base}/kasten`} class={tab === 'kasten' ? 'on' : ''}>
+          Kasten
+        </a>
         <a href={`#/${base}/geschiedenis`} class={tab === 'geschiedenis' ? 'on' : ''}>
-          Geschiedenis
+          Uitslagen
         </a>
       </nav>
       {tab === 'ronde' && <RoundTab t={t} onGame={setEditGame} />}
       {tab === 'stand' && <StandingsTable t={t} />}
+      {tab === 'kasten' && <MachinesTab t={t} />}
       {tab === 'geschiedenis' && <HistoryTab t={t} onGame={setEditGame} />}
       {editGame && <ResultSheet t={t} gameId={editGame.id} onClose={() => setEditGame(null)} />}
       {menu && <MenuSheet t={t} onClose={() => setMenu(false)} />}
@@ -151,6 +158,33 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
   );
 }
 
+/** Info-tab: de kasten van dit toernooi met notities en rulesheet, handig om aan spelers te laten zien. */
+function MachinesTab({ t }: { t: Tournament }) {
+  const s = state.value;
+  const machines = t.machineIds.map((id) => s.machines.get(id)).filter((m) => !!m);
+  if (!machines.length) return <p class="empty">Dit toernooi heeft geen kasten.</p>;
+  return (
+    <ul class="list">
+      {machines.map((m) => (
+        <li key={m.id} class="card machine-info">
+          <a class="row plain" href={'#/kast/' + m.id}>
+            <Thumb src={m.imageSmall} size={56} />
+            <div class="grow">
+              <b>{m.name}</b>
+              {machineSubtitle(m) && <div class="small muted">{machineSubtitle(m)}</div>}
+            </div>
+            <span class="muted">›</span>
+          </a>
+          {m.notes && <p class="notes-text">{m.notes}</p>}
+          <a class="small" href={m.rulesheetUrl ?? tiltForumsSearch(m.name)} target="_blank" rel="noopener">
+            {m.rulesheetUrl ? '📖 Rulesheet' : '🔍 Rulesheet zoeken op Tilt Forums'}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function HistoryTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
   const rounds = t.rounds.slice().reverse();
   const any = t.rounds.some((r) => r.games.some((g) => g.result));
@@ -211,7 +245,15 @@ function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; on
   return (
     <Sheet onClose={onClose}>
       <div class="row">
-        <h3 class="grow">{machineName(s, game.machineId)}</h3>
+        <h3 class="grow">
+          {game.machineId ? (
+            <a class="plain" href={'#/kast/' + game.machineId}>
+              {machineName(s, game.machineId)} <span class="muted small">ⓘ</span>
+            </a>
+          ) : (
+            machineName(s, game.machineId)
+          )}
+        </h3>
         {t.status === 'active' && (
           <button class="btn ghost small" onClick={() => setPickMachine(!pickMachine)}>
             Andere kast
