@@ -8,7 +8,6 @@ import { Shell, UndoRedo } from '../components/Shell';
 import { Sheet } from '../components/Sheet';
 import { StandingsTable } from '../components/Standings';
 import { Thumb } from '../components/Thumb';
-import { tiltForumsSearch } from './MachineDetail';
 import { machineSubtitle } from './Machines';
 
 type Tab = 'ronde' | 'stand' | 'kasten' | 'geschiedenis';
@@ -176,8 +175,8 @@ function MachinesTab({ t }: { t: Tournament }) {
             <span class="muted">›</span>
           </a>
           {m.notes && <p class="notes-text">{m.notes}</p>}
-          <a class="small" href={m.rulesheetUrl ?? tiltForumsSearch(m.name)} target="_blank" rel="noopener">
-            {m.rulesheetUrl ? '📖 Rulesheet' : '🔍 Rulesheet zoeken op Tilt Forums'}
+          <a class="btn block" href={`#/kast/${m.id}/regels`}>
+            📖 Spelregels
           </a>
         </li>
       ))}

@@ -11,7 +11,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
 - Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
 - `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
-- Bundle-doel: < ~60 KB gzip JS (nu ~59 KB, waarvan Dexie het grootste deel).
+- Bundle-doel: < ~60 KB gzip JS (nu ~62 KB, waarvan Dexie het grootste deel).
 
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
@@ -76,10 +76,28 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   Bijwerken via Meer. Kastafbeeldingen (cross-origin) via Workbox runtime cache `kast-afbeeldingen` (CacheFirst).
 - `Machine` heeft optioneel: manufacturer, year, kind, notes, rulesheetUrl, primerUrl, ipdbId, opdbId, imageSmall/Medium.
   `MachineUpdated` is een patch (alleen meegegeven velden; `null`/'' = leegmaken). Oude events blijven geldig.
-- Schermen: Kasten (zoeken in catalogus of handmatig), `#/kast/:id` (plaatje, rulesheet/Tilt Forums-zoeklink,
-  PinballPrimer, IPDB, eigen notities, beste spelers op de kast), toernooi-tab "Kasten" (notities + rulesheet).
+- Schermen: Kasten (zoeken in catalogus of handmatig), `#/kast/:id` (plaatje, knop Spelregels, PinballPrimer/IPDB-
+  links, eigen notities, beste spelers op de kast), toernooi-tab "Kasten" (notities + knop Spelregels).
 - Bronvermelding in de app: "Kastgegevens: OPDB (opdb.org), via Match Play". Licentie van de OPDB-data is niet
   expliciet gevonden; bij twijfel navragen bij OPDB/Match Play.
+
+## Spelregels (na fase 3, gebruikerswens)
+- **Tilt Forums is op 1 sept 2026 gesloten.** De wiki-rulesheets staan nu op pinballrulesheets.com, bron in
+  GitHub-repo `heyrocker/pinballrules` (map `docs/<fabrikant>/<naam>.md`, YAML-kop met `title`, `manufacturer`,
+  `opdb_id` = OPDB-groep). Licentie **CC0** → we leveren ze mee. ~90 kasten (vooral modern).
+- CI: `git clone` van die repo → `scripts/build-rules.mjs` kopieert ze naar `public/rules/<pad>.md` + `index.json`
+  (groep → pad); `build-catalog.mjs` zet `rs` (pad) op elke catalogusregel van die groep (alle varianten).
+- **The Pinball Primer** (pinballprimer.github.io, ~800 handleidingen, ook klassiekers; OPDB levert de URL als `pp`)
+  heeft GEEN licentie → niet meeleveren. De app haalt de pagina op het apparaat zelf op (GitHub Pages staat CORS toe),
+  zet hem om naar Markdown (`src/rules/primer.ts`) en bewaart een persoonlijke offline kopie met bronvermelding.
+  NB: de maker is fel tegen AI; niets van hun inhoud in de repo of tests zetten.
+- `src/rules/rules.ts`: `ensureRules(machineId)` bij toevoegen uit de catalogus; `syncMissingRules()` bij opstarten
+  en bij 'online' (ook voor oudere kasten: vult `rulesheetPath`/`primerUrl` aan uit de catalogus). Opslag als
+  `MachineUpdated { rules: { source, url, text, fetchedAt } }` → in back-ups en offline beschikbaar.
+- `src/rules/markdown.ts`: eigen kleine, veilige Markdown-renderer (escapet alles, geen ruwe HTML/afbeeldingen,
+  alleen http(s)-links, kramdown-ankers `{#id}` → interne scroll-links via `data-anchor`, BBCode `[details]` weg).
+- Scherm `#/kast/:id/regels` (knop "📖 Spelregels" op kastpagina en in toernooi-tab Kasten): huisregels bovenaan,
+  dan de spelregels, bron + "opnieuw ophalen". `rules/**` en `catalog/**` niet in de precache.
 
 ## Schermen (`src/ui/screens/`)
 Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Kasten/Uitslagen, uitslag-sheet,
@@ -104,6 +122,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
+- [x] Spelregels automatisch ophalen en offline tonen (Pinball Rulesheets + PinballPrimer).
 - [x] Undo alleen per toernooi + echt verwijderen van ongebruikte spelers/kasten (feedback na fase 2).
 
 ## Werkwijze

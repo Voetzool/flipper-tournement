@@ -27,6 +27,8 @@ export interface CatalogRow {
   r?: string;
   /** PinballPrimer-URL */
   pp?: string;
+  /** pad van de meegeleverde rulesheet (Pinball Rulesheets), zonder .md */
+  rs?: string;
   /** zoekwoorden */
   k?: string;
 }
@@ -62,4 +64,5 @@ export interface CatalogMachine {
   imageMedium?: string;
   rulesheetUrl?: string;
   primerUrl?: string;
+  rulesheetPath?: string;
 }

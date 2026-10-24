@@ -8,6 +8,7 @@ import { NewTournamentScreen } from './screens/NewTournament';
 import { PlayerProfileScreen } from './screens/PlayerProfile';
 import { PlayersScreen } from './screens/Players';
 import { RankingScreen } from './screens/Ranking';
+import { RulesScreen } from './screens/Rules';
 import { ScoreboardScreen } from './screens/Scoreboard';
 import { TournamentScreen } from './screens/Tournament';
 import { TournamentsScreen } from './screens/Tournaments';
@@ -32,6 +33,7 @@ function Screen() {
     case 'ranglijst':
       return <RankingScreen />;
     case 'kast':
+      if (c === 'regels') return <RulesScreen key={b} id={b} />;
       return <MachineDetailScreen key={b} id={b} />;
     case 'kasten':
       return <MachinesScreen />;

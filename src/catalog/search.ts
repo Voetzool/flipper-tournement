@@ -24,6 +24,7 @@ export function toMachine(f: CatalogFile, r: CatalogRow): CatalogMachine {
     imageMedium: r.im ? f.imgBase + r.im : undefined,
     rulesheetUrl: r.r,
     primerUrl: r.pp,
+    rulesheetPath: r.rs,
   };
 }
 

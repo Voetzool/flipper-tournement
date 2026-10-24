@@ -28,6 +28,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Rulesheets (Pinball Rulesheets, CC0) ophalen
+        run: |
+          git clone --depth 1 https://github.com/heyrocker/pinballrules "$RUNNER_TEMP/pinballrules" || echo "::warning::pinballrules niet opgehaald"
+          node scripts/build-rules.mjs "$RUNNER_TEMP/pinballrules"
       - name: Kastencatalogus (OPDB via Match Play) ophalen
         run: node scripts/build-catalog.mjs
       - run: npm run build

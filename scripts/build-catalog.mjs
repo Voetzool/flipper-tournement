@@ -5,7 +5,7 @@
 // Gebruik: node scripts/build-catalog.mjs            (downloaden)
 //          node scripts/build-catalog.mjs export.json (lokaal bestand gebruiken)
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { transformOpdb } from './catalog-transform.mjs';
 
@@ -22,7 +22,9 @@ async function load() {
 
 try {
   const data = await load();
-  const catalog = transformOpdb(data, { generatedAt: new Date().toISOString() });
+  const rulesFile = new globalThis.URL('../public/rules/index.json', import.meta.url);
+  const rulesIndex = existsSync(rulesFile) ? JSON.parse(readFileSync(rulesFile, 'utf8')) : {};
+  const catalog = transformOpdb(data, { generatedAt: new Date().toISOString(), rulesIndex });
   if (catalog.e.length < 100) throw new Error(`Verdacht weinig kasten in export (${catalog.e.length})`);
   const json = JSON.stringify(catalog);
   const version = createHash('sha256').update(json).digest('hex').slice(0, 12);
@@ -32,6 +34,9 @@ try {
   writeFileSync(new globalThis.URL('opdb-meta.json', outDir), JSON.stringify(meta));
   console.log(`Catalogus: ${meta.count} kasten, ${catalog.mfrs.length} fabrikanten, ${(meta.bytes / 1024).toFixed(0)} KB (gzip ${(meta.gzipBytes / 1024).toFixed(0)} KB), versie ${version}`);
   console.log('Afbeeldingen-basis:', catalog.imgBase || '(geen)');
+  console.log(`Met rulesheet: ${catalog.e.filter((r) => r.rs).length} · met PinballPrimer: ${catalog.e.filter((r) => r.pp).length} · met rules-URL: ${catalog.e.filter((r) => r.r).length}`);
+  const unmatched = Object.keys(rulesIndex).filter((g) => !catalog.e.some((r) => r.i.startsWith(g + '-') || r.i === g));
+  if (unmatched.length) console.log('Rulesheets zonder kast in catalogus:', unmatched.join(', '));
   console.log('Voorbeeld:', JSON.stringify(catalog.e.find((r) => /medieval madness/i.test(r.n)) ?? catalog.e[0]));
 } catch (err) {
   console.warn('::warning::Kastencatalogus niet bijgewerkt:', err.message);

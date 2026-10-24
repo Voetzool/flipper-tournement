@@ -1024,3 +1024,131 @@ textarea.input.notes {
   border-radius: 10px;
   background: var(--bg-2);
 }
+
+/* ---------- Spelregels ---------- */
+
+.rules {
+  font-size: 17px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.rules h2 {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--cyan);
+  font-size: 22px;
+  margin: 28px 0 8px;
+  scroll-margin-top: 80px;
+}
+
+.rules .rules-title {
+  color: var(--text);
+  font-size: 24px;
+  margin-top: 8px;
+}
+
+.rules a.anchor {
+  color: var(--cyan);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.rules h3 {
+  color: var(--yellow);
+  font-size: 19px;
+  margin: 20px 0 6px;
+  scroll-margin-top: 80px;
+}
+
+.rules h4 {
+  font-size: 17px;
+  margin: 16px 0 4px;
+}
+
+.rules p {
+  margin: 0 0 12px;
+}
+
+.rules ul,
+.rules ol {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+
+.rules li {
+  margin: 4px 0;
+}
+
+.rules li.d1 {
+  margin-left: 18px;
+}
+
+.rules li.d2,
+.rules li.d3 {
+  margin-left: 36px;
+}
+
+.rules blockquote {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--pink);
+  background: var(--bg-2);
+}
+
+.rules code {
+  background: var(--card-2);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+.rules hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 20px 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 0 12px;
+}
+
+.rules table {
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.rules th,
+.rules td {
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.toc summary {
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 32px;
+}
+
+.toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.linkbtn {
+  background: none;
+  border: none;
+  color: var(--cyan);
+  padding: 8px 0;
+  text-align: left;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.house-rules {
+  border-color: var(--yellow);
+  margin-bottom: 14px;
+}

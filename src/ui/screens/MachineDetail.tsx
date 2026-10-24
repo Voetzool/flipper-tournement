@@ -3,16 +3,13 @@ import { dispatch, playerName, state } from '../../app/state';
 import { back } from '../../app/router';
 import { machineInUse } from '../../events/reducer';
 import type { Machine } from '../../events/types';
+import { fetchingRules } from '../../rules/rules';
 import { machineStats } from '../../stats/machineStats';
 import { Shell } from '../components/Shell';
 import { Sheet } from '../components/Sheet';
 import { MachineForm, machineSubtitle } from './Machines';
 
 const KIND: Record<string, string> = { em: 'Elektromechanisch', ss: 'Solid state', me: 'Mechanisch' };
-
-export function tiltForumsSearch(name: string) {
-  return 'https://tiltforums.com/search?q=' + encodeURIComponent(name + ' rulesheet');
-}
 
 /** Infopagina van een kast: plaatje, gegevens, links naar spelregels, eigen notities en statistieken. */
 export function MachineDetailScreen({ id }: { id: string }) {
@@ -58,31 +55,27 @@ export function MachineDetailScreen({ id }: { id: string }) {
 
       <h2>Spelregels</h2>
       <div class="stack">
-        {m.rulesheetUrl ? (
-          <a class="btn cyan block" href={m.rulesheetUrl} target="_blank" rel="noopener">
-            📖 Rulesheet openen
-          </a>
-        ) : (
-          <a class="btn block" href={tiltForumsSearch(m.name)} target="_blank" rel="noopener">
-            🔍 Zoek rulesheet op Tilt Forums
-          </a>
+        <a class="btn cyan block big" href={`#/kast/${m.id}/regels`}>
+          📖 Spelregels {m.rules ? '' : fetchingRules.value.has(m.id) ? '(ophalen…)' : ''}
+        </a>
+        {m.rules && <p class="small muted" style="margin:0">Opgeslagen op dit apparaat, ook offline te lezen.</p>}
+        {(m.primerUrl || m.ipdbId) && (
+          <div class="row small">
+            {m.primerUrl && (
+              <a href={m.primerUrl} target="_blank" rel="noopener">
+                PinballPrimer
+              </a>
+            )}
+            {m.ipdbId && (
+              <a href={`https://www.ipdb.org/machine.cgi?id=${m.ipdbId}`} target="_blank" rel="noopener">
+                IPDB
+              </a>
+            )}
+          </div>
         )}
-        {m.primerUrl && (
-          <a class="btn block" href={m.primerUrl} target="_blank" rel="noopener">
-            📘 PinballPrimer
-          </a>
-        )}
-        {m.ipdbId && (
-          <a class="btn ghost block" href={`https://www.ipdb.org/machine.cgi?id=${m.ipdbId}`} target="_blank" rel="noopener">
-            IPDB-pagina
-          </a>
-        )}
-        <p class="small muted" style="margin:0">
-          Links openen alleen met internet. Zet de belangrijkste regels daarom ook in je eigen notities hieronder.
-        </p>
       </div>
 
-      <h2>Eigen notities en spelregels</h2>
+      <h2>Eigen notities en huisregels</h2>
       <Notes key={m.id + (m.notes ?? '')} m={m} />
 
       {stats.games > 0 && (

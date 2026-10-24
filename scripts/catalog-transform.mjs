@@ -26,7 +26,8 @@ function pickImage(images) {
 
 /**
  * @param {{entries: any[]}} data  OPDB v2-export
- * @param {{generatedAt?: string, source?: string}} meta
+ * @param {{generatedAt?: string, source?: string, rulesIndex?: Record<string, {path: string}>}} meta
+ *   rulesIndex: OPDB-groep → rulesheet-bestand (uit scripts/build-rules.mjs)
  */
 export function transformOpdb(data, meta = {}) {
   const entries = Array.isArray(data?.entries) ? data.entries : Array.isArray(data) ? data : [];
@@ -62,6 +63,9 @@ export function transformOpdb(data, meta = {}) {
       row.im = img.urls.medium;
     }
     if (e.pinballRulesUrl) row.r = e.pinballRulesUrl;
+    const group = typeof e.opdbGroup === 'string' ? e.opdbGroup : e.opdbId.split('-')[0];
+    const sheet = meta.rulesIndex?.[group];
+    if (sheet) row.rs = sheet.path;
     if (e.pinballPrimerUrl) row.pp = e.pinballPrimerUrl;
     if (Array.isArray(e.keywords) && e.keywords.length) row.k = e.keywords.join(' ');
     rows.push(row);

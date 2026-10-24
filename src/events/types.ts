@@ -70,6 +70,19 @@ export interface MachineDetails {
   opdbId?: string;
   imageSmall?: string;
   imageMedium?: string;
+  /** Pad van de meegeleverde rulesheet (Pinball Rulesheets), bijv. "stern/jaws-rulesheet". */
+  rulesheetPath?: string;
+  /** Automatisch opgehaalde spelregels, offline leesbaar. */
+  rules?: MachineRules;
+}
+
+export interface MachineRules {
+  source: 'pinballrulesheets' | 'pinballprimer';
+  /** Webpagina van de bron (voor bronvermelding). */
+  url: string;
+  /** Markdown */
+  text: string;
+  fetchedAt: number;
 }
 
 export type MachinePatch = { [K in keyof MachineDetails]?: MachineDetails[K] | null };

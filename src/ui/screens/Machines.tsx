@@ -3,6 +3,7 @@ import { dispatch, showToast, state } from '../../app/state';
 import { go } from '../../app/router';
 import { catalogError, catalogIndex, catalogStatus, loadStoredCatalog, prefetchImage, updateCatalog } from '../../catalog/catalog';
 import { searchCatalog } from '../../catalog/search';
+import { ensureRules } from '../../rules/rules';
 import type { CatalogMachine } from '../../catalog/types';
 import type { Machine } from '../../events/types';
 import { newId } from '../../lib/id';
@@ -75,10 +76,11 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
   const results = index ? searchCatalog(index, query, 25) : [];
 
   const addFromCatalog = (c: CatalogMachine) => {
-    const { opdbId, name, manufacturer, year, kind, ipdbId, imageSmall, imageMedium, rulesheetUrl, primerUrl } = c;
+    const { opdbId, name, manufacturer, year, kind, ipdbId, imageSmall, imageMedium, rulesheetUrl, primerUrl, rulesheetPath } = c;
+    const machineId = newId();
     dispatch({
       type: 'MachineAdded',
-      machineId: newId(),
+      machineId,
       name,
       manufacturer,
       year,
@@ -89,7 +91,10 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
       imageMedium,
       rulesheetUrl,
       primerUrl,
+      rulesheetPath,
     });
+    // Spelregels meteen ophalen en opslaan (lukt het nu niet, dan later automatisch opnieuw).
+    ensureRules(machineId);
     prefetchImage(imageSmall);
     prefetchImage(imageMedium);
     showToast(`${name} toegevoegd`);
@@ -213,8 +218,8 @@ export function MachineForm({ initial, onSave }: { initial?: Partial<MachineForm
         </div>
       </div>
       <div class="field">
-        <label for="mrules">Link naar rulesheet (bijv. Tilt Forums)</label>
-        <input id="mrules" class="input" type="url" value={rules} placeholder="https://tiltforums.com/…" onInput={(e) => setRules(e.currentTarget.value)} />
+        <label for="mrules">Link naar rulesheet (optioneel)</label>
+        <input id="mrules" class="input" type="url" value={rules} placeholder="https://pinballrulesheets.com/…" onInput={(e) => setRules(e.currentTarget.value)} />
       </div>
       <button class="btn primary block big" type="submit" disabled={!name.trim()}>
         Opslaan
