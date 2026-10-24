@@ -99,6 +99,14 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - Scherm `#/kast/:id/regels` (knop "📖 Spelregels" op kastpagina en in toernooi-tab Kasten): huisregels bovenaan,
   dan de spelregels, bron + "opnieuw ophalen". `rules/**` en `catalog/**` niet in de precache.
 
+## Weergave (lichte modus)
+- `src/app/settings.ts`: `theme` ('auto'|'light'|'dark') in localStorage (per apparaat, niet in back-up). Zet
+  `data-theme` op `<html>` altijd op 'light' of 'dark' ('auto' volgt `prefers-color-scheme`, live) + `<meta theme-color>`.
+  `initSettings()` vóór de eerste render. Keuze in Meer → Weergave.
+- `theme.css`: donkere waarden op `:root`, lichte op `:root[data-theme='light']`. Nooit kleuren hard coderen: gebruik
+  de variabelen (o.a. `--topbar-bg`, `--nav-bg`, `--overlay`, `--shadow`, `--sb-row-bg`, `--sb-glow`, `--chart`, `--img-bg`).
+  Grafieklijn licht #0b7390 (dataviz-validator op #ffffff). Gloed-effecten uit in licht.
+
 ## Schermen (`src/ui/screens/`)
 Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Kasten/Uitslagen, uitslag-sheet,
 menu: deelnemers aan/afmelden, afronden/heropenen, verwijderen; "ronde opnieuw indelen" zolang er geen uitslag is) ·
@@ -122,6 +130,8 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
+- [x] Lichte modus (stap 1 van 4 uit feedback-ronde; volgende: speelveldfoto bij spelregels, nieuwe 1-tegen-1
+      "Round Robin" (bestaande vorm heet dan "Groepsrondes", interne id blijft `roundRobin`), Engels).
 - [x] Spelregels automatisch ophalen en offline tonen (Pinball Rulesheets + PinballPrimer).
 - [x] Undo alleen per toernooi + echt verwijderen van ongebruikte spelers/kasten (feedback na fase 2).
 

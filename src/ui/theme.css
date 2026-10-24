@@ -15,11 +15,60 @@
   --gold: #ffd60a;
   --silver: #c9d3ff;
   --bronze: #ff9d5c;
+  --topbar-bg: rgba(11, 11, 18, 0.92);
+  --nav-bg: rgba(20, 20, 34, 0.96);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow: rgba(0, 0, 0, 0.5);
+  --sb-row-bg: rgba(27, 27, 46, 0.85);
+  --sb-glow: #241046;
+  --chart: #0e9cbc;
+  --img-bg: #000;
   --radius: 16px;
   --tap: 56px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   color-scheme: dark;
+}
+
+/* Lichte modus. settings.ts zet data-theme altijd op "light" of "dark" ("Automatisch" volgt de telefoon). */
+:root[data-theme='light'] {
+  --bg: #f3f4f8;
+  --bg-2: #e9ebf2;
+  --card: #ffffff;
+  --card-2: #eef0f6;
+  --line: #d5d8e3;
+  --text: #15151f;
+  --muted: #5b5e70;
+  --pink: #d1006b;
+  --cyan: #0072a3;
+  --yellow: #a36d00;
+  --green: #0d8a46;
+  --orange: #c45a00;
+  --red: #cc1f36;
+  --gold: #a36d00;
+  --silver: #66718f;
+  --bronze: #b0541f;
+  --topbar-bg: rgba(243, 244, 248, 0.94);
+  --nav-bg: rgba(255, 255, 255, 0.97);
+  --overlay: rgba(20, 20, 40, 0.45);
+  --shadow: rgba(20, 20, 40, 0.18);
+  --sb-row-bg: rgba(255, 255, 255, 0.92);
+  --sb-glow: #e4dcff;
+  --chart: #0b7390;
+  --img-bg: #e9ebf2;
+  color-scheme: light;
+}
+
+/* Gloed-effecten passen niet bij een lichte achtergrond */
+:root[data-theme='light'] .bottomnav a.active,
+:root[data-theme='light'] .sb-row .p,
+:root[data-theme='light'] .hero .big {
+  text-shadow: none;
+}
+
+:root[data-theme='light'] .sb-row.rank-1,
+:root[data-theme='light'] .seg button.on {
+  box-shadow: none;
 }
 
 * {
@@ -67,7 +116,7 @@ a {
   align-items: center;
   gap: 8px;
   padding: calc(var(--safe-top) + 8px) 12px 8px;
-  background: rgba(11, 11, 18, 0.92);
+  background: var(--topbar-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
@@ -104,7 +153,7 @@ main {
   z-index: 20;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background: rgba(20, 20, 34, 0.96);
+  background: var(--nav-bg);
   border-top: 1px solid var(--line);
   padding-bottom: var(--safe-bottom);
 }
@@ -415,7 +464,7 @@ h2:first-child {
 .chip.on {
   border-color: var(--pink);
   background: rgba(255, 46, 147, 0.18);
-  color: #fff;
+  color: var(--text);
 }
 
 .points-row {
@@ -589,7 +638,7 @@ h2:first-child {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--overlay);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -697,7 +746,7 @@ h2:first-child {
   background: var(--card-2);
   border: 1px solid var(--yellow);
   font-weight: 650;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 30px var(--shadow);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -736,7 +785,7 @@ h2:first-child {
 .scoreboard {
   min-height: 100dvh;
   padding: calc(var(--safe-top) + 16px) 4vw 24px;
-  background: radial-gradient(ellipse at top, #241046 0%, var(--bg) 60%);
+  background: radial-gradient(ellipse at top, var(--sb-glow) 0%, var(--bg) 60%);
 }
 
 .scoreboard header {
@@ -774,7 +823,7 @@ h2:first-child {
   gap: 0.6em;
   padding: 0.35em 0.6em;
   border-radius: 0.4em;
-  background: rgba(27, 27, 46, 0.85);
+  background: var(--sb-row-bg);
   border: 1px solid var(--line);
   font-size: var(--sb-size, clamp(20px, 3.6vw, 52px));
   font-weight: 800;
@@ -922,7 +971,7 @@ a.plain {
   white-space: nowrap;
 }
 
-/* Grafiek: lijn #0e9cbc (gevalideerd op de donkere kaartkleur), recessief raster */
+/* Grafiek: lijn var(--chart): #0e9cbc op donker / #0b7390 op licht (beide gevalideerd), recessief raster */
 .chart {
   position: relative;
   padding-top: 34px;
@@ -947,14 +996,14 @@ a.plain {
 
 .chart .line {
   fill: none;
-  stroke: #0e9cbc;
+  stroke: var(--chart);
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .chart .band {
-  fill: #0e9cbc;
+  fill: var(--chart);
   opacity: 0.16;
 }
 
@@ -965,7 +1014,7 @@ a.plain {
 }
 
 .chart .dot {
-  fill: #0e9cbc;
+  fill: var(--chart);
   stroke: var(--card);
   stroke-width: 2;
 }
@@ -1002,7 +1051,7 @@ a.plain {
   max-height: 46vh;
   object-fit: contain;
   border-radius: var(--radius);
-  background: #000;
+  background: var(--img-bg);
   margin-bottom: 8px;
 }
 

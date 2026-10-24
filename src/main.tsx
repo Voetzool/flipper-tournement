@@ -1,11 +1,13 @@
 import { render } from 'preact';
 import { initPwa } from './app/pwa';
+import { initSettings } from './app/settings';
 import { initState } from './app/state';
 import { requestPersistence } from './db/db';
 import { syncMissingRules } from './rules/rules';
 import { App } from './ui/App';
 import './ui/theme.css';
 
+initSettings();
 render(<App />, document.getElementById('app')!);
 
 initState()

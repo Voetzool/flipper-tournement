@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../../app/state';
 import { offlineReady } from '../../app/pwa';
+import { setTheme, theme, type ThemeChoice } from '../../app/settings';
 import { backupFileName, makeBackup, parseBackup } from '../../backup/backup';
 import { requestPersistence } from '../../db/db';
 import { catalog, catalogError, catalogStatus, catalogVersion, fetchRemoteMeta, loadStoredCatalog, updateCatalog } from '../../catalog/catalog';
@@ -67,6 +68,24 @@ export function MoreScreen() {
   return (
     <Shell title="Meer">
       <BackupBanner />
+      <h2>Weergave</h2>
+      <div class="card stack">
+        <div class="seg" role="radiogroup" aria-label="Weergave">
+          {(
+            [
+              ['auto', 'Automatisch'],
+              ['light', '☀️ Licht'],
+              ['dark', '🌙 Donker'],
+            ] as [ThemeChoice, string][]
+          ).map(([v, label]) => (
+            <button key={v} class={theme.value === v ? 'on' : ''} role="radio" aria-checked={theme.value === v} onClick={() => setTheme(v)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <p class="small muted" style="margin:0">Automatisch volgt de instelling van je telefoon.</p>
+      </div>
+
       <h2>Back-up</h2>
       <div class="card stack">
         <p style="margin:0">
