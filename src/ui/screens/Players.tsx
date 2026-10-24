@@ -1,12 +1,13 @@
 import { useState } from 'preact/hooks';
-import { dispatch, showToast, state } from '../../app/state';
+import { dispatch, ratings, showToast, state } from '../../app/state';
+import { go } from '../../app/router';
 import type { Player } from '../../events/types';
 import { newId } from '../../lib/id';
 import { Shell } from '../components/Shell';
 import { Sheet } from '../components/Sheet';
 
 export function PlayersScreen() {
-  const [editing, setEditing] = useState<Player | 'new' | null>(null);
+  const [editing, setEditing] = useState<'new' | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const all = [...state.value.players.values()].sort((a, b) => a.name.localeCompare(b.name, 'nl'));
   const active = all.filter((p) => !p.archived);
@@ -17,8 +18,9 @@ export function PlayersScreen() {
       {!active.length && <p class="empty">Nog geen spelers. Tik op + om iemand toe te voegen.</p>}
       <ul class="list">
         {active.map((p) => (
-          <li key={p.id} class="list-item card tap" onClick={() => setEditing(p)}>
+          <li key={p.id} class="list-item card tap" onClick={() => go('speler/' + p.id)}>
             <span class="name">{p.name}</span>
+            {ratings.value.has(p.id) && <span class="muted">{Math.round(ratings.value.get(p.id)!.rating)}</span>}
             <span class="muted">›</span>
           </li>
         ))}
@@ -34,7 +36,9 @@ export function PlayersScreen() {
             <ul class="list">
               {archived.map((p) => (
                 <li key={p.id} class="list-item">
-                  <span class="name muted">{p.name}</span>
+                  <a class="name muted plain" href={'#/speler/' + p.id}>
+                    {p.name}
+                  </a>
                   <button class="btn" onClick={() => dispatch({ type: 'PlayerRestored', playerId: p.id })}>
                     Terugzetten
                   </button>
@@ -47,12 +51,12 @@ export function PlayersScreen() {
       <button class="fab" onClick={() => setEditing('new')} aria-label="Speler toevoegen">
         +
       </button>
-      {editing && <PlayerSheet player={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
+      {editing && <PlayerSheet player={null} onClose={() => setEditing(null)} />}
     </Shell>
   );
 }
 
-function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () => void }) {
+export function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () => void }) {
   const [name, setName] = useState(player?.name ?? '');
   const trimmed = name.trim();
   const duplicate = [...state.value.players.values()].some(

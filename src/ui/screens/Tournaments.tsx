@@ -9,7 +9,14 @@ export function TournamentsScreen() {
   const active = list.filter((t) => t.status === 'active');
   const done = list.filter((t) => t.status === 'finished');
   return (
-    <Shell title="🎰 Flipper Toernooi">
+    <Shell
+      title={
+        <>
+          <img class="logo" src="icons/icon.svg" alt="" width={32} height={32} />
+          Flipper Toernooi
+        </>
+      }
+    >
       <BackupBanner />
       <button class="btn primary block big" onClick={() => go('nieuw')}>
         + Nieuw toernooi

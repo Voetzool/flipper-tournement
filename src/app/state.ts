@@ -2,6 +2,7 @@ import { computed, signal } from '@preact/signals';
 import { dexiePersistence, getMeta, setMeta } from '../db/db';
 import { buildState } from '../events/reducer';
 import { EventStore } from '../events/store';
+import { computeRatings } from '../rating/ratings';
 import type { AppState, EventBody, StoredEvent } from '../events/types';
 
 export const store = new EventStore(dexiePersistence);
@@ -9,6 +10,8 @@ export const store = new EventStore(dexiePersistence);
 export const events = signal<readonly StoredEvent[]>([]);
 export const loaded = signal(false);
 export const state = computed<AppState>(() => buildState(events.value));
+/** Glicko-2 ratings, altijd opnieuw berekend uit alle uitslagen. */
+export const ratings = computed(() => computeRatings(state.value));
 export const lastBackupAt = signal<number | undefined>(undefined);
 
 store.subscribe((all) => {

@@ -21,7 +21,9 @@ export function StandingsTable({ t }: { t: Tournament }) {
           <tr key={r.playerId} class={'rank-' + r.rank}>
             <td>{r.rank}</td>
             <td>
-              {playerName(s, r.playerId)}
+              <a class="plain" href={'#/speler/' + r.playerId}>
+                {playerName(s, r.playerId)}
+              </a>
               {!t.playerIds.includes(r.playerId) && <span class="badge" style="margin-left:6px">afgemeld</span>}
             </td>
             <td class="num muted">{r.played}</td>

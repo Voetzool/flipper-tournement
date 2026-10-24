@@ -11,7 +11,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
 - Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
 - `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
-- Bundle-doel: < ~60 KB gzip JS (nu ~52 KB, waarvan Dexie het grootste deel).
+- Bundle-doel: < ~60 KB gzip JS (nu ~55 KB, waarvan Dexie het grootste deel).
 
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
@@ -39,10 +39,24 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
     helemaal gelijk = gelijke rang.
   - Minder kasten dan groepen → groep krijgt `machineId: null` ("Vrije kast").
 
+## Rating & statistieken (fase 2)
+- `src/rating/glicko2.ts`: Glicko-2 (Glickman 2013; getest tegen zijn rekenvoorbeeld). τ = 0.5, start 1500/350/0.06.
+  `inflate()` laat RD groeien bij inactiviteit (geeft altijd een kopie terug — aliasing gaf eerder een bug).
+- `src/rating/ratings.ts`: `computeRatings(state)` — alle potjes uit alle (niet-verwijderde) toernooien op volgorde
+  van `resultAt` (= eerste invoer; correcties veranderen die niet). Elk potje = één ratingperiode; meerspelerpotje =
+  paarsgewijze uitslagen tegen de ratings van vóór het potje. Inactiviteit: 1 periode per 30 dagen.
+  Voorlopig tot `PROVISIONAL_GAMES` (5) potjes; voorlopige spelers staan apart onderaan de ranglijst.
+- Ratings zijn puur afgeleid (signal `ratings` in `src/app/state.ts`), dus undo/correctie werkt vanzelf door.
+- `src/stats/playerStats.ts`: potjes, winst%, gem. plek, % verslagen tegenstanders, toernooien/zeges/podium,
+  per kast, tegenstanders (erboven–eronder), recente potjes.
+- `RatingChart` (eigen SVG): lijn #0e9cbc (gevalideerd met de dataviz-validator op kaartkleur #1b1b2e), band = ±RD,
+  tik/beweeg voor tooltip per potje.
+
 ## Schermen (`src/ui/screens/`)
 Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Geschiedenis, uitslag-sheet,
 menu: deelnemers aan/afmelden, afronden/heropenen, verwijderen; "ronde opnieuw indelen" zolang er geen uitslag is) ·
-Scorebord (`#/t/:id/scorebord`, wake lock, schaalt met aantal spelers) · Spelers · Kasten · Meer (back-up
+Scorebord (`#/t/:id/scorebord`, wake lock, schaalt met aantal spelers) · Ranglijst (`#/ranglijst`) ·
+Spelers (tik → profiel `#/speler/:id`, bewerken via ✎ op het profiel) · Kasten · Meer (back-up
 export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme.css`.
 
 ## Beslissingen (met gebruiker afgestemd)
@@ -57,8 +71,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 ## Fases / voortgang
 - [x] **Fase 1** — PWA/offline, eventlog + undo/redo, spelers, simpele kasten (alleen naam), Round Robin, stand,
       geschiedenis/correctie, scorebord, back-up, GitHub Pages-deploy, unit tests.
-- [ ] **Fase 2** — Glicko-2 rating (meerspelerpotje = paarsgewijze uitslagen, afgeleid uit de eventlog), ranglijst,
-      spelersprofiel met statistieken en ratingverloop (eigen SVG).
+- [x] **Fase 2** — Glicko-2 rating, ranglijst, spelersprofiel met statistieken en ratingverloop. Logo (icon.svg) i.p.v. 🎰.
 - [ ] **Fase 3** — kasten uitgebreid (fabrikant, jaar, notities/spelregels, rulesheet-link Tilt Forums), info-tab,
       catalogus (OPDB of Pinball Map, nog kiezen) via GitHub Action + token in GitHub Secrets, offline doorzoekbaar.
       `Machine` krijgt dan o.a. `externalIds { opdb?, pinballMap? }` (nieuwe optionele velden in `MachineAdded/Updated`).

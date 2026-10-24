@@ -81,6 +81,7 @@ export interface Machine {
 export interface Game extends GameDraft {
   /** Volgorde van finish, 1e eerst. undefined = nog niet gespeeld. */
   result?: Id[];
+  /** Moment van de eerste invoer (niet van een correctie). */
   resultAt?: number;
   corrected?: boolean;
 }

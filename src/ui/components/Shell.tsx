@@ -4,7 +4,7 @@ import { route } from '../../app/router';
 import { applyUpdate, updateAvailable } from '../../app/pwa';
 
 interface Props {
-  title: string;
+  title: ComponentChildren;
   back?: string;
   actions?: ComponentChildren;
   children: ComponentChildren;
@@ -57,7 +57,8 @@ export function UndoRedo() {
 
 const tabs = [
   { path: '', match: ['', 't', 'nieuw'], ico: '🏆', label: 'Toernooien' },
-  { path: 'spelers', match: ['spelers'], ico: '👤', label: 'Spelers' },
+  { path: 'ranglijst', match: ['ranglijst'], ico: '📈', label: 'Ranglijst' },
+  { path: 'spelers', match: ['spelers', 'speler'], ico: '👤', label: 'Spelers' },
   { path: 'kasten', match: ['kasten'], ico: '🕹️', label: 'Kasten' },
   { path: 'meer', match: ['meer'], ico: '⚙️', label: 'Meer' },
 ];

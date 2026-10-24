@@ -87,8 +87,9 @@ export function apply(state: AppState, e: StoredEvent): void {
       const g = findGame(state.tournaments.get(b.tournamentId), b.gameId);
       if (g) {
         if (b.type === 'ResultCorrected' && g.result) g.corrected = true;
+        // resultAt blijft het moment van de eerste invoer, zodat de volgorde (en dus de rating) klopt na correcties.
+        if (!g.result) g.resultAt = e.at;
         g.result = b.order.slice();
-        g.resultAt = e.at;
       }
       break;
     }
