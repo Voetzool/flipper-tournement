@@ -1,0 +1,70 @@
+# CLAUDE.md — Flipper Toernooi
+
+Offline-first PWA voor kleine flipperkast-toernooien. UI-taal: **Nederlands**. De gebruiker is geen ontwikkelaar:
+leg keuzes kort en in eenvoudige taal uit en vertel precies wat die zelf moet doen. Vraag bij twijfel in plaats van gokken.
+
+Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/sharp-thompson-fr3ldi`
+
+## Stack
+- Vite + TypeScript + Preact + @preact/signals (geen router/UI/font-libs; systeemfonts).
+- Dexie (IndexedDB) + `navigator.storage.persist()`.
+- vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
+- Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
+- `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
+- Bundle-doel: < ~60 KB gzip JS (nu ~52 KB, waarvan Dexie het grootste deel).
+
+## Architectuur: event sourcing
+- Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
+- State = `buildState(events)` (`src/events/reducer.ts`), puur; alleen events met `reverted: false` tellen.
+- Undo/redo (`src/events/store.ts`, `EventStore`): log is altijd `[actief…, reverted…]`. Undo zet de laatste actieve op
+  reverted; redo de eerste reverted terug; een nieuwe dispatch verwijdert alle reverted events. Opslag via de
+  `Persistence`-interface (Dexie in de app, `MemoryPersistence` in tests). Schrijfacties lopen in een promise-queue.
+- Uitslag corrigeren = nieuw event `ResultCorrected` (dus zelf ook te undo'en). Events worden nooit gemuteerd.
+- Random uitkomsten (indeling) worden **in het event opgeslagen** (`firstRound`, `RoundGenerated.games`), zodat replay
+  deterministisch is.
+- **Event-vormen nooit breken**: back-ups bevatten letterlijk de events. Nieuwe velden optioneel maken of een migratie
+  in de reducer toevoegen; `schema` staat op elk event.
+- `src/app/state.ts`: signals (`events`, `state`), `dispatch/undo/redo`, `describeEvent` (NL-omschrijving voor toasts).
+- Meta-tabel: `lastBackupAt`.
+
+## Toernooivormen (plug-ins)
+- Interface `FormatDefinition` in `src/formats/types.ts` (`nextRound`, `standings`); registratie in `src/formats/index.ts`.
+- Round Robin (`src/formats/roundRobin/`):
+  - `groupSizes(n, max)`: zo gelijk mogelijk, nooit een groep van 1 (10 spelers, max 4 → 4+3+3).
+  - `generateRound`: random starts + lokale zoekstappen (spelers wisselen tussen groepen, kasten toewijzen/wisselen).
+    Strafscore: W_MEET (al samen gespeeld, kwadratisch) ≫ W_SIZE (vaker in groep van deze grootte dan de speler die
+    het minst vaak) > W_MACHINE (kast al gespeeld) > W_MACHINE_TOTAL (kastgebruik spreiden). Pogingen schalen met
+    het spelersaantal (32 spelers ≈ 0,2 s per ronde op een laptop).
+  - Punten per groepsgrootte (standaard 4: 7/5/3/1, 3: 7/4/1, 2: 7/1). Stand: punten ↓, winsten ↓, gem. plek ↑;
+    helemaal gelijk = gelijke rang.
+  - Minder kasten dan groepen → groep krijgt `machineId: null` ("Vrije kast").
+
+## Schermen (`src/ui/screens/`)
+Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Geschiedenis, uitslag-sheet,
+menu: deelnemers aan/afmelden, afronden/heropenen, verwijderen; "ronde opnieuw indelen" zolang er geen uitslag is) ·
+Scorebord (`#/t/:id/scorebord`, wake lock, schaalt met aantal spelers) · Spelers · Kasten · Meer (back-up
+export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme.css`.
+
+## Beslissingen (met gebruiker afgestemd)
+- Organisator kiest het aantal rondes (extra ronde kan altijd). Rondes worden één voor één ingedeeld.
+- Bij restspelers: groepen mengen (niemand zit over).
+- Puntentabel per groepsgrootte, instelbaar per toernooi.
+- Repo is openbaar (GitHub Pages gratis). Deploy vanaf `main` én de werkbranch.
+- Back-up = alleen actieve events (redo-stapel niet). Herinnering na 7 dagen of na een afgerond toernooi zonder back-up.
+- Export via Web Share (telefoon) met download als fallback.
+- Tegenstanders-spreiding gaat voor kast- en groepsgrootte-spreiding (gemiddelde punten bij 4 en 3 spelers zijn gelijk: 4).
+
+## Fases / voortgang
+- [x] **Fase 1** — PWA/offline, eventlog + undo/redo, spelers, simpele kasten (alleen naam), Round Robin, stand,
+      geschiedenis/correctie, scorebord, back-up, GitHub Pages-deploy, unit tests.
+- [ ] **Fase 2** — Glicko-2 rating (meerspelerpotje = paarsgewijze uitslagen, afgeleid uit de eventlog), ranglijst,
+      spelersprofiel met statistieken en ratingverloop (eigen SVG).
+- [ ] **Fase 3** — kasten uitgebreid (fabrikant, jaar, notities/spelregels, rulesheet-link Tilt Forums), info-tab,
+      catalogus (OPDB of Pinball Map, nog kiezen) via GitHub Action + token in GitHub Secrets, offline doorzoekbaar.
+      `Machine` krijgt dan o.a. `externalIds { opdb?, pinballMap? }` (nieuwe optionele velden in `MachineAdded/Updated`).
+- [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
+
+## Werkwijze
+- `npm test` en `npm run build` moeten groen zijn vóór een push. Voor UI-wijzigingen: `npx vite preview` +
+  Playwright-screenshot (telefoon 400×860 en tablet 1280×800).
+- CLAUDE.md bijwerken bij elke fase/beslissing.
