@@ -1,7 +1,8 @@
+import { locale, tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../../app/state';
 import { offlineReady } from '../../app/pwa';
-import { setTheme, theme, type ThemeChoice } from '../../app/settings';
+import { lang, setLang, setTheme, theme, type Lang, type ThemeChoice } from '../../app/settings';
 import { backupFileName, makeBackup, parseBackup } from '../../backup/backup';
 import { requestPersistence } from '../../db/db';
 import { catalog, catalogError, catalogStatus, catalogVersion, fetchRemoteMeta, loadStoredCatalog, updateCatalog } from '../../catalog/catalog';
@@ -19,7 +20,7 @@ export function MoreScreen() {
     navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(false));
     loadStoredCatalog();
     fetchRemoteMeta().then(setRemote);
-    navigator.storage?.estimate?.().then((e) => e.usage !== undefined && setUsage(`${Math.round(e.usage / 1024)} KB gebruikt`));
+    navigator.storage?.estimate?.().then((e) => e.usage !== undefined && setUsage(tr('{n} KB gebruikt', { n: Math.round(e.usage / 1024) })));
   }, []);
 
   const exportData = async () => {
@@ -29,9 +30,9 @@ export function MoreScreen() {
     // Op telefoons: deelmenu (opslaan in Bestanden/Drive, mailen, WhatsApp). Anders: gewone download.
     if (navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: 'Flipper back-up' });
+        await navigator.share({ files: [file], title: tr('Flipper back-up') });
         await markBackedUp();
-        showToast('Back-up gedeeld');
+        showToast(tr('Back-up gedeeld'));
         return;
       } catch (e) {
         if ((e as Error).name === 'AbortError') return;
@@ -46,7 +47,7 @@ export function MoreScreen() {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     await markBackedUp();
-    showToast('Back-up opgeslagen');
+    showToast(tr('Back-up opgeslagen'));
   };
 
   const importData = async (e: Event) => {
@@ -56,22 +57,38 @@ export function MoreScreen() {
     if (!f) return;
     try {
       const imported = parseBackup(await f.text());
-      if (!confirm(`Back-up met ${imported.length} acties terugzetten? Alle huidige gegevens op dit apparaat worden vervangen.`)) return;
+      if (!confirm(tr('Back-up met {n} acties terugzetten? Alle huidige gegevens op dit apparaat worden vervangen.', { n: imported.length }))) return;
       await store.replaceAll(imported);
       await markBackedUp();
-      showToast('Back-up teruggezet');
+      showToast(tr('Back-up teruggezet'));
     } catch (err) {
-      alert((err as Error).message);
+      alert(tr((err as Error).message));
     }
   };
 
   const s = state.value;
   return (
-    <Shell title="Meer">
+    <Shell title={tr('Meer')}>
       <BackupBanner />
-      <h2>Weergave</h2>
+      <h2>Taal / Language</h2>
       <div class="card stack">
-        <div class="seg" role="radiogroup" aria-label="Weergave">
+        <div class="seg" role="radiogroup" aria-label="Taal / Language">
+          {(
+            [
+              ['nl', 'Nederlands'],
+              ['en', 'English'],
+            ] as [Lang, string][]
+          ).map(([v, label]) => (
+            <button key={v} class={lang.value === v ? 'on' : ''} role="radio" aria-checked={lang.value === v} onClick={() => setLang(v)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <h2>{tr('Weergave')}</h2>
+      <div class="card stack">
+        <div class="seg" role="radiogroup" aria-label={tr('Weergave')}>
           {(
             [
               ['auto', 'Automatisch'],
@@ -80,45 +97,44 @@ export function MoreScreen() {
             ] as [ThemeChoice, string][]
           ).map(([v, label]) => (
             <button key={v} class={theme.value === v ? 'on' : ''} role="radio" aria-checked={theme.value === v} onClick={() => setTheme(v)}>
-              {label}
+              {tr(label)}
             </button>
           ))}
         </div>
-        <p class="small muted" style="margin:0">Automatisch volgt de instelling van je telefoon.</p>
+        <p class="small muted" style="margin:0">{tr('Automatisch volgt de instelling van je telefoon.')}</p>
       </div>
 
-      <h2>Back-up</h2>
+      <h2>{tr('Back-up')}</h2>
       <div class="card stack">
         <p style="margin:0">
-          Al je gegevens staan alleen op dit apparaat. Maak regelmatig een back-up en bewaar die ergens anders (bijv. Google Drive,
-          iCloud of mail).
+          {tr('Al je gegevens staan alleen op dit apparaat. Maak regelmatig een back-up en bewaar die ergens anders (bijv. Google Drive, iCloud of mail).')}
         </p>
         <p class="small muted" style="margin:0">
-          Laatste back-up: {lastBackupAt.value ? new Date(lastBackupAt.value).toLocaleString('nl-NL') : 'nog nooit'}
+          {tr('Laatste back-up:')} {lastBackupAt.value ? new Date(lastBackupAt.value).toLocaleString(locale()) : tr('nog nooit')}
         </p>
         <button class="btn cyan block" onClick={exportData}>
-          💾 Back-up maken
+          💾 {tr('Back-up maken')}
         </button>
         <label class="btn block">
-          📂 Back-up terugzetten
+          📂 {tr('Back-up terugzetten')}
           <input type="file" accept="application/json,.json" style="display:none" onChange={importData} />
         </label>
       </div>
 
-      <h2>Kastencatalogus (OPDB)</h2>
+      <h2>{tr('Kastencatalogus (OPDB)')}</h2>
       <div class="card stack">
         <div>
           {catalog.value
-            ? `${catalog.value.e.length} kasten offline beschikbaar · versie van ${new Date(catalog.value.generatedAt).toLocaleDateString('nl-NL')}`
-            : 'Nog niet gedownload.'}
+            ? tr('{n} kasten offline beschikbaar · versie van {datum}', { n: catalog.value.e.length, datum: new Date(catalog.value.generatedAt).toLocaleDateString(locale()) })
+            : tr('Nog niet gedownload.')}
         </div>
         {remote && remote.version !== catalogVersion.value && (
           <div class="small muted">
-            {catalog.value ? 'Er is een nieuwere versie' : 'Beschikbaar'}: {remote.count} kasten, ±{Math.max(1, Math.round(remote.gzipBytes / 1024))} KB downloaden.
+            {tr(catalog.value ? 'Er is een nieuwere versie: {n} kasten, ±{kb} KB downloaden.' : 'Beschikbaar: {n} kasten, ±{kb} KB downloaden.', { n: remote.count, kb: Math.max(1, Math.round(remote.gzipBytes / 1024)) })}
           </div>
         )}
-        {remote === null && <div class="small muted">Server niet bereikbaar (geen internet?).</div>}
-        {catalogStatus.value === 'error' && <div class="small" style="color:var(--yellow)">{catalogError.value}</div>}
+        {remote === null && <div class="small muted">{tr('Server niet bereikbaar (geen internet?).')}</div>}
+        {catalogStatus.value === 'error' && <div class="small" style="color:var(--yellow)">{tr(catalogError.value ?? '')}</div>}
         <button
           class="btn block"
           disabled={catalogStatus.value === 'loading' || !remote || remote.version === catalogVersion.value}
@@ -126,50 +142,50 @@ export function MoreScreen() {
             if (await updateCatalog(true)) await syncPlayfields().then(syncMissingRules);
           }}
         >
-          {catalogStatus.value === 'loading' ? 'Downloaden…' : catalog.value ? '⟳ Catalogus bijwerken' : '⬇ Catalogus downloaden'}
+          {catalogStatus.value === 'loading' ? tr('Downloaden…') : catalog.value ? '⟳ ' + tr('Catalogus bijwerken') : '⬇ ' + tr('Catalogus downloaden')}
         </button>
         <p class="small muted" style="margin:0">
-          Kastgegevens en afbeeldingen: OPDB (opdb.org), via Match Play. De catalogus wordt wekelijks ververst.
+          {tr('Kastgegevens en afbeeldingen: OPDB (opdb.org), via Match Play. De catalogus wordt wekelijks ververst.')}
         </p>
       </div>
 
-      <h2>Opslag</h2>
+      <h2>{tr('Opslag')}</h2>
       <div class="card stack">
         <div>
-          {s.players.size} spelers · {s.machines.size} kasten · {s.tournaments.size} toernooien · {events.value.length} acties
+          {tr('{spelers} spelers · {kasten} kasten · {toernooien} toernooien · {acties} acties', { spelers: s.players.size, kasten: s.machines.size, toernooien: s.tournaments.size, acties: events.value.length })}
         </div>
         <div class="small muted">{usage}</div>
         <div class="row">
           <span class="grow">
-            {persisted ? '✅ Browser bewaart de gegevens permanent' : '⚠️ Browser mag gegevens opruimen bij weinig ruimte'}
+            {persisted ? '✅ ' + tr('Browser bewaart de gegevens permanent') : '⚠️ ' + tr('Browser mag gegevens opruimen bij weinig ruimte')}
           </span>
           {!persisted && (
             <button class="btn" onClick={async () => setPersisted(await requestPersistence())}>
-              Vragen
+              {tr('Vragen')}
             </button>
           )}
         </div>
         {!persisted && (
           <p class="small muted" style="margin:0">
-            Tip: zet de app op je startscherm; dan bewaren de meeste browsers de gegevens permanent.
+            {tr('Tip: zet de app op je startscherm; dan bewaren de meeste browsers de gegevens permanent.')}
           </p>
         )}
       </div>
 
-      <h2>Installeren</h2>
+      <h2>{tr('Installeren')}</h2>
       <div class="card stack small">
         <div>
-          <b>Android (Chrome):</b> menu ⋮ → <i>App installeren</i> of <i>Toevoegen aan startscherm</i>.
+          <b>Android (Chrome):</b> {tr('menu ⋮ →')} <i>{tr('App installeren')}</i> {tr('of')} <i>{tr('Toevoegen aan startscherm')}</i>.
         </div>
         <div>
-          <b>iPhone/iPad (Safari):</b> deelknop ⬆︎ → <i>Zet op beginscherm</i>.
+          <b>iPhone/iPad (Safari):</b> {tr('deelknop ⬆︎ →')} <i>{tr('Zet op beginscherm')}</i>.
         </div>
-        <div class="muted">{offlineReady.value ? '✅ Klaar voor offline gebruik.' : 'Werkt offline zodra de app één keer volledig geladen is.'}</div>
+        <div class="muted">{offlineReady.value ? '✅ ' + tr('Klaar voor offline gebruik.') : tr('Werkt offline zodra de app één keer volledig geladen is.')}</div>
       </div>
 
-      <h2>Over</h2>
+      <h2>{tr('Over')}</h2>
       <div class="card small muted">
-        Flipper Toernooi v{__APP_VERSION__} · gebouwd {new Date(__BUILD_TIME__).toLocaleDateString('nl-NL')}
+        {tr('Flipper Toernooi')} v{__APP_VERSION__} · {tr('gebouwd')} {new Date(__BUILD_TIME__).toLocaleDateString(locale())}
       </div>
     </Shell>
   );

@@ -1,3 +1,4 @@
+import { locale, tr } from '../../i18n';
 import { useMemo, useState } from 'preact/hooks';
 import { state } from '../../app/state';
 import { renderMarkdown } from '../../rules/markdown';
@@ -19,8 +20,8 @@ export function RulesScreen({ id }: { id: string }) {
 
   if (!m) {
     return (
-      <Shell title="Spelregels" back="kasten">
-        <p class="empty">Deze kast bestaat niet (meer).</p>
+      <Shell title={tr('Spelregels')} back="kasten">
+        <p class="empty">{tr('Deze kast bestaat niet (meer).')}</p>
       </Shell>
     );
   }
@@ -32,17 +33,17 @@ export function RulesScreen({ id }: { id: string }) {
   return (
     <Shell title={m.name} back={'kast/' + m.id}>
       {m.playfieldMedium && !pfFailed && (
-        <button class="playfield" onClick={() => setViewer(true)} aria-label="Speelveld vergroten">
-          <img src={m.playfieldMedium} alt={`Speelveld ${m.name}`} onError={() => setPfFailed(true)} />
-          <span class="playfield-hint">🔍 Tik om te vergroten</span>
+        <button class="playfield" onClick={() => setViewer(true)} aria-label={tr('Speelveld vergroten')}>
+          <img src={m.playfieldMedium} alt={tr('Speelveld {naam}', { naam: m.name })} onError={() => setPfFailed(true)} />
+          <span class="playfield-hint">🔍 {tr('Tik om te vergroten')}</span>
         </button>
       )}
 
-      <h2 style="margin-top:0">Spelregels</h2>
+      <h2 style="margin-top:0">{tr('Spelregels')}</h2>
 
       {m.notes && (
         <div class="card house-rules">
-          <div class="small muted">Eigen notities en huisregels</div>
+          <div class="small muted">{tr('Eigen notities en huisregels')}</div>
           <p class="notes-text" style="margin:6px 0 0">
             {m.notes}
           </p>
@@ -53,7 +54,7 @@ export function RulesScreen({ id }: { id: string }) {
         <>
           {rendered.toc.length > 3 && !rendered.hasOwnToc && (
             <details class="card toc">
-              <summary>Inhoud</summary>
+              <summary>{tr('Inhoud')}</summary>
               <ul>
                 {rendered.toc.map((h) => (
                   <li key={h.id}>
@@ -75,41 +76,41 @@ export function RulesScreen({ id }: { id: string }) {
           />
           <div class="card small muted stack" style="margin-top:20px">
             <div>
-              Bron: <b>{src!.name}</b> — {src!.note}
+              {tr('Bron:')} <b>{src!.name}</b> — {tr(src!.note)}
             </div>
             <div>
-              Opgehaald op {new Date(m.rules!.fetchedAt).toLocaleDateString('nl-NL')} ·{' '}
+              {tr('Opgehaald op {datum}', { datum: new Date(m.rules!.fetchedAt).toLocaleDateString(locale()) })} ·{' '}
               <a href={m.rules!.url} target="_blank" rel="noopener">
-                origineel bekijken
+                {tr('origineel bekijken')}
               </a>
             </div>
             <button class="btn block" disabled={loading || !navigator.onLine} onClick={() => ensureRules(m.id, true)}>
-              {loading ? 'Bezig…' : '⟳ Opnieuw ophalen'}
+              {loading ? tr('Bezig…') : '⟳ ' + tr('Opnieuw ophalen')}
             </button>
           </div>
         </>
       ) : (
         <div class="card stack">
           {loading ? (
-            <p style="margin:0">Spelregels ophalen…</p>
+            <p style="margin:0">{tr('Spelregels ophalen…')}</p>
           ) : (
             <>
               <p style="margin:0">
                 {canFetch
                   ? navigator.onLine
-                    ? 'Er zijn (nog) geen spelregels gevonden voor deze kast.'
-                    : 'Nog niet opgehaald. Zodra er internet is, worden de spelregels automatisch opgehaald.'
-                  : 'Voor deze kast zijn geen online spelregels bekend. Voeg de kast toe via de catalogus, of zet de regels in je eigen notities.'}
+                    ? tr('Er zijn (nog) geen spelregels gevonden voor deze kast.')
+                    : tr('Nog niet opgehaald. Zodra er internet is, worden de spelregels automatisch opgehaald.')
+                  : tr('Voor deze kast zijn geen online spelregels bekend. Voeg de kast toe via de catalogus, of zet de regels in je eigen notities.')}
               </p>
               {canFetch && (
                 <button class="btn cyan block" disabled={!navigator.onLine} onClick={() => ensureRules(m.id, true)}>
-                  Spelregels ophalen
+                  {tr('Spelregels ophalen')}
                 </button>
               )}
             </>
           )}
           <a class="btn ghost block" href={'#/kast/' + m.id}>
-            ✎ Eigen notities schrijven
+            ✎ {tr('Eigen notities schrijven')}
           </a>
         </div>
       )}
@@ -117,21 +118,21 @@ export function RulesScreen({ id }: { id: string }) {
       {m.rulesheetUrl && (
         <p class="small">
           <a href={m.rulesheetUrl} target="_blank" rel="noopener">
-            Eigen rulesheet-link openen
+            {tr('Eigen rulesheet-link openen')}
           </a>
         </p>
       )}
 
       {m.playfieldMedium && !pfFailed && (
-        <button class="playfield-fab" onClick={() => setViewer(true)} aria-label="Speelveld bekijken">
-          🗺️ Speelveld
+        <button class="playfield-fab" onClick={() => setViewer(true)} aria-label={tr('Speelveld bekijken')}>
+          🗺️ {tr('Speelveld')}
         </button>
       )}
       {viewer && m.playfieldMedium && (
         <ImageViewer
           src={m.playfieldLarge ?? m.playfieldMedium}
           fallback={m.playfieldMedium}
-          alt={`Speelveld ${m.name}`}
+          alt={tr('Speelveld {naam}', { naam: m.name })}
           onClose={() => setViewer(false)}
         />
       )}

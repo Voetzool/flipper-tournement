@@ -1,3 +1,4 @@
+import { locale, tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { dispatch, state } from '../../app/state';
 import { go } from '../../app/router';
@@ -12,11 +13,11 @@ import { Sheet } from '../components/Sheet';
 import { Shell } from '../components/Shell';
 
 function defaultName() {
-  return 'Toernooi ' + new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+  return tr('Toernooi') + ' ' + new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
 }
 
 function pointsSummary(table: Record<number, number[]>, max: number) {
-  return (table[max] ?? []).join(' · ') + ` bij ${max} spelers`;
+  return (table[max] ?? []).join(' · ') + ' ' + tr('bij {n} spelers', { n: max });
 }
 
 function isDefaultPoints(table: Record<number, number[]>) {
@@ -89,39 +90,39 @@ export function NewTournamentScreen() {
   };
 
   return (
-    <Shell title="Nieuw toernooi" back="">
+    <Shell title={tr('Nieuw toernooi')} back="">
       <div class="stack">
         <div class="field">
-          <label for="tname">Naam</label>
+          <label for="tname">{tr('Naam')}</label>
           <input id="tname" class="input" value={name} onInput={(e) => setName(e.currentTarget.value)} />
         </div>
 
-        <h2>Spelvorm</h2>
+        <h2>{tr('Spelvorm')}</h2>
         <div class="seg">
           {(['roundRobin', 'headToHead'] as FormatId[]).map((f) => (
             <button key={f} class={format === f ? 'on' : ''} onClick={() => setFormat(f)}>
-              {formatOf(f).label}
+              {tr(formatOf(f).label)}
             </button>
           ))}
         </div>
         <p class="small muted" style="margin:4px 0 0">
-          {h2h ? '1-tegen-1, iedereen één keer tegen iedereen.' : 'Groepjes van 2–4 per kast, punten per plek, eerlijk ingedeeld.'}
+          {h2h ? tr('1-tegen-1, iedereen één keer tegen iedereen.') : tr('Groepjes van 2–4 per kast, punten per plek, eerlijk ingedeeld.')}
         </p>
 
         <h2>
-          Spelers ({selPlayers.size}){' '}
+          {tr('Spelers ({n})', { n: selPlayers.size })}{' '}
           {players.length > 0 && (
             <button
               class="btn ghost small"
               onClick={() => setSelPlayers(selPlayers.size === players.length ? new Set() : new Set(players.map((p) => p.id)))}
             >
-              {selPlayers.size === players.length ? 'Geen' : 'Iedereen'}
+              {selPlayers.size === players.length ? tr('Geen') : tr('Iedereen')}
             </button>
           )}
         </h2>
         {!players.length && (
           <p class="muted">
-            Nog geen spelers. <a href="#/spelers">Voeg eerst spelers toe</a>.
+            {tr('Nog geen spelers.')} <a href="#/spelers">{tr('Voeg eerst spelers toe')}</a>.
           </p>
         )}
         <div class="chips">
@@ -132,10 +133,10 @@ export function NewTournamentScreen() {
           ))}
         </div>
 
-        <h2>Kasten ({selMachines.size})</h2>
+        <h2>{tr('Kasten ({n})', { n: selMachines.size })}</h2>
         {!machines.length && (
           <p class="muted">
-            Nog geen kasten. <a href="#/kasten">Voeg kasten toe</a> (mag ook zonder).
+            {tr('Nog geen kasten.')} <a href="#/kasten">{tr('Voeg kasten toe')}</a> {tr('(mag ook zonder).')}
           </p>
         )}
         <div class="chips">
@@ -146,24 +147,23 @@ export function NewTournamentScreen() {
           ))}
         </div>
 
-        <h2>Instellingen</h2>
+        <h2>{tr('Instellingen')}</h2>
         {h2h ? (
           <div class="card stack">
             <p style="margin:0">
-              Iedereen speelt één keer 1-tegen-1 tegen iedereen. Winst = 1 punt, verlies = 0. Bij gelijke stand bovenaan volgt een
-              tie-breaker.
+              {tr('Iedereen speelt één keer 1-tegen-1 tegen iedereen. Winst = 1 punt, verlies = 0. Bij gelijke stand bovenaan volgt een tie-breaker.')}
             </p>
             {selPlayers.size >= 2 && (
               <p class="small muted" style="margin:0">
-                {headToHeadSettings(selPlayers.size).rounds} rondes; iedereen speelt {selPlayers.size - 1} potjes.
-                {selPlayers.size % 2 === 1 && ' Oneven aantal: elke ronde wacht één speler.'}
+                {tr('{r} rondes; iedereen speelt {n} potjes.', { r: headToHeadSettings(selPlayers.size).rounds, n: selPlayers.size - 1 })}
+                {selPlayers.size % 2 === 1 && ' ' + tr('Oneven aantal: elke ronde wacht één speler.')}
               </p>
             )}
           </div>
         ) : (
         <div class="card stack">
           <div class="row">
-            <span class="grow">Aantal rondes</span>
+            <span class="grow">{tr('Aantal rondes')}</span>
             <div class="stepper">
               <button class="iconbtn" onClick={() => setRounds(settings.rounds - 1)}>
                 −
@@ -175,7 +175,7 @@ export function NewTournamentScreen() {
             </div>
           </div>
           <div class="field">
-            <label>Maximaal spelers per kast</label>
+            <label>{tr('Maximaal spelers per kast')}</label>
             <div class="seg">
               {([2, 3, 4] as const).map((n) => (
                 <button key={n} class={settings.maxGroupSize === n ? 'on' : ''} onClick={() => setSettings({ ...settings, maxGroupSize: n })}>
@@ -186,22 +186,22 @@ export function NewTournamentScreen() {
           </div>
           {n >= 2 && (
             <p class="small muted" style="margin:0">
-              Per ronde: {sizes.length} {sizes.length === 1 ? 'groep' : 'groepen'} ({sizes.join(' + ')} spelers)
-              {waiting > 0 && ', 1 speler wacht (0 punten)'}.
-              {tooFewMachines && ' Er zijn minder kasten dan groepen; sommige groepen wachten op een vrije kast.'}
+              {sizes.length === 1 ? tr('Per ronde: 1 groep ({groepen} spelers)', { groepen: sizes.join(' + ') }) : tr('Per ronde: {n} groepen ({groepen} spelers)', { n: sizes.length, groepen: sizes.join(' + ') })}
+              {waiting > 0 && tr(', 1 speler wacht (0 punten)')}.
+              {tooFewMachines && ' ' + tr('Er zijn minder kasten dan groepen; sommige groepen wachten op een vrije kast.')}
             </p>
           )}
           {n >= 2 && fair && (
             <div class={'advice' + (isFair ? '' : ' warn')}>
               <div>
                 {isFair
-                  ? `Met ${settings.rounds} rondes wacht iedereen ${settings.rounds / n}× en speelt iedereen ${(settings.rounds / n) * (n - 1)} potjes.`
-                  : `Met ${settings.rounds} rondes speelt niet iedereen even vaak. Kies een aanbevolen aantal:`}
+                  ? tr('Met {r} rondes wacht iedereen {w}× en speelt iedereen {p} potjes.', { r: settings.rounds, w: settings.rounds / n, p: (settings.rounds / n) * (n - 1) })
+                  : tr('Met {r} rondes speelt niet iedereen even vaak. Kies een aanbevolen aantal:', { r: settings.rounds })}
               </div>
               <div class="chips" style="margin-top:8px">
                 {fair.slice(0, 4).map((r) => (
                   <button key={r} class={'chip' + (r === settings.rounds ? ' on' : '')} onClick={() => setRounds(r)}>
-                    {r} rondes · {(r / n) * (n - 1)} potjes p.p.
+                    {tr('{r} rondes · {p} potjes p.p.', { r, p: (r / n) * (n - 1) })}
                   </button>
                 ))}
               </div>
@@ -209,43 +209,44 @@ export function NewTournamentScreen() {
           )}
           <div class="row">
             <span class="grow">
-              Punten per plek
+              {tr('Punten per plek')}
               <div class="small muted">
                 {pointsSummary(settings.pointsTable, settings.maxGroupSize)}
-                {isDefaultPoints(settings.pointsTable) ? ' (standaard)' : ' (aangepast)'}
+                {' '}
+                {isDefaultPoints(settings.pointsTable) ? tr('(standaard)') : tr('(aangepast)')}
               </div>
             </span>
             <button class="btn" onClick={() => setEditPoints(true)}>
-              Punten aanpassen
+              {tr('Punten aanpassen')}
             </button>
           </div>
         </div>
         )}
 
         <button class="btn primary block big" disabled={selPlayers.size < 2} onClick={start}>
-          Start toernooi
+          {tr('Start toernooi')}
         </button>
-        {selPlayers.size < 2 && <p class="small muted">Kies minstens 2 spelers.</p>}
+        {selPlayers.size < 2 && <p class="small muted">{tr('Kies minstens 2 spelers.')}</p>}
       </div>
       {editPoints && (
         <Sheet onClose={() => setEditPoints(false)}>
           <div class="stack">
-            <h3>Punten per plek</h3>
+            <h3>{tr('Punten per plek')}</h3>
             <p class="small muted" style="margin:0">
-              Hoeveel punten krijgt de 1e, 2e, 3e en 4e plek? Dat hangt af van hoeveel spelers er in het potje zitten.
+              {tr('Hoeveel punten krijgt de 1e, 2e, 3e en 4e plek? Dat hangt af van hoeveel spelers er in het potje zitten.')}
             </p>
             {[4, 3, 2]
               .filter((size) => size <= settings.maxGroupSize)
               .map((size) => (
                 <div class="points-row" key={size}>
-                  <span class="lbl">{size} spelers</span>
+                  <span class="lbl">{tr('{n} spelers', { n: size })}</span>
                   {settings.pointsTable[size].map((v, i) => (
                     <input
                       key={i}
                       type="number"
                       inputMode="numeric"
                       value={v}
-                      aria-label={`${size} spelers, plek ${i + 1}`}
+                      aria-label={tr('{n} spelers, plek {p}', { n: size, p: i + 1 })}
                       onInput={(e) => setPoints(size, i, e.currentTarget.value)}
                     />
                   ))}
@@ -253,10 +254,10 @@ export function NewTournamentScreen() {
               ))}
             <div class="grid2">
               <button class="btn" onClick={() => setSettings({ ...settings, pointsTable: structuredClone(DEFAULT_POINTS) })}>
-                Standaard
+                {tr('Standaard')}
               </button>
               <button class="btn primary" onClick={() => setEditPoints(false)}>
-                Klaar
+                {tr('Klaar')}
               </button>
             </div>
           </div>

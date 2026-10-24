@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 import { computed, signal } from '@preact/signals';
 import { dexiePersistence, getMeta, setMeta } from '../db/db';
 import { buildState } from '../events/reducer';
@@ -64,67 +65,70 @@ export function canRedo(tournamentId: string) {
 export function undo(tournamentId: string) {
   const before = state.value;
   const e = store.undo(tournamentId);
-  if (e) showToast('Ongedaan: ' + describeEvent(e.body, before));
+  if (e) showToast(tr('Ongedaan: {wat}', { wat: describeEvent(e.body, before) }));
 }
 
 export function redo(tournamentId: string) {
   const e = store.redo(tournamentId);
-  if (e) showToast('Opnieuw: ' + describeEvent(e.body, state.value));
+  if (e) showToast(tr('Opnieuw: {wat}', { wat: describeEvent(e.body, state.value) }));
 }
 
 // ---------- Leesbare omschrijving van een event ----------
 
 export function playerName(s: AppState, id: string) {
-  return s.players.get(id)?.name ?? 'Onbekend';
+  return s.players.get(id)?.name ?? tr('Onbekend');
 }
 
 export function machineName(s: AppState, id: string | null) {
-  if (!id) return 'Vrije kast';
-  return s.machines.get(id)?.name ?? 'Onbekende kast';
+  if (!id) return tr('Vrije kast');
+  return s.machines.get(id)?.name ?? tr('Onbekende kast');
 }
 
 export function describeEvent(b: EventBody, s: AppState): string {
-  const t = 'tournamentId' in b ? s.tournaments.get(b.tournamentId)?.name ?? 'toernooi' : '';
+  const t = 'tournamentId' in b ? s.tournaments.get(b.tournamentId)?.name ?? tr('toernooi') : '';
+  const p = 'playerId' in b ? playerName(s, b.playerId) : '';
+  const m = 'machineId' in b ? machineName(s, b.machineId) : '';
+  const order = 'order' in b ? b.order.map((id) => playerName(s, id)).join(', ') : '';
   switch (b.type) {
     case 'PlayerAdded':
-      return `speler ${b.name} toegevoegd`;
+      return tr('speler {naam} toegevoegd', { naam: b.name });
     case 'PlayerUpdated':
-      return `naam gewijzigd in ${b.name}`;
+      return tr('naam gewijzigd in {naam}', { naam: b.name });
     case 'PlayerDeleted':
-      return `${playerName(s, b.playerId)} verwijderd`;
+      return tr('{naam} verwijderd', { naam: p });
     case 'PlayerArchived':
-      return `${playerName(s, b.playerId)} gearchiveerd`;
+      return tr('{naam} gearchiveerd', { naam: p });
     case 'PlayerRestored':
-      return `${playerName(s, b.playerId)} teruggezet`;
+      return tr('{naam} teruggezet', { naam: p });
     case 'MachineAdded':
-      return `kast ${b.name} toegevoegd`;
+      return tr('kast {naam} toegevoegd', { naam: b.name });
     case 'MachineUpdated':
-      return b.name ? `kast hernoemd naar ${b.name}` : `${machineName(s, b.machineId)} bijgewerkt`;
+      return b.name ? tr('kast hernoemd naar {naam}', { naam: b.name }) : tr('{naam} bijgewerkt', { naam: m });
     case 'MachineDeleted':
-      return `${machineName(s, b.machineId)} definitief verwijderd`;
+      return tr('{naam} definitief verwijderd', { naam: m });
     case 'MachineRemoved':
-      return `${machineName(s, b.machineId)} verwijderd`;
+      return tr('{naam} verwijderd', { naam: m });
     case 'MachineRestored':
-      return `${machineName(s, b.machineId)} teruggezet`;
+      return tr('{naam} teruggezet', { naam: m });
     case 'TournamentCreated':
-      return `toernooi ${b.name} gestart`;
+      return tr('toernooi {naam} gestart', { naam: b.name });
     case 'TournamentPlayersChanged':
-      return `deelnemers ${t} gewijzigd`;
+      return tr('deelnemers {naam} gewijzigd', { naam: t });
     case 'RoundGenerated':
-      return `nieuwe ronde in ${t}`;
+      return tr('nieuwe ronde in {naam}', { naam: t });
     case 'RoundRegenerated':
-      return `ronde opnieuw ingedeeld in ${t}`;
+      return tr('ronde opnieuw ingedeeld in {naam}', { naam: t });
     case 'GameResultEntered':
-      return `uitslag (${b.order.map((id) => playerName(s, id)).join(', ')})`;
+      return tr('uitslag ({spelers})', { spelers: order });
     case 'ResultCorrected':
-      return `correctie (${b.order.map((id) => playerName(s, id)).join(', ')})`;
+      return tr('correctie ({spelers})', { spelers: order });
     case 'GameMachineChanged':
-      return `kast gewisseld naar ${machineName(s, b.machineId)}`;
+      return tr('kast gewisseld naar {naam}', { naam: m });
     case 'TournamentFinished':
-      return `${t} afgerond`;
+      return tr('{naam} afgerond', { naam: t });
     case 'TournamentReopened':
-      return `${t} heropend`;
+      return tr('{naam} heropend', { naam: t });
     case 'TournamentDeleted':
-      return `${t} verwijderd`;
+      return tr('{naam} verwijderd', { naam: t });
   }
 }

@@ -11,7 +11,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
 - Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
 - `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
-- Bundle-doel: < ~60 KB gzip JS (nu ~68 KB, waarvan Dexie het grootste deel).
+- Bundle-doel: < ~60 KB gzip JS (nu ~76 KB, waarvan Dexie het grootste deel; Engels woordenboek ~6 KB).
 
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
@@ -138,6 +138,18 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   de variabelen (o.a. `--topbar-bg`, `--nav-bg`, `--overlay`, `--shadow`, `--sb-row-bg`, `--sb-glow`, `--chart`, `--img-bg`).
   Grafieklijn licht #0b7390 (dataviz-validator op #ffffff). Gloed-effecten uit in licht.
 
+## Talen (NL/EN, stap 4 van 4)
+- `src/app/settings.ts`: `lang` ('nl'|'en') in localStorage; standaard NL, Engels als de telefoon niet op Nederlands
+  staat. Keuze in Meer → "Taal / Language". Zet `<html lang>`.
+- `src/i18n/index.ts`: `tr('Nederlandse tekst', { naam })` — de Nederlandse tekst is de sleutel, `{x}` = placeholder,
+  ontbreekt een vertaling dan blijft het Nederlands. `locale()` voor datums, `ordinal(n)` voor plekken (3e / 3rd).
+  Functie heet `tr` (niet `t`, dat is al de toernooi-variabele). Engels staat in `src/i18n/en.ts`.
+- Nieuwe tekst in de UI? Altijd `tr('…')` gebruiken en de Engelse vertaling in `en.ts` zetten. `tests/i18n.test.ts`
+  faalt bij een ontbrekende of ongebruikte vertaling of verschillende placeholders. Teksten die via een variabele
+  vertaald worden (labels, foutmeldingen uit backup/catalogus) moeten letterlijk in de code staan.
+- Bewust niet vertaald: spelregels zelf, namen van spelers/kasten/toernooien (ook opgeslagen "Losse pot · …"-namen),
+  eigen notities, het PWA-manifest.
+
 ## Schermen (`src/ui/screens/`)
 Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Kasten/Uitslagen, uitslag-sheet,
 menu: deelnemers aan/afmelden, afronden/heropenen, verwijderen; "ronde opnieuw indelen" zolang er geen uitslag is) ·
@@ -168,7 +180,8 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 
 - [x] Vooruit spelen in de volgende ronde + tab "Spelen".
 - [x] Losse ranked pot (iedereen voor zich of teams, kast zelf of willekeurig uit selectie).
-- [x] Nieuwe spelvorm Round Robin 1-tegen-1 met tie-breaker (stap 3 van 4). Volgende: Engels (stap 4).
+- [x] Engels als tweede taal (stap 4 van 4).
+- [x] Nieuwe spelvorm Round Robin 1-tegen-1 met tie-breaker (stap 3 van 4).
 - [x] Speelveldfoto bij spelregels (stap 2 van 4).
 - [x] Lichte modus (stap 1 van 4 uit feedback-ronde; volgende: nieuwe 1-tegen-1
       "Round Robin" (bestaande vorm heet dan "Groepsrondes", interne id blijft `roundRobin`), Engels).

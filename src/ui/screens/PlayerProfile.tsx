@@ -1,3 +1,4 @@
+import { locale, ordinal, tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { machineName, playerName, ratings, state } from '../../app/state';
 import { PROVISIONAL_GAMES } from '../../rating/ratings';
@@ -7,7 +8,7 @@ import { Shell } from '../components/Shell';
 import { PlayerSheet } from './Players';
 import { Delta } from './Ranking';
 
-const fmtDate = (at: number) => new Date(at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+const fmtDate = (at: number) => new Date(at).toLocaleDateString(locale(), { day: 'numeric', month: 'short' });
 const pct = (v: number) => `${Math.round(v)}%`;
 
 export function PlayerProfileScreen({ id }: { id: string }) {
@@ -17,8 +18,8 @@ export function PlayerProfileScreen({ id }: { id: string }) {
 
   if (!player) {
     return (
-      <Shell title="Speler" back="spelers">
-        <p class="empty">Deze speler bestaat niet (meer).</p>
+      <Shell title={tr('Speler')} back="spelers">
+        <p class="empty">{tr('Deze speler bestaat niet (meer).')}</p>
       </Shell>
     );
   }
@@ -37,53 +38,53 @@ export function PlayerProfileScreen({ id }: { id: string }) {
       title={player.name}
       back="spelers"
       actions={
-        <button class="iconbtn" onClick={() => setEditing(true)} aria-label="Bewerken" title="Bewerken">
+        <button class="iconbtn" onClick={() => setEditing(true)} aria-label={tr('Bewerken')} title={tr('Bewerken')}>
           ✎
         </button>
       }
     >
-      {player.archived && <div class="banner">Deze speler is gearchiveerd.</div>}
+      {player.archived && <div class="banner">{tr('Deze speler is gearchiveerd.')}</div>}
 
       <div class="card stack">
         <div class="hero">
           <span class="big">{Math.round(r?.rating ?? 1500)}</span>
           <span class="muted">±{Math.round(r?.rd ?? 350)}</span>
-          {r && r.games < PROVISIONAL_GAMES && <span class="badge warn">voorlopig</span>}
-          {rank > 0 && <span class="badge live">#{rank} van {established.length}</span>}
+          {r && r.games < PROVISIONAL_GAMES && <span class="badge warn">{tr('voorlopig')}</span>}
+          {rank > 0 && <span class="badge live">{tr('#{n} van {totaal}', { n: rank, totaal: established.length })}</span>}
         </div>
         {r && r.history.length > 0 ? (
           <RatingChart
             history={r.history}
-            label={(p, i) => `Potje ${i + 1} · ${fmtDate(p.at)} · ${Math.round(p.rating)} (${p.delta >= 0 ? '+' : ''}${Math.round(p.delta)})`}
+            label={(p, i) => `${tr('Potje {n}', { n: i + 1 })} · ${fmtDate(p.at)} · ${Math.round(p.rating)} (${p.delta >= 0 ? '+' : ''}${Math.round(p.delta)})`}
           />
         ) : (
           <p class="muted" style="margin:0">
-            Nog geen potjes gespeeld.
+            {tr('Nog geen potjes gespeeld.')}
           </p>
         )}
       </div>
 
       {stats.games > 0 && (
         <>
-          <h2>Statistieken</h2>
+          <h2>{tr('Statistieken')}</h2>
           <div class="tiles">
-            <Tile v={stats.games} l="potjes" />
-            <Tile v={pct(stats.winPct)} l={`gewonnen (${stats.wins})`} />
-            <Tile v={stats.avgPosition.toFixed(2)} l="gem. plek" />
-            <Tile v={pct(stats.beatenPct)} l="tegenstanders verslagen" />
-            <Tile v={stats.tournaments} l="toernooien" />
-            <Tile v={`🏆 ${stats.tournamentWins}`} l={`toernooizeges · ${stats.podiums}× podium`} />
+            <Tile v={stats.games} l={tr('potjes')} />
+            <Tile v={pct(stats.winPct)} l={tr('gewonnen ({n})', { n: stats.wins })} />
+            <Tile v={stats.avgPosition.toFixed(2)} l={tr('gem. plek')} />
+            <Tile v={pct(stats.beatenPct)} l={tr('tegenstanders verslagen')} />
+            <Tile v={stats.tournaments} l={tr('toernooien')} />
+            <Tile v={`🏆 ${stats.tournamentWins}`} l={tr('toernooizeges · {n}× podium', { n: stats.podiums })} />
           </div>
 
-          <h2>Per kast</h2>
+          <h2>{tr('Per kast')}</h2>
           <div class="card">
             <table class="table">
               <thead>
                 <tr>
-                  <th>Kast</th>
-                  <th class="num">Potjes</th>
-                  <th class="num">Winst</th>
-                  <th class="num">Gem.</th>
+                  <th>{tr('Kast')}</th>
+                  <th class="num">{tr('Potjes')}</th>
+                  <th class="num">{tr('Winst')}</th>
+                  <th class="num">{tr('Gem.')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,14 +100,14 @@ export function PlayerProfileScreen({ id }: { id: string }) {
             </table>
           </div>
 
-          <h2>Tegenstanders</h2>
+          <h2>{tr('Tegenstanders')}</h2>
           <div class="card">
             <table class="table">
               <thead>
                 <tr>
-                  <th>Tegen</th>
-                  <th class="num">Samen</th>
-                  <th class="num">Erboven – eronder</th>
+                  <th>{tr('Tegen')}</th>
+                  <th class="num">{tr('Samen')}</th>
+                  <th class="num">{tr('Erboven – eronder')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,17 +128,17 @@ export function PlayerProfileScreen({ id }: { id: string }) {
             </table>
           </div>
 
-          <h2>Recente potjes</h2>
+          <h2>{tr('Recente potjes')}</h2>
           <ul class="list">
             {stats.recent.slice(0, 15).map((g) => {
               const h = ratingByGame.get(g.game.id);
               return (
                 <li key={g.game.id} class="list-item">
                   <div class="name">
-                    {g.position}e van {g.size} · {machineName(s, g.game.machineId)}
+                    {tr('{plek} van {n}', { plek: ordinal(g.position), n: g.size })} · {machineName(s, g.game.machineId)}
                     <div class="small muted">
                       {fmtDate(g.game.resultAt ?? 0)} · {g.tournament.name}
-                      {g.tournament.format !== 'single' && ` · ${g.points} ptn`}
+                      {g.tournament.format !== 'single' && ` · ${tr('{n} ptn', { n: g.points })}`}
                     </div>
                   </div>
                   {h && (

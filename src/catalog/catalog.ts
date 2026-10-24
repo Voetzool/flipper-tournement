@@ -51,7 +51,7 @@ export async function updateCatalog(force = false): Promise<boolean> {
       return false;
     }
     const res = await fetch(BASE + 'opdb.json?v=' + meta.version);
-    if (!res.ok) throw new Error('Downloaden mislukt (' + res.status + ').');
+    if (!res.ok) throw new Error('Downloaden mislukt.');
     const file = (await res.json()) as CatalogFile;
     await setMeta('catalog', { version: meta.version, file });
     catalog.value = file;

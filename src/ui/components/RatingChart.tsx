@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import { useRef, useState } from 'preact/hooks';
 import type { RatingPoint } from '../../rating/ratings';
 import { DEFAULT_RATING, DEFAULT_RD } from '../../rating/glicko2';
@@ -61,7 +62,7 @@ export function RatingChart({ history, label }: { history: RatingPoint[]; label:
         ref={svgRef}
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`Ratingverloop over ${history.length} potjes`}
+        aria-label={tr('Ratingverloop over {n} potjes', { n: history.length })}
         onPointerDown={onPointer}
         onPointerMove={onPointer}
         onPointerLeave={() => setHover(null)}
@@ -80,10 +81,10 @@ export function RatingChart({ history, label }: { history: RatingPoint[]; label:
           </g>
         ))}
         <text class="axis" x={PAD.l} y={H - 4}>
-          start
+          {tr('start')}
         </text>
         <text class="axis" x={W - PAD.r} y={H - 4} text-anchor="end">
-          potje {history.length}
+          {tr('potje {n}', { n: history.length })}
         </text>
         <path class="band" d={band} clip-path="url(#plot)" />
         <path class="line" d={line} />

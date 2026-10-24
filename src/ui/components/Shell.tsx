@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import type { ComponentChildren } from 'preact';
 import { canRedo, canUndo, redo, undo } from '../../app/state';
 import { route } from '../../app/router';
@@ -16,7 +17,7 @@ export function Shell({ title, back, actions, children, nav = true }: Props) {
     <div class="app">
       <header class="topbar">
         {back !== undefined && (
-          <a class="iconbtn back" href={'#/' + back} aria-label="Terug">
+          <a class="iconbtn back" href={'#/' + back} aria-label={tr('Terug')}>
             ‹
           </a>
         )}
@@ -26,9 +27,9 @@ export function Shell({ title, back, actions, children, nav = true }: Props) {
       <main>
         {updateAvailable.value && (
           <div class="banner info">
-            <span class="grow">Er is een nieuwe versie van de app.</span>
+            <span class="grow">{tr('Er is een nieuwe versie van de app.')}</span>
             <button class="btn cyan" onClick={applyUpdate}>
-              Bijwerken
+              {tr('Bijwerken')}
             </button>
           </div>
         )}
@@ -47,13 +48,13 @@ export function UndoRedo({ tournamentId }: { tournamentId: string }) {
         class="iconbtn undo"
         disabled={!canUndo(tournamentId)}
         onClick={() => undo(tournamentId)}
-        aria-label="Ongedaan maken"
-        title="Ongedaan maken"
+        aria-label={tr('Ongedaan maken')}
+        title={tr('Ongedaan maken')}
       >
         ↶
       </button>
       {canRedo(tournamentId) && (
-        <button class="iconbtn" onClick={() => redo(tournamentId)} aria-label="Opnieuw" title="Opnieuw">
+        <button class="iconbtn" onClick={() => redo(tournamentId)} aria-label={tr('Opnieuw')} title={tr('Opnieuw')}>
           ↷
         </button>
       )}
@@ -76,7 +77,7 @@ function BottomNav() {
       {tabs.map((t) => (
         <a key={t.path} href={'#/' + t.path} class={t.match.includes(cur) ? 'active' : ''}>
           <span class="ico">{t.ico}</span>
-          {t.label}
+          {tr(t.label)}
         </a>
       ))}
     </nav>

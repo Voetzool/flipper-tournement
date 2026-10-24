@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { dispatch, ratings, showToast, state } from '../../app/state';
 import { go } from '../../app/router';
@@ -15,8 +16,8 @@ export function PlayersScreen() {
   const archived = all.filter((p) => p.archived);
 
   return (
-    <Shell title="Spelers">
-      {!active.length && <p class="empty">Nog geen spelers. Tik op + om iemand toe te voegen.</p>}
+    <Shell title={tr('Spelers')}>
+      {!active.length && <p class="empty">{tr('Nog geen spelers. Tik op + om iemand toe te voegen.')}</p>}
       <ul class="list">
         {active.map((p) => (
           <li key={p.id} class="list-item card tap" onClick={() => go('speler/' + p.id)}>
@@ -30,7 +31,7 @@ export function PlayersScreen() {
         <>
           <h2>
             <button class="btn ghost" onClick={() => setShowArchived(!showArchived)}>
-              Gearchiveerd ({archived.length}) {showArchived ? '▲' : '▼'}
+              {tr('Gearchiveerd ({n})', { n: archived.length })} {showArchived ? '▲' : '▼'}
             </button>
           </h2>
           {showArchived && (
@@ -41,7 +42,7 @@ export function PlayersScreen() {
                     {p.name}
                   </a>
                   <button class="btn" onClick={() => dispatch({ type: 'PlayerRestored', playerId: p.id })}>
-                    Terugzetten
+                    {tr('Terugzetten')}
                   </button>
                 </li>
               ))}
@@ -49,7 +50,7 @@ export function PlayersScreen() {
           )}
         </>
       )}
-      <button class="fab" onClick={() => setEditing('new')} aria-label="Speler toevoegen">
+      <button class="fab" onClick={() => setEditing('new')} aria-label={tr('Speler toevoegen')}>
         +
       </button>
       {editing && <PlayerSheet player={null} onClose={() => setEditing(null)} />}
@@ -72,7 +73,7 @@ export function PlayerSheet({ player, onClose }: { player: Player | null; onClos
       onClose();
     } else {
       dispatch({ type: 'PlayerAdded', playerId: newId(), name: trimmed });
-      showToast(`${trimmed} toegevoegd`);
+      showToast(tr('{naam} toegevoegd', { naam: trimmed }));
       setName('');
     }
   };
@@ -80,9 +81,9 @@ export function PlayerSheet({ player, onClose }: { player: Player | null; onClos
   return (
     <Sheet onClose={onClose}>
       <form onSubmit={save} class="stack">
-        <h3>{player ? 'Speler bewerken' : 'Nieuwe speler'}</h3>
+        <h3>{player ? tr('Speler bewerken') : tr('Nieuwe speler')}</h3>
         <div class="field">
-          <label for="pname">Naam</label>
+          <label for="pname">{tr('Naam')}</label>
           <input
             id="pname"
             class="input"
@@ -92,24 +93,24 @@ export function PlayerSheet({ player, onClose }: { player: Player | null; onClos
             autoComplete="off"
             enterKeyHint="done"
           />
-          {duplicate && <span class="small" style="color:var(--yellow)">Er is al een speler met deze naam.</span>}
+          {duplicate && <span class="small" style="color:var(--yellow)">{tr('Er is al een speler met deze naam.')}</span>}
         </div>
         <button class="btn primary block big" type="submit" disabled={!trimmed}>
-          {player ? 'Opslaan' : 'Toevoegen'}
+          {player ? tr('Opslaan') : tr('Toevoegen')}
         </button>
-        {!player && <p class="small muted">Je kunt meteen de volgende naam typen.</p>}
+        {!player && <p class="small muted">{tr('Je kunt meteen de volgende naam typen.')}</p>}
         {player && !playerInUse(state.value, player.id) && (
           <button
             type="button"
             class="btn danger block"
             onClick={() => {
-              if (!confirm(`${player.name} verwijderen?`)) return;
+              if (!confirm(tr('{naam} verwijderen?', { naam: player.name }))) return;
               dispatch({ type: 'PlayerDeleted', playerId: player.id });
               onClose();
               go('spelers');
             }}
           >
-            Verwijderen
+            {tr('Verwijderen')}
           </button>
         )}
         {player && playerInUse(state.value, player.id) && !player.archived && (
@@ -122,16 +123,15 @@ export function PlayerSheet({ player, onClose }: { player: Player | null; onClos
                 onClose();
               }}
             >
-              Archiveren
+              {tr('Archiveren')}
             </button>
             <p class="small muted" style="margin:0">
-              {player.name} heeft al meegedaan aan een toernooi en kan daarom niet verwijderd worden (dan kloppen oude uitslagen niet
-              meer). Archiveren verbergt de speler uit de lijsten; terugzetten kan altijd.
+              {tr('{naam} heeft al meegedaan aan een toernooi en kan daarom niet verwijderd worden (dan kloppen oude uitslagen niet meer). Archiveren verbergt de speler uit de lijsten; terugzetten kan altijd.', { naam: player.name })}
             </p>
           </>
         )}
         <button type="button" class="btn ghost block" onClick={onClose}>
-          Sluiten
+          {tr('Sluiten')}
         </button>
       </form>
     </Sheet>

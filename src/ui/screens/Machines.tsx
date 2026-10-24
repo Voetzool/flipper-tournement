@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { dispatch, showToast, state } from '../../app/state';
 import { go } from '../../app/router';
@@ -22,8 +23,8 @@ export function MachinesScreen() {
   const removed = all.filter((m) => !m.active);
 
   return (
-    <Shell title="Kasten">
-      {!active.length && <p class="empty">Nog geen kasten. Tik op + om een flipperkast toe te voegen.</p>}
+    <Shell title={tr('Kasten')}>
+      {!active.length && <p class="empty">{tr('Nog geen kasten. Tik op + om een flipperkast toe te voegen.')}</p>}
       <ul class="list">
         {active.map((m) => (
           <MachineItem key={m.id} m={m} />
@@ -31,7 +32,7 @@ export function MachinesScreen() {
       </ul>
       {removed.length > 0 && (
         <>
-          <h2>Verwijderd</h2>
+          <h2>{tr('Verwijderd')}</h2>
           <ul class="list">
             {removed.map((m) => (
               <MachineItem key={m.id} m={m} />
@@ -39,7 +40,7 @@ export function MachinesScreen() {
           </ul>
         </>
       )}
-      <button class="fab" onClick={() => setAdding(true)} aria-label="Kast toevoegen">
+      <button class="fab" onClick={() => setAdding(true)} aria-label={tr('Kast toevoegen')}>
         +
       </button>
       {adding && <AddMachineSheet onClose={() => setAdding(false)} />}
@@ -101,20 +102,20 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
     prefetchImage(imageSmall);
     prefetchImage(imageMedium);
     prefetchImage(playfieldMedium);
-    showToast(`${name} toegevoegd`);
+    showToast(tr('{naam} toegevoegd', { naam: name }));
     setQuery('');
   };
 
   return (
     <Sheet onClose={onClose}>
       <div class="stack">
-        <h3>Kast toevoegen</h3>
+        <h3>{tr('Kast toevoegen')}</h3>
         <div class="seg">
           <button class={mode === 'zoeken' ? 'on' : ''} onClick={() => setMode('zoeken')}>
-            🔍 Zoeken
+            🔍 {tr('Zoeken')}
           </button>
           <button class={mode === 'handmatig' ? 'on' : ''} onClick={() => setMode('handmatig')}>
-            ✎ Handmatig
+            ✎ {tr('Handmatig')}
           </button>
         </div>
         {mode === 'zoeken' ? (
@@ -122,7 +123,7 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
             {index ? (
               <input
                 class="input"
-                placeholder="Naam, afkorting (AFM) of fabrikant…"
+                placeholder={tr('Naam, afkorting (AFM) of fabrikant…')}
                 value={query}
                 onInput={(e) => setQuery(e.currentTarget.value)}
                 autoFocus
@@ -130,14 +131,14 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
                 enterKeyHint="search"
               />
             ) : catalogStatus.value === 'loading' ? (
-              <p class="muted">Catalogus downloaden…</p>
+              <p class="muted">{tr('Catalogus downloaden…')}</p>
             ) : (
               <div class="banner">
                 <span class="grow">
-                  {catalogError.value || 'De kastencatalogus is nog niet gedownload.'} Je kunt de kast ook handmatig toevoegen.
+                  {tr(catalogError.value || 'De kastencatalogus is nog niet gedownload.')} {tr('Je kunt de kast ook handmatig toevoegen.')}
                 </span>
                 <button class="btn" onClick={() => updateCatalog(true)}>
-                  Opnieuw
+                  {tr('Opnieuw')}
                 </button>
               </div>
             )}
@@ -150,29 +151,29 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
                     <div class="small muted">{machineSubtitle(c)}</div>
                   </div>
                   {existing.has(c.opdbId) ? (
-                    <span class="badge">al toegevoegd</span>
+                    <span class="badge">{tr('al toegevoegd')}</span>
                   ) : (
-                    <button class="btn" onClick={() => addFromCatalog(c)} aria-label={`${c.name} toevoegen`}>
+                    <button class="btn" onClick={() => addFromCatalog(c)} aria-label={tr('{naam} toevoegen', { naam: c.name })}>
                       +
                     </button>
                   )}
                 </li>
               ))}
             </ul>
-            {index && query.trim() && !results.length && <p class="muted">Niets gevonden. Voeg de kast handmatig toe.</p>}
-            {index && <p class="small muted">Kastgegevens: OPDB (opdb.org), via Match Play.</p>}
+            {index && query.trim() && !results.length && <p class="muted">{tr('Niets gevonden. Voeg de kast handmatig toe.')}</p>}
+            {index && <p class="small muted">{tr('Kastgegevens: OPDB (opdb.org), via Match Play.')}</p>}
           </>
         ) : (
           <MachineForm
             onSave={(d) => {
               dispatch({ type: 'MachineAdded', machineId: newId(), ...d });
-              showToast(`${d.name} toegevoegd`);
+              showToast(tr('{naam} toegevoegd', { naam: d.name }));
               onClose();
             }}
           />
         )}
         <button type="button" class="btn ghost block" onClick={onClose}>
-          Sluiten
+          {tr('Sluiten')}
         </button>
       </div>
     </Sheet>
@@ -208,25 +209,25 @@ export function MachineForm({ initial, onSave }: { initial?: Partial<MachineForm
       }}
     >
       <div class="field">
-        <label for="mname">Naam</label>
-        <input id="mname" class="input" value={name} placeholder="bijv. Medieval Madness" onInput={(e) => setName(e.currentTarget.value)} autoComplete="off" />
+        <label for="mname">{tr('Naam')}</label>
+        <input id="mname" class="input" value={name} placeholder={tr('bijv. Medieval Madness')} onInput={(e) => setName(e.currentTarget.value)} autoComplete="off" />
       </div>
       <div class="grid2">
         <div class="field">
-          <label for="mmfr">Fabrikant</label>
+          <label for="mmfr">{tr('Fabrikant')}</label>
           <input id="mmfr" class="input" value={manufacturer} onInput={(e) => setManufacturer(e.currentTarget.value)} autoComplete="off" />
         </div>
         <div class="field">
-          <label for="myear">Jaar</label>
+          <label for="myear">{tr('Jaar')}</label>
           <input id="myear" class="input" inputMode="numeric" value={year} onInput={(e) => setYear(e.currentTarget.value)} />
         </div>
       </div>
       <div class="field">
-        <label for="mrules">Link naar rulesheet (optioneel)</label>
+        <label for="mrules">{tr('Link naar rulesheet (optioneel)')}</label>
         <input id="mrules" class="input" type="url" value={rules} placeholder="https://pinballrulesheets.com/…" onInput={(e) => setRules(e.currentTarget.value)} />
       </div>
       <button class="btn primary block big" type="submit" disabled={!name.trim()}>
-        Opslaan
+        {tr('Opslaan')}
       </button>
     </form>
   );

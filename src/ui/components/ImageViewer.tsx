@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 
 /** Schermvullende afbeelding met zoomknoppen; knijpen/schuiven werkt ook. */
@@ -32,7 +33,7 @@ export function ImageViewer({ src, fallback, alt, onClose }: { src: string; fall
             {z === 1 ? '⤢' : z + '×'}
           </button>
         ))}
-        <button class="iconbtn" onClick={onClose} aria-label="Sluiten">
+        <button class="iconbtn" onClick={onClose} aria-label={tr('Sluiten')}>
           ✕
         </button>
       </div>

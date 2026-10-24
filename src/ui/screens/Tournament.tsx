@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { dispatch, machineName, playerName, showToast, state, undo } from '../../app/state';
 import { go } from '../../app/router';
@@ -22,8 +23,8 @@ export function TournamentScreen({ id, tab }: { id: string; tab: Tab }) {
 
   if (!t) {
     return (
-      <Shell title="Toernooi" back="">
-        <p class="empty">Dit toernooi bestaat niet (meer).</p>
+      <Shell title={tr('Toernooi')} back="">
+        <p class="empty">{tr('Dit toernooi bestaat niet (meer).')}</p>
       </Shell>
     );
   }
@@ -37,10 +38,10 @@ export function TournamentScreen({ id, tab }: { id: string; tab: Tab }) {
       back=""
       actions={
         <>
-          <a class="iconbtn" href={`#/${base}/scorebord`} aria-label="Scorebord" title="Scorebord">
+          <a class="iconbtn" href={`#/${base}/scorebord`} aria-label={tr('Scorebord')} title={tr('Scorebord')}>
             📺
           </a>
-          <button class="iconbtn" onClick={() => setMenu(true)} aria-label="Menu">
+          <button class="iconbtn" onClick={() => setMenu(true)} aria-label={tr('Menu')}>
             ⋯
           </button>
           <UndoRedo tournamentId={t.id} />
@@ -49,16 +50,16 @@ export function TournamentScreen({ id, tab }: { id: string; tab: Tab }) {
     >
       <nav class="tabs">
         <a href={`#/${base}`} class={tab === 'ronde' ? 'on' : ''}>
-          Ronde
+          {tr('Ronde')}
         </a>
         <a href={`#/${base}/stand`} class={tab === 'stand' ? 'on' : ''}>
-          Stand
+          {tr('Stand')}
         </a>
         <a href={`#/${base}/kasten`} class={tab === 'kasten' ? 'on' : ''}>
-          Kasten
+          {tr('Kasten')}
         </a>
         <a href={`#/${base}/geschiedenis`} class={tab === 'geschiedenis' ? 'on' : ''}>
-          Uitslagen
+          {tr('Uitslagen')}
         </a>
       </nav>
       {tab === 'ronde' && <RoundTab t={t} onGame={setEditGame} />}
@@ -79,15 +80,15 @@ function GameCard({ t, game, onClick, showStatus }: { t: Tournament; game: Game;
   return (
     <div class={'card tap game' + (done ? ' done' : '') + (status?.state === 'busy' ? ' busy' : '')} onClick={onClick}>
       <div class="machine">
-        {machineName(s, game.machineId)} {game.tiebreak && <span class="badge live">tie-breaker</span>}{' '}
-        {game.corrected && <span class="badge warn">gecorrigeerd</span>}
-        {status?.state === 'ready' && <span class="badge live">▶ speel nu</span>}
+        {machineName(s, game.machineId)} {game.tiebreak && <span class="badge live">{tr('tie-breaker')}</span>}{' '}
+        {game.corrected && <span class="badge warn">{tr('gecorrigeerd')}</span>}
+        {status?.state === 'ready' && <span class="badge live">▶ {tr('speel nu')}</span>}
       </div>
       {status?.state === 'busy' && (
         <div class="small muted wait-reason">
-          ⏳ {status.waitingFor.length ? `Wacht op ${status.waitingFor.map((id) => playerName(s, id)).join(', ')}` : ''}
+          ⏳ {status.waitingFor.length ? tr('Wacht op {namen}', { namen: status.waitingFor.map((id) => playerName(s, id)).join(', ') }) : ''}
           {status.waitingFor.length && status.machineBusy ? ' · ' : ''}
-          {status.machineBusy ? 'kast nog bezet' : ''}
+          {status.machineBusy ? tr('kast nog bezet') : ''}
         </div>
       )}
       <ol>
@@ -101,7 +102,7 @@ function GameCard({ t, game, onClick, showStatus }: { t: Tournament; game: Game;
           </li>
         ))}
       </ol>
-      {!done && <div class="hint">Tik om de uitslag in te voeren</div>}
+      {!done && <div class="hint">{tr('Tik om de uitslag in te voeren')}</div>}
     </div>
   );
 }
@@ -126,9 +127,9 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
   if (!last) {
     return (
       <div class="stack">
-        <p class="empty">Er is nog geen ronde.</p>
+        <p class="empty">{tr('Er is nog geen ronde.')}</p>
         <button class="btn primary block big" disabled={t.playerIds.length < 2} onClick={nextRound}>
-          Ronde 1 indelen
+          {tr('Ronde {n} indelen', { n: 1 })}
         </button>
       </div>
     );
@@ -146,8 +147,8 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
       {winner && (
         <div class="banner winner">
           <span class="grow">
-            🏆 Winnaar: <b>{playerName(s, winner.playerId)}</b>
-            {winner.note ? ` (${winner.note})` : ''}
+            🏆 {tr('Winnaar:')} <b>{playerName(s, winner.playerId)}</b>
+            {winner.note ? ` (${tr(winner.note)})` : ''}
           </span>
         </div>
       )}
@@ -158,16 +159,16 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
           <div key={round.index} class="stack">
             <div class="row">
               <h2 class="grow" style="margin:0">
-                {isTiebreakRound(round) ? '⚔️ Tie-breaker' : `Ronde ${round.index + 1} van ${Math.max(target, regularCount)}`}
+                {isTiebreakRound(round) ? '⚔️ ' + tr('Tie-breaker') : tr('Ronde {n} van {totaal}', { n: round.index + 1, totaal: Math.max(target, regularCount) })}
               </h2>
-              {i > 0 && <span class="badge warn">vooruit</span>}
-              {finished ? <span class="badge">afgerond</span> : <span class="badge live">{doneCount}/{round.games.length} ingevoerd</span>}
+              {i > 0 && <span class="badge warn">{tr('vooruit')}</span>}
+              {finished ? <span class="badge">{tr('afgerond')}</span> : <span class="badge live">{tr('{n}/{totaal} ingevoerd', { n: doneCount, totaal: round.games.length })}</span>}
             </div>
             {isTiebreakRound(round) && (
               <p class="small muted" style="margin:0">
                 {round.games[0].playerIds.length > 2
-                  ? 'Alle spelers met evenveel punten spelen op dezelfde kast. De winnaar wint het toernooi.'
-                  : 'Eén potje: de winnaar wint het toernooi.'}
+                  ? tr('Alle spelers met evenveel punten spelen op dezelfde kast. De winnaar wint het toernooi.')
+                  : tr('Eén potje: de winnaar wint het toernooi.')}
               </p>
             )}
             <div class="games">
@@ -177,7 +178,7 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
             </div>
             {waiting.length > 0 && (
               <div class="card small">
-                ⏸ Wacht deze ronde: <b>{waiting.map((id) => playerName(s, id)).join(', ')}</b>
+                ⏸ {tr('Wacht deze ronde:')} <b>{waiting.map((id) => playerName(s, id)).join(', ')}</b>
               </div>
             )}
           </div>
@@ -186,48 +187,48 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
       {lookAhead && (
         <>
           <button class="btn cyan block" onClick={nextRound}>
-            ⏩ Ronde {t.rounds.length + 1} alvast indelen
+            ⏩ {tr('Ronde {n} alvast indelen', { n: t.rounds.length + 1 })}
           </button>
-          <p class="small muted" style="margin:-4px 0 0">Wie klaar is, kan alvast beginnen aan de volgende ronde.</p>
+          <p class="small muted" style="margin:-4px 0 0">{tr('Wie klaar is, kan alvast beginnen aan de volgende ronde.')}</p>
         </>
       )}
       {!finished && complete && regularCount < target && (
         <button class="btn primary block big" onClick={nextRound}>
-          Ronde {t.rounds.length + 1} indelen
+          {tr('Ronde {n} indelen', { n: t.rounds.length + 1 })}
         </button>
       )}
       {!finished && complete && regularCount >= target && needsTiebreak && (
         <>
           <div class="banner">
             <span class="grow">
-              Gelijke stand bovenaan: <b>{tied.map((id) => playerName(s, id)).join(', ')}</b>
+              {tr('Gelijke stand bovenaan:')} <b>{tied.map((id) => playerName(s, id)).join(', ')}</b>
             </span>
           </div>
           <button class="btn primary block big" onClick={nextRound}>
-            ⚔️ Tie-breaker starten
+            ⚔️ {tr('Tie-breaker starten')}
           </button>
         </>
       )}
       {!finished && complete && regularCount >= target && !needsTiebreak && (
         <>
           <button class="btn primary block big" onClick={finish}>
-            🏁 Toernooi afronden
+            🏁 {tr('Toernooi afronden')}
           </button>
           {!h2h && (
             <button class="btn block" onClick={nextRound}>
-              Extra ronde
+              {tr('Extra ronde')}
             </button>
           )}
         </>
       )}
       {!finished && !h2h && last.games.every((g) => !g.result) && (
         <button class="btn ghost block" onClick={regenerate}>
-          🔀 Ronde {last.index + 1} opnieuw indelen
+          🔀 {tr('Ronde {n} opnieuw indelen', { n: last.index + 1 })}
         </button>
       )}
       {finished && (
         <div class="card">
-          <h2 style="margin-top:0">Eindstand</h2>
+          <h2 style="margin-top:0">{tr('Eindstand')}</h2>
           <StandingsTable t={t} />
         </div>
       )}
@@ -239,7 +240,7 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
 function MachinesTab({ t }: { t: Tournament }) {
   const s = state.value;
   const machines = t.machineIds.map((id) => s.machines.get(id)).filter((m) => !!m);
-  if (!machines.length) return <p class="empty">Dit toernooi heeft geen kasten.</p>;
+  if (!machines.length) return <p class="empty">{tr('Dit toernooi heeft geen kasten.')}</p>;
   return (
     <ul class="list">
       {machines.map((m) => (
@@ -254,7 +255,7 @@ function MachinesTab({ t }: { t: Tournament }) {
           </a>
           {m.notes && <p class="notes-text">{m.notes}</p>}
           <a class="btn block" href={`#/kast/${m.id}/regels`}>
-            📖 Spelregels
+            📖 {tr('Spelregels')}
           </a>
         </li>
       ))}
@@ -265,16 +266,16 @@ function MachinesTab({ t }: { t: Tournament }) {
 function HistoryTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
   const rounds = t.rounds.slice().reverse();
   const any = t.rounds.some((r) => r.games.some((g) => g.result));
-  if (!any) return <p class="empty">Nog geen uitslagen ingevoerd.</p>;
+  if (!any) return <p class="empty">{tr('Nog geen uitslagen ingevoerd.')}</p>;
   return (
     <div>
-      <p class="small muted">Tik op een potje om de uitslag te corrigeren.</p>
+      <p class="small muted">{tr('Tik op een potje om de uitslag te corrigeren.')}</p>
       {rounds.map((r) => {
         const played = r.games.filter((g) => g.result);
         if (!played.length) return null;
         return (
           <div key={r.index}>
-            <h2>Ronde {r.index + 1}</h2>
+            <h2>{tr('Ronde {n}', { n: r.index + 1 })}</h2>
             <div class="games">
               {played.map((g) => (
                 <GameCard key={g.id} t={t} game={g} onClick={() => onGame(g)} />
@@ -313,7 +314,7 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
       order,
     });
     onClose();
-    showToast(game.result ? 'Correctie opgeslagen' : 'Uitslag opgeslagen', { label: 'Ongedaan maken', run: () => undo(t.id) });
+    showToast(game.result ? tr('Correctie opgeslagen') : tr('Uitslag opgeslagen'), { label: tr('Ongedaan maken'), run: () => undo(t.id) });
   };
 
   const unchanged = !!game.result && game.result.join() === order.join();
@@ -340,7 +341,7 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
         </h3>
         {t.status === 'active' && (
           <button class="btn ghost small" onClick={() => setPickMachine(!pickMachine)}>
-            Andere kast
+            {tr('Andere kast')}
           </button>
         )}
       </div>
@@ -355,14 +356,14 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
                 setPickMachine(false);
               }}
             >
-              {m?.name ?? 'Vrije kast'}
+              {m?.name ?? tr('Vrije kast')}
             </button>
           ))}
         </div>
       )}
       <p class="muted" style="margin:4px 0 0">
-        {game.result ? 'Uitslag corrigeren. ' : ''}
-        {teams ? 'Tik op het team dat gewonnen heeft.' : 'Tik de spelers aan in volgorde van finish: eerst de winnaar.'}
+        {game.result ? tr('Uitslag corrigeren.') + ' ' : ''}
+        {teams ? tr('Tik op het team dat gewonnen heeft.') : tr('Tik de spelers aan in volgorde van finish: eerst de winnaar.')}
       </p>
       {teams ? (
         <div class="order-btns">
@@ -370,7 +371,7 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
             <button key={i} class={'order-btn' + (winnerTeam === i ? ' set' : '')} onClick={() => pickTeam(i)}>
               <span class="pos">{winnerTeam === i ? '🏆' : String.fromCharCode(65 + i)}</span>
               <span>
-                Team {String.fromCharCode(65 + i)} wint
+                {tr('Team {t} wint', { t: String.fromCharCode(65 + i) })}
                 <div class="small muted">{tm.map((id) => playerName(s, id)).join(' & ')}</div>
               </span>
             </button>
@@ -384,7 +385,7 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
             <button key={pid} class={'order-btn' + (pos >= 0 ? ' set' : '')} onClick={() => tap(pid)}>
               <span class="pos">{pos >= 0 ? pos + 1 : ''}</span>
               {playerName(s, pid)}
-              {pos >= 0 && !game.tiebreak && t.format !== 'single' && <span class="pts">{pointsFor(t.settings.pointsTable, n, pos)} ptn</span>}
+              {pos >= 0 && !game.tiebreak && t.format !== 'single' && <span class="pts">{tr('{n} ptn', { n: pointsFor(t.settings.pointsTable, n, pos) })}</span>}
             </button>
           );
         })}
@@ -392,14 +393,14 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
       )}
       <div class="stack">
         <button class="btn primary block big" disabled={order.length !== n || unchanged} onClick={save}>
-          {game.result ? 'Correctie opslaan' : 'Uitslag opslaan'}
+          {game.result ? tr('Correctie opslaan') : tr('Uitslag opslaan')}
         </button>
         <div class="grid2">
           <button class="btn" disabled={!order.length} onClick={() => setOrder([])}>
-            Wissen
+            {tr('Wissen')}
           </button>
           <button class="btn ghost" onClick={onClose}>
-            Annuleren
+            {tr('Annuleren')}
           </button>
         </div>
       </div>
@@ -416,7 +417,7 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
         <h3>{t.name}</h3>
         {t.status === 'active' && t.format !== 'headToHead' && (
           <button class="btn block" onClick={() => setPlayers(true)}>
-            👤 Deelnemers aan-/afmelden
+            👤 {tr('Deelnemers aan-/afmelden')}
           </button>
         )}
         {t.status === 'active' ? (
@@ -427,7 +428,7 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
               onClose();
             }}
           >
-            🏁 Toernooi afronden
+            🏁 {tr('Toernooi afronden')}
           </button>
         ) : (
           <button
@@ -437,19 +438,19 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
               onClose();
             }}
           >
-            ↩ Toernooi heropenen
+            ↩ {tr('Toernooi heropenen')}
           </button>
         )}
         <button
           class="btn danger block"
           onClick={() => {
-            if (!confirm(`"${t.name}" verwijderen?`)) return;
+            if (!confirm(tr('{naam} verwijderen?', { naam: `"${t.name}"` }))) return;
             dispatch({ type: 'TournamentDeleted', tournamentId: t.id });
             onClose();
             go('');
             const id = t.id;
-            showToast(`${t.name} verwijderd`, {
-              label: 'Herstellen',
+            showToast(tr('{naam} verwijderd', { naam: t.name }), {
+              label: tr('Herstellen'),
               run: () => {
                 undo(id);
                 go('t/' + id);
@@ -457,10 +458,10 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
             });
           }}
         >
-          Toernooi verwijderen
+          {tr('Toernooi verwijderen')}
         </button>
         <button class="btn ghost block" onClick={onClose}>
-          Sluiten
+          {tr('Sluiten')}
         </button>
       </div>
     </Sheet>
@@ -477,8 +478,8 @@ function PlayersSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
   return (
     <Sheet onClose={onClose}>
       <div class="stack">
-        <h3>Deelnemers</h3>
-        <p class="small muted">Wijzigingen gelden vanaf de volgende ronde. Gespeelde uitslagen blijven staan.</p>
+        <h3>{tr('Deelnemers')}</h3>
+        <p class="small muted">{tr('Wijzigingen gelden vanaf de volgende ronde. Gespeelde uitslagen blijven staan.')}</p>
         <div class="chips">
           {all.map((p) => (
             <button
@@ -502,10 +503,10 @@ function PlayersSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
             onClose();
           }}
         >
-          Opslaan ({sel.size} spelers)
+          {tr('Opslaan ({n} spelers)', { n: sel.size })}
         </button>
         <button class="btn ghost block" onClick={onClose}>
-          Annuleren
+          {tr('Annuleren')}
         </button>
       </div>
     </Sheet>

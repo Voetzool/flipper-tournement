@@ -1,3 +1,4 @@
+import { locale, tr } from '../../i18n';
 import { machineName, playerName, state } from '../../app/state';
 import { go } from '../../app/router';
 import type { Tournament } from '../../events/types';
@@ -16,38 +17,38 @@ export function TournamentsScreen() {
       title={
         <>
           <img class="logo" src="icons/icon.svg" alt="" width={32} height={32} />
-          Flipper Toernooi
+          {tr('Flipper Toernooi')}
         </>
       }
     >
       <BackupBanner />
       <div class="grid2">
         <button class="btn primary big" onClick={() => go('nieuw')}>
-          🏆 Toernooi
+          🏆 {tr('Toernooi')}
         </button>
         <button class="btn cyan big" onClick={() => go('pot')}>
-          ⚡ Losse pot
+          ⚡ {tr('Losse pot')}
         </button>
       </div>
-      {active.length > 0 && <h2>Bezig</h2>}
+      {active.length > 0 && <h2>{tr('Bezig')}</h2>}
       <ul class="list">
         {active.map((t) => (
           <Item key={t.id} t={t} />
         ))}
       </ul>
-      {done.length > 0 && <h2>Afgerond</h2>}
+      {done.length > 0 && <h2>{tr('Afgerond')}</h2>}
       <ul class="list">
         {done.map((t) => (
           <Item key={t.id} t={t} />
         ))}
       </ul>
-      {singles.length > 0 && <h2>Losse potjes</h2>}
+      {singles.length > 0 && <h2>{tr('Losse potjes')}</h2>}
       <ul class="list">
         {singles.map((t) => (
           <SingleItem key={t.id} t={t} />
         ))}
       </ul>
-      {!all.length && <p class="empty">Nog geen toernooien of potjes. Voeg eerst spelers (en kasten) toe en start een toernooi of een losse pot.</p>}
+      {!all.length && <p class="empty">{tr('Nog geen toernooien of potjes. Voeg eerst spelers (en kasten) toe en start een toernooi of een losse pot.')}</p>}
     </Shell>
   );
 }
@@ -64,26 +65,26 @@ function SingleItem({ t }: { t: Tournament }) {
       <div class="name">
         {vs}
         <div class="small muted">
-          {machineName(s, game.machineId)} · {t.name.replace('Losse pot · ', '')}
+          {machineName(s, game.machineId)} · {t.name.replace(/^[^·]*· /, '')}
         </div>
       </div>
-      {winner ? <span class="badge">🏆 {winner}</span> : <span class="badge live">bezig</span>}
+      {winner ? <span class="badge">🏆 {winner}</span> : <span class="badge live">{tr('bezig')}</span>}
     </li>
   );
 }
 
 function Item({ t }: { t: Tournament }) {
-  const date = new Date(t.createdAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+  const date = new Date(t.createdAt).toLocaleDateString(locale(), { day: 'numeric', month: 'short', year: 'numeric' });
   return (
     <li class="list-item card tap" onClick={() => go('t/' + t.id)}>
       <div class="name">
         {t.name}
         <div class="small muted">
-          {formatOf(t.format).label} · {date} · {t.playerIds.length} spelers · ronde {Math.min(t.rounds.length, t.settings.rounds)}/
-          {t.settings.rounds}
+          {tr(formatOf(t.format).label)} · {date} ·{' '}
+          {tr('{n} spelers · ronde {r}/{totaal}', { n: t.playerIds.length, r: Math.min(t.rounds.length, t.settings.rounds), totaal: t.settings.rounds })}
         </div>
       </div>
-      {t.status === 'active' ? <span class="badge live">live</span> : <span class="badge">klaar</span>}
+      {t.status === 'active' ? <span class="badge live">{tr('live')}</span> : <span class="badge">{tr('klaar')}</span>}
     </li>
   );
 }

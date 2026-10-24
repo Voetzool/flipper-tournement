@@ -1,3 +1,4 @@
+import { locale, tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { dispatch, machineName, playerName, ratings, showToast, state, undo } from '../../app/state';
 import { go } from '../../app/router';
@@ -70,11 +71,11 @@ export function NewSingleScreen({ from }: { from?: string }) {
   const start = () => {
     const machineId = machineMode === 'choose' ? chosen : (picked ?? pickRandom(poolList));
     const tournamentId = newId();
-    const when = new Date().toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const when = new Date().toLocaleString(locale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     dispatch({
       type: 'TournamentCreated',
       tournamentId,
-      name: `Losse pot · ${when}`,
+      name: `${tr('Losse pot')} · ${when}`,
       format: 'single',
       settings: { rounds: 1, maxGroupSize: 2, pointsTable: {} },
       playerIds: sel,
@@ -86,24 +87,24 @@ export function NewSingleScreen({ from }: { from?: string }) {
   };
 
   return (
-    <Shell title="Losse ranked pot" back="">
+    <Shell title={tr('Losse ranked pot')} back="">
       <div class="stack">
         <p class="small muted" style="margin:0">
-          Eén potje dat meetelt voor de ranglijst.
+          {tr('Eén potje dat meetelt voor de ranglijst.')}
         </p>
         <div class="seg">
           <button class={mode === 'ffa' ? 'on' : ''} onClick={() => setMode('ffa')}>
-            Iedereen voor zich
+            {tr('Iedereen voor zich')}
           </button>
           <button class={mode === 'teams' ? 'on' : ''} onClick={() => setMode('teams')}>
-            Teams
+            {tr('Teams')}
           </button>
         </div>
 
-        <h2>Spelers ({sel.length})</h2>
+        <h2>{tr('Spelers ({n})', { n: sel.length })}</h2>
         {!players.length && (
           <p class="muted">
-            Nog geen spelers. <a href="#/spelers">Voeg eerst spelers toe</a>.
+            {tr('Nog geen spelers.')} <a href="#/spelers">{tr('Voeg eerst spelers toe')}</a>.
           </p>
         )}
         <div class="chips">
@@ -113,47 +114,47 @@ export function NewSingleScreen({ from }: { from?: string }) {
             </button>
           ))}
         </div>
-        {mode === 'ffa' && sel.length > 4 && <p class="small" style="color:var(--yellow);margin:0">Let op: de meeste kasten hebben maximaal 4 spelers.</p>}
+        {mode === 'ffa' && sel.length > 4 && <p class="small" style="color:var(--yellow);margin:0">{tr('Let op: de meeste kasten hebben maximaal 4 spelers.')}</p>}
 
         {mode === 'teams' && sel.length > 0 && (
           <div class="card stack">
             <div class="row">
-              <span class="grow small muted">Tik op een speler om van team te wisselen.</span>
+              <span class="grow small muted">{tr('Tik op een speler om van team te wisselen.')}</span>
               <button class="btn" disabled={sel.length < 2} onClick={drawTeams}>
-                🎲 Teams loten
+                🎲 {tr('Teams loten')}
               </button>
             </div>
             <div class="grid2">
               {teams.map((tm, i) => (
                 <div key={i} class={'team team-' + i}>
-                  <b>Team {String.fromCharCode(65 + i)}</b>
+                  <b>{tr('Team {t}', { t: String.fromCharCode(65 + i) })}</b>
                   {tm.map((id) => (
                     <button key={id} class="chip on" onClick={() => setTeamOf({ ...teamOf, [id]: 1 - team(id) })}>
                       {playerName(s, id)} ⇄
                     </button>
                   ))}
-                  {!tm.length && <span class="small muted">nog niemand</span>}
+                  {!tm.length && <span class="small muted">{tr('nog niemand')}</span>}
                 </div>
               ))}
             </div>
             <span class="small muted">
-              {teams[0].length}-tegen-{teams[1].length}
+              {tr('{a}-tegen-{b}', { a: teams[0].length, b: teams[1].length })}
             </span>
           </div>
         )}
 
-        <h2>Kast</h2>
+        <h2>{tr('Kast')}</h2>
         <div class="seg">
           <button class={machineMode === 'choose' ? 'on' : ''} onClick={() => setMachineMode('choose')}>
-            Zelf kiezen
+            {tr('Zelf kiezen')}
           </button>
           <button class={machineMode === 'random' ? 'on' : ''} onClick={() => setMachineMode('random')}>
-            🎲 Willekeurig
+            🎲 {tr('Willekeurig')}
           </button>
         </div>
         {!machines.length && (
           <p class="muted">
-            Nog geen kasten. <a href="#/kasten">Voeg kasten toe</a> (mag ook zonder).
+            {tr('Nog geen kasten.')} <a href="#/kasten">{tr('Voeg kasten toe')}</a> {tr('(mag ook zonder).')}
           </p>
         )}
         {machineMode === 'choose' ? (
@@ -167,9 +168,9 @@ export function NewSingleScreen({ from }: { from?: string }) {
         ) : (
           <div class="card stack">
             <div class="row">
-              <span class="grow small muted">Kies uit welke kasten geloot wordt ({poolList.length}):</span>
+              <span class="grow small muted">{tr('Kies uit welke kasten geloot wordt ({n}):', { n: poolList.length })}</span>
               <button class="btn ghost small" onClick={() => setPool(poolList.length === machines.length ? new Set() : new Set(machines.map((m) => m.id)))}>
-                {poolList.length === machines.length ? 'Geen' : 'Alle'}
+                {poolList.length === machines.length ? tr('Geen') : tr('Alle')}
               </button>
             </div>
             <div class="chips">
@@ -189,7 +190,7 @@ export function NewSingleScreen({ from }: { from?: string }) {
               ))}
             </div>
             <button class="btn cyan block" disabled={!poolList.length} onClick={roll}>
-              🎲 {picked ? 'Opnieuw loten' : 'Kies een kast'}
+              🎲 {picked ? tr('Opnieuw loten') : tr('Kies een kast')}
             </button>
             {picked && (
               <div class="picked">
@@ -197,15 +198,15 @@ export function NewSingleScreen({ from }: { from?: string }) {
                 <b>{machineName(s, picked)}</b>
               </div>
             )}
-            {!picked && poolList.length > 0 && <span class="small muted">Of start meteen: dan loot de app bij het starten.</span>}
+            {!picked && poolList.length > 0 && <span class="small muted">{tr('Of start meteen: dan loot de app bij het starten.')}</span>}
           </div>
         )}
 
         <button class="btn primary block big" disabled={!valid} onClick={start}>
-          Start pot
+          {tr('Start pot')}
         </button>
         {!valid && (
-          <p class="small muted">{mode === 'teams' ? 'Kies spelers en zet in elk team minstens één speler.' : 'Kies minstens 2 spelers.'}</p>
+          <p class="small muted">{mode === 'teams' ? tr('Kies spelers en zet in elk team minstens één speler.') : tr('Kies minstens 2 spelers.')}</p>
         )}
       </div>
     </Shell>
@@ -225,7 +226,7 @@ export function SingleGameView({ t }: { t: Tournament }) {
 
   return (
     <Shell
-      title="Losse pot"
+      title={tr('Losse pot')}
       back=""
       actions={<UndoRedo tournamentId={t.id} />}
     >
@@ -235,11 +236,11 @@ export function SingleGameView({ t }: { t: Tournament }) {
             <Thumb src={game.machineId ? s.machines.get(game.machineId)?.imageSmall : undefined} size={56} />
             <div class="grow">
               <div class="machine-title">{machineName(s, game.machineId)}</div>
-              <div class="small muted">{t.name.replace('Losse pot · ', '')}</div>
+              <div class="small muted">{t.name.replace(/^[^·]*· /, '')}</div>
             </div>
             {game.machineId && (
               <a class="btn" href={`#/kast/${game.machineId}/regels`}>
-                📖 Regels
+                📖 {tr('Regels')}
               </a>
             )}
           </div>
@@ -248,7 +249,7 @@ export function SingleGameView({ t }: { t: Tournament }) {
               {game.teams.map((tm, i) => (
                 <div key={i} class={'team team-' + i + (ranks && ranks.get(tm[0]) === 0 ? ' won' : '')}>
                   <b>
-                    Team {String.fromCharCode(65 + i)} {ranks && ranks.get(tm[0]) === 0 && '🏆'}
+                    {tr('Team {t}', { t: String.fromCharCode(65 + i) })} {ranks && ranks.get(tm[0]) === 0 && '🏆'}
                   </b>
                   {tm.map((id) => (
                     <PlayerLine key={id} name={playerName(s, id)} delta={deltaFor(id)?.delta} rating={deltaFor(id)?.rating} />
@@ -269,23 +270,23 @@ export function SingleGameView({ t }: { t: Tournament }) {
         </div>
 
         <button class={'btn block big ' + (game.result ? '' : 'primary')} onClick={() => setEntering(true)}>
-          {game.result ? 'Uitslag corrigeren' : 'Uitslag invoeren'}
+          {game.result ? tr('Uitslag corrigeren') : tr('Uitslag invoeren')}
         </button>
         {game.result && (
           <button class="btn primary block big" onClick={() => go('pot/' + t.id)}>
-            ⚡ Nog een pot
+            ⚡ {tr('Nog een pot')}
           </button>
         )}
         <button
           class="btn ghost block"
           onClick={() => {
-            if (!confirm('Deze pot verwijderen?')) return;
+            if (!confirm(tr('Deze pot verwijderen?'))) return;
             dispatch({ type: 'TournamentDeleted', tournamentId: t.id });
             go('');
-            showToast('Pot verwijderd', { label: 'Herstellen', run: () => (undo(t.id), go('t/' + t.id)) });
+            showToast(tr('Pot verwijderd'), { label: tr('Herstellen'), run: () => (undo(t.id), go('t/' + t.id)) });
           }}
         >
-          Pot verwijderen
+          {tr('Pot verwijderen')}
         </button>
       </div>
       {entering && <ResultSheet t={t} gameId={game.id} onClose={() => setEntering(false)} />}

@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import { useEffect } from 'preact/hooks';
 import { machineName, playerName, state } from '../../app/state';
 import { formatOf } from '../../formats';
@@ -22,7 +23,7 @@ export function ScoreboardScreen({ id }: { id: string }) {
     };
   }, []);
 
-  if (!t) return <p class="empty">Toernooi niet gevonden.</p>;
+  if (!t) return <p class="empty">{tr('Toernooi niet gevonden.')}</p>;
   const rows = formatOf(t.format).standings(t);
   // Bij vooruit spelen lopen er twee rondes; "Nu spelen" = de potjes die nu echt gespeeld kunnen worden.
   const running = openRounds(t);
@@ -32,22 +33,22 @@ export function ScoreboardScreen({ id }: { id: string }) {
   return (
     <div class="scoreboard">
       <header>
-        <a class="iconbtn" href={`#/t/${t.id}`} aria-label="Terug">
+        <a class="iconbtn" href={`#/t/${t.id}`} aria-label={tr('Terug')}>
           ‹
         </a>
         <h1>{t.name}</h1>
         <UndoRedo tournamentId={t.id} />
-        <button class="iconbtn" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})} aria-label="Volledig scherm">
+        <button class="iconbtn" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})} aria-label={tr('Volledig scherm')}>
           ⛶
         </button>
       </header>
       <div class="sub" style="margin-bottom:2vh">
         {t.status === 'finished'
-          ? 'Eindstand'
+          ? tr('Eindstand')
           : isTiebreakRound(round)
-            ? '⚔️ Tie-breaker'
+            ? '⚔️ ' + tr('Tie-breaker')
             : round
-              ? `Ronde ${running.length > 1 ? `${round.index + 1}–${running[running.length - 1].index + 1}` : round.index + 1} van ${Math.max(t.settings.rounds, t.rounds.length)}`
+              ? tr('Ronde {n} van {totaal}', { n: running.length > 1 ? `${round.index + 1}–${running[running.length - 1].index + 1}` : round.index + 1, totaal: Math.max(t.settings.rounds, t.rounds.length) })
               : ''}
       </div>
       <div class={'sb-cols' + (open.length ? ' two' : '')}>
@@ -63,7 +64,7 @@ export function ScoreboardScreen({ id }: { id: string }) {
         </div>
         {open.length > 0 && t.status === 'active' && (
           <div class="sb-games stack">
-            <div class="sub">Nu spelen</div>
+            <div class="sub">{tr('Nu spelen')}</div>
             {open.map((g) => (
               <div key={g.id} class="card game">
                 <div class="machine">{machineName(s, g.machineId)}</div>
@@ -71,7 +72,7 @@ export function ScoreboardScreen({ id }: { id: string }) {
               </div>
             ))}
             {round && waitingPlayers(t, round).length > 0 && (
-              <div class="sub">⏸ Wacht: {waitingPlayers(t, round).map((p) => playerName(s, p)).join(', ')}</div>
+              <div class="sub">⏸ {tr('Wacht:')} {waitingPlayers(t, round).map((p) => playerName(s, p)).join(', ')}</div>
             )}
           </div>
         )}

@@ -1,3 +1,4 @@
+import { tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { dispatch, playerName, state } from '../../app/state';
 import { back } from '../../app/router';
@@ -20,30 +21,30 @@ export function MachineDetailScreen({ id }: { id: string }) {
 
   if (!m) {
     return (
-      <Shell title="Kast" back="kasten">
-        <p class="empty">Deze kast bestaat niet (meer).</p>
+      <Shell title={tr('Kast')} back="kasten">
+        <p class="empty">{tr('Deze kast bestaat niet (meer).')}</p>
       </Shell>
     );
   }
 
   const stats = machineStats(s, id);
-  const details = [machineSubtitle(m), m.kind && KIND[m.kind]].filter(Boolean).join(' · ');
+  const details = [machineSubtitle(m), m.kind && tr(KIND[m.kind])].filter(Boolean).join(' · ');
 
   return (
     <Shell
       title={m.name}
       back="kasten"
       actions={
-        <button class="iconbtn" onClick={() => setEditing(true)} aria-label="Bewerken" title="Bewerken">
+        <button class="iconbtn" onClick={() => setEditing(true)} aria-label={tr('Bewerken')} title={tr('Bewerken')}>
           ✎
         </button>
       }
     >
       {!m.active && (
         <div class="banner">
-          <span class="grow">Deze kast is verwijderd.</span>
+          <span class="grow">{tr('Deze kast is verwijderd.')}</span>
           <button class="btn" onClick={() => dispatch({ type: 'MachineRestored', machineId: m.id })}>
-            Terugzetten
+            {tr('Terugzetten')}
           </button>
         </div>
       )}
@@ -53,12 +54,12 @@ export function MachineDetailScreen({ id }: { id: string }) {
       )}
       {details && <p class="muted">{details}</p>}
 
-      <h2>Spelregels</h2>
+      <h2>{tr('Spelregels')}</h2>
       <div class="stack">
         <a class="btn cyan block big" href={`#/kast/${m.id}/regels`}>
-          📖 Spelregels {m.rules ? '' : fetchingRules.value.has(m.id) ? '(ophalen…)' : ''}
+          📖 {tr('Spelregels')} {m.rules ? '' : fetchingRules.value.has(m.id) ? tr('(ophalen…)') : ''}
         </a>
-        {m.rules && <p class="small muted" style="margin:0">Opgeslagen op dit apparaat, ook offline te lezen.</p>}
+        {m.rules && <p class="small muted" style="margin:0">{tr('Opgeslagen op dit apparaat, ook offline te lezen.')}</p>}
         {(m.primerUrl || m.ipdbId) && (
           <div class="row small">
             {m.primerUrl && (
@@ -75,30 +76,30 @@ export function MachineDetailScreen({ id }: { id: string }) {
         )}
       </div>
 
-      <h2>Eigen notities en huisregels</h2>
+      <h2>{tr('Eigen notities en huisregels')}</h2>
       <Notes key={m.id + (m.notes ?? '')} m={m} />
 
       {stats.games > 0 && (
         <>
-          <h2>Op deze kast</h2>
+          <h2>{tr('Op deze kast')}</h2>
           <div class="tiles">
             <div class="tile">
               <div class="v">{stats.games}</div>
-              <div class="l">potjes gespeeld</div>
+              <div class="l">{tr('potjes gespeeld')}</div>
             </div>
             <div class="tile">
               <div class="v">{stats.tournaments}</div>
-              <div class="l">toernooien</div>
+              <div class="l">{tr('toernooien')}</div>
             </div>
           </div>
           <div class="card" style="margin-top:10px">
             <table class="table">
               <thead>
                 <tr>
-                  <th>Beste spelers</th>
-                  <th class="num">Potjes</th>
-                  <th class="num">Winst</th>
-                  <th class="num">Gem.</th>
+                  <th>{tr('Beste spelers')}</th>
+                  <th class="num">{tr('Potjes')}</th>
+                  <th class="num">{tr('Winst')}</th>
+                  <th class="num">{tr('Gem.')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -120,7 +121,7 @@ export function MachineDetailScreen({ id }: { id: string }) {
         </>
       )}
 
-      {m.opdbId && <p class="small muted">Gegevens uit OPDB ({m.opdbId}).</p>}
+      {m.opdbId && <p class="small muted">{tr('Gegevens uit OPDB ({id}).', { id: m.opdbId })}</p>}
       {editing && <EditMachineSheet m={m} onClose={() => setEditing(false)} />}
     </Shell>
   );
@@ -134,13 +135,13 @@ function Notes({ m }: { m: Machine }) {
       <textarea
         class="input notes"
         rows={5}
-        placeholder="Bijv. huisregels, tilt-gevoeligheid, extra ball uit, kapotte onderdelen…"
+        placeholder={tr('Bijv. huisregels, tilt-gevoeligheid, extra ball uit, kapotte onderdelen…')}
         value={text}
         onInput={(e) => setText(e.currentTarget.value)}
       />
       {changed && (
         <button class="btn primary block" onClick={() => dispatch({ type: 'MachineUpdated', machineId: m.id, notes: text.trim() || null })}>
-          Notities opslaan
+          {tr('Notities opslaan')}
         </button>
       )}
     </div>
@@ -152,7 +153,7 @@ function EditMachineSheet({ m, onClose }: { m: Machine; onClose: () => void }) {
   return (
     <Sheet onClose={onClose}>
       <div class="stack">
-        <h3>Kast bewerken</h3>
+        <h3>{tr('Kast bewerken')}</h3>
         <MachineForm
           initial={m}
           onSave={(v) => {
@@ -176,23 +177,23 @@ function EditMachineSheet({ m, onClose }: { m: Machine; onClose: () => void }) {
                 dispatch({ type: 'MachineRemoved', machineId: m.id });
                 onClose();
               } else {
-                if (!confirm(`${m.name} verwijderen?`)) return;
+                if (!confirm(tr('{naam} verwijderen?', { naam: m.name }))) return;
                 dispatch({ type: 'MachineDeleted', machineId: m.id });
                 onClose();
                 back('kasten');
               }
             }}
           >
-            Verwijderen
+            {tr('Verwijderen')}
           </button>
         )}
         {m.active && inUse && (
           <p class="small muted" style="margin:0">
-            Deze kast is al in een toernooi gebruikt. Na verwijderen blijft hij in oude uitslagen staan en kun je hem terugzetten.
+            {tr('Deze kast is al in een toernooi gebruikt. Na verwijderen blijft hij in oude uitslagen staan en kun je hem terugzetten.')}
           </p>
         )}
         <button type="button" class="btn ghost block" onClick={onClose}>
-          Sluiten
+          {tr('Sluiten')}
         </button>
       </div>
     </Sheet>
