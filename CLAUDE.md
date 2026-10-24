@@ -98,6 +98,10 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   alleen http(s)-links, kramdown-ankers `{#id}` → interne scroll-links via `data-anchor`, BBCode `[details]` weg).
 - Scherm `#/kast/:id/regels` (knop "📖 Spelregels" op kastpagina en in toernooi-tab Kasten): huisregels bovenaan,
   dan de spelregels, bron + "opnieuw ophalen". `rules/**` en `catalog/**` niet in de precache.
+- Speelveldfoto: catalogus-velden `pm`/`pl` (OPDB image `type: 'playfield'`, medium/large) → `Machine.playfieldMedium/
+  playfieldLarge`. Bovenaan de spelregels + zwevende knop "🗺️ Speelveld" → `ImageViewer` (zoom 1×/2×/3×, knijpen).
+  Oudere kasten: `syncPlayfields()` (opstarten, 'online', na catalogus bijwerken) vult URL's aan uit de lokale catalogus
+  en prefetcht de foto (runtime cache `kast-afbeeldingen`).
 
 ## Weergave (lichte modus)
 - `src/app/settings.ts`: `theme` ('auto'|'light'|'dark') in localStorage (per apparaat, niet in back-up). Zet
@@ -130,7 +134,8 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
-- [x] Lichte modus (stap 1 van 4 uit feedback-ronde; volgende: speelveldfoto bij spelregels, nieuwe 1-tegen-1
+- [x] Speelveldfoto bij spelregels (stap 2 van 4).
+- [x] Lichte modus (stap 1 van 4 uit feedback-ronde; volgende: nieuwe 1-tegen-1
       "Round Robin" (bestaande vorm heet dan "Groepsrondes", interne id blijft `roundRobin`), Engels).
 - [x] Spelregels automatisch ophalen en offline tonen (Pinball Rulesheets + PinballPrimer).
 - [x] Undo alleen per toernooi + echt verwijderen van ongebruikte spelers/kasten (feedback na fase 2).

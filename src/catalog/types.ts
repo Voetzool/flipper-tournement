@@ -23,6 +23,9 @@ export interface CatalogRow {
   /** afbeelding klein/middel, relatief t.o.v. `imgBase` */
   is?: string;
   im?: string;
+  /** speelveldfoto middel/groot, relatief t.o.v. `imgBase` */
+  pm?: string;
+  pl?: string;
   /** rulesheet-URL */
   r?: string;
   /** PinballPrimer-URL */
@@ -65,4 +68,6 @@ export interface CatalogMachine {
   rulesheetUrl?: string;
   primerUrl?: string;
   rulesheetPath?: string;
+  playfieldMedium?: string;
+  playfieldLarge?: string;
 }

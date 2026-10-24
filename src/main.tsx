@@ -3,7 +3,7 @@ import { initPwa } from './app/pwa';
 import { initSettings } from './app/settings';
 import { initState } from './app/state';
 import { requestPersistence } from './db/db';
-import { syncMissingRules } from './rules/rules';
+import { syncMissingRules, syncPlayfields } from './rules/rules';
 import { App } from './ui/App';
 import './ui/theme.css';
 
@@ -13,8 +13,8 @@ render(<App />, document.getElementById('app')!);
 initState()
   .then(() => {
     // Spelregels die eerder (offline) niet opgehaald konden worden, alsnog ophalen.
-    syncMissingRules();
-    addEventListener('online', () => syncMissingRules());
+    syncPlayfields().then(() => syncMissingRules());
+    addEventListener('online', () => syncPlayfields().then(() => syncMissingRules()));
   })
   .catch((err) => {
   console.error(err);

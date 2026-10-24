@@ -70,6 +70,9 @@ export interface MachineDetails {
   opdbId?: string;
   imageSmall?: string;
   imageMedium?: string;
+  /** Speelveldfoto (OPDB), getoond bovenaan de spelregels. */
+  playfieldMedium?: string;
+  playfieldLarge?: string;
   /** Pad van de meegeleverde rulesheet (Pinball Rulesheets), bijv. "stern/jaws-rulesheet". */
   rulesheetPath?: string;
   /** Automatisch opgehaalde spelregels, offline leesbaar. */

@@ -25,6 +25,8 @@ export function toMachine(f: CatalogFile, r: CatalogRow): CatalogMachine {
     rulesheetUrl: r.r,
     primerUrl: r.pp,
     rulesheetPath: r.rs,
+    playfieldMedium: r.pm ? f.imgBase + r.pm : undefined,
+    playfieldLarge: r.pl ? f.imgBase + r.pl : undefined,
   };
 }
 

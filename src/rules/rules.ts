@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals';
 import { dispatch, state } from '../app/state';
-import { catalogIndex, loadStoredCatalog } from '../catalog/catalog';
+import { catalogIndex, loadStoredCatalog, prefetchImage } from '../catalog/catalog';
 import type { Machine, MachineRules } from '../events/types';
 import { primerToMarkdown } from './primer';
 
@@ -62,6 +62,22 @@ export async function ensureRules(machineId: string, force = false): Promise<boo
     const next = new Set(fetchingRules.value);
     next.delete(machineId);
     fetchingRules.value = next;
+  }
+}
+
+/** Kasten van vóór de speelveldfoto's: foto-URL's aanvullen uit de (lokale) catalogus en alvast cachen. */
+export async function syncPlayfields() {
+  const todo = [...state.value.machines.values()].filter((m) => m.opdbId && !m.playfieldMedium);
+  if (!todo.length) return;
+  await loadStoredCatalog();
+  const index = catalogIndex.value;
+  if (!index) return;
+  for (const m of todo) {
+    const row = index.file.e.find((r) => r.i === m.opdbId);
+    if (!row?.pm) continue;
+    const playfieldMedium = index.file.imgBase + row.pm;
+    dispatch({ type: 'MachineUpdated', machineId: m.id, playfieldMedium, playfieldLarge: row.pl ? index.file.imgBase + row.pl : undefined });
+    if (navigator.onLine) prefetchImage(playfieldMedium);
   }
 }
 

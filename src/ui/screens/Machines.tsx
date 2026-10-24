@@ -76,7 +76,8 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
   const results = index ? searchCatalog(index, query, 25) : [];
 
   const addFromCatalog = (c: CatalogMachine) => {
-    const { opdbId, name, manufacturer, year, kind, ipdbId, imageSmall, imageMedium, rulesheetUrl, primerUrl, rulesheetPath } = c;
+    const { opdbId, name, manufacturer, year, kind, ipdbId, imageSmall, imageMedium, rulesheetUrl, primerUrl, rulesheetPath, playfieldMedium, playfieldLarge } =
+      c;
     const machineId = newId();
     dispatch({
       type: 'MachineAdded',
@@ -92,11 +93,14 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
       rulesheetUrl,
       primerUrl,
       rulesheetPath,
+      playfieldMedium,
+      playfieldLarge,
     });
     // Spelregels meteen ophalen en opslaan (lukt het nu niet, dan later automatisch opnieuw).
     ensureRules(machineId);
     prefetchImage(imageSmall);
     prefetchImage(imageMedium);
+    prefetchImage(playfieldMedium);
     showToast(`${name} toegevoegd`);
     setQuery('');
   };

@@ -62,6 +62,12 @@ export function transformOpdb(data, meta = {}) {
       row.is = img.urls.small;
       row.im = img.urls.medium;
     }
+    // Speelveldfoto voor bij de spelregels (medium om te tonen, large om in te zoomen)
+    const pf = Array.isArray(e.images) ? e.images.find((i) => i && i.type === 'playfield' && i.urls && i.urls.medium) : null;
+    if (pf) {
+      row.pm = pf.urls.medium;
+      if (pf.urls.large) row.pl = pf.urls.large;
+    }
     if (e.pinballRulesUrl) row.r = e.pinballRulesUrl;
     const group = typeof e.opdbGroup === 'string' ? e.opdbGroup : e.opdbId.split('-')[0];
     const sheet = meta.rulesIndex?.[group];
@@ -71,12 +77,10 @@ export function transformOpdb(data, meta = {}) {
     rows.push(row);
   }
   // Afbeeldings-URL's delen bijna altijd hetzelfde begin; dat één keer opslaan scheelt veel bytes.
-  const imgBase = commonPrefix(rows.flatMap((r) => [r.is, r.im].filter(Boolean)));
+  const IMG_KEYS = ['is', 'im', 'pm', 'pl'];
+  const imgBase = commonPrefix(rows.flatMap((r) => IMG_KEYS.map((k) => r[k]).filter(Boolean)));
   if (imgBase) {
-    for (const r of rows) {
-      if (r.is) r.is = r.is.slice(imgBase.length);
-      if (r.im) r.im = r.im.slice(imgBase.length);
-    }
+    for (const r of rows) for (const k of IMG_KEYS) if (r[k]) r[k] = r[k].slice(imgBase.length);
   }
   rows.sort((a, b) => a.n.localeCompare(b.n) || (a.y ?? 0) - (b.y ?? 0));
   return {

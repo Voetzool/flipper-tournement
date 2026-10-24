@@ -6,6 +6,7 @@ import { backupFileName, makeBackup, parseBackup } from '../../backup/backup';
 import { requestPersistence } from '../../db/db';
 import { catalog, catalogError, catalogStatus, catalogVersion, fetchRemoteMeta, loadStoredCatalog, updateCatalog } from '../../catalog/catalog';
 import type { CatalogMeta } from '../../catalog/types';
+import { syncMissingRules, syncPlayfields } from '../../rules/rules';
 import { BackupBanner } from '../components/BackupBanner';
 import { Shell } from '../components/Shell';
 
@@ -121,7 +122,9 @@ export function MoreScreen() {
         <button
           class="btn block"
           disabled={catalogStatus.value === 'loading' || !remote || remote.version === catalogVersion.value}
-          onClick={() => updateCatalog(true)}
+          onClick={async () => {
+            if (await updateCatalog(true)) await syncPlayfields().then(syncMissingRules);
+          }}
         >
           {catalogStatus.value === 'loading' ? 'Downloaden…' : catalog.value ? '⟳ Catalogus bijwerken' : '⬇ Catalogus downloaden'}
         </button>

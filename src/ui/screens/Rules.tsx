@@ -1,7 +1,8 @@
-import { useMemo } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import { state } from '../../app/state';
 import { renderMarkdown } from '../../rules/markdown';
 import { ensureRules, fetchingRules } from '../../rules/rules';
+import { ImageViewer } from '../components/ImageViewer';
 import { Shell } from '../components/Shell';
 
 const SOURCES = {
@@ -12,6 +13,8 @@ const SOURCES = {
 /** Spelregels van één kast, in de app en offline leesbaar. */
 export function RulesScreen({ id }: { id: string }) {
   const m = state.value.machines.get(id);
+  const [viewer, setViewer] = useState(false);
+  const [pfFailed, setPfFailed] = useState(false);
   const rendered = useMemo(() => (m?.rules ? renderMarkdown(m.rules.text, m.rules.url) : null), [m?.rules]);
 
   if (!m) {
@@ -28,6 +31,13 @@ export function RulesScreen({ id }: { id: string }) {
 
   return (
     <Shell title={m.name} back={'kast/' + m.id}>
+      {m.playfieldMedium && !pfFailed && (
+        <button class="playfield" onClick={() => setViewer(true)} aria-label="Speelveld vergroten">
+          <img src={m.playfieldMedium} alt={`Speelveld ${m.name}`} onError={() => setPfFailed(true)} />
+          <span class="playfield-hint">🔍 Tik om te vergroten</span>
+        </button>
+      )}
+
       <h2 style="margin-top:0">Spelregels</h2>
 
       {m.notes && (
@@ -110,6 +120,20 @@ export function RulesScreen({ id }: { id: string }) {
             Eigen rulesheet-link openen
           </a>
         </p>
+      )}
+
+      {m.playfieldMedium && !pfFailed && (
+        <button class="playfield-fab" onClick={() => setViewer(true)} aria-label="Speelveld bekijken">
+          🗺️ Speelveld
+        </button>
+      )}
+      {viewer && m.playfieldMedium && (
+        <ImageViewer
+          src={m.playfieldLarge ?? m.playfieldMedium}
+          fallback={m.playfieldMedium}
+          alt={`Speelveld ${m.name}`}
+          onClose={() => setViewer(false)}
+        />
       )}
     </Shell>
   );

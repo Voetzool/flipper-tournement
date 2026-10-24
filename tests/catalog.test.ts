@@ -80,6 +80,9 @@ describe('OPDB-export omzetten', () => {
     expect(cat.imgBase).toBe('https://img.opdb.org/');
     expect(mm.im).toBe('bg-medium.jpg');
     expect(mm.r).toContain('tiltforums');
+    // speelveldfoto apart bewaard (medium + large)
+    expect(mm.pm).toBe('pf-medium.jpg');
+    expect(mm.pl).toBe('pf-large.jpg');
   });
 
   it('commonPrefix kapt af op een /', () => {
@@ -118,7 +121,14 @@ describe('catalogus doorzoeken', () => {
 
   it('geeft leesbare gegevens met volledige afbeeldings-URL', () => {
     const [mm] = searchCatalog(index, 'mm');
-    expect(mm).toMatchObject({ opdbId: 'G1-M1', manufacturer: 'Williams', year: 1997, imageMedium: 'https://img.opdb.org/bg-medium.jpg' });
+    expect(mm).toMatchObject({
+      opdbId: 'G1-M1',
+      manufacturer: 'Williams',
+      year: 1997,
+      imageMedium: 'https://img.opdb.org/bg-medium.jpg',
+      playfieldMedium: 'https://img.opdb.org/pf-medium.jpg',
+      playfieldLarge: 'https://img.opdb.org/pf-large.jpg',
+    });
   });
 
   it('lege zoekopdracht geeft niets', () => {
