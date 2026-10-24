@@ -1,4 +1,5 @@
 import type { AppState, Game, Id, Tournament } from '../events/types';
+import { areOpponents, ranksOf } from '../events/ranks';
 import { inflate, initialRating, update, type Glicko, type MatchResult } from './glicko2';
 
 export interface RatingPoint {
@@ -60,13 +61,16 @@ export function computeRatings(state: AppState): Map<Id, PlayerRating> {
       const r = get(id, at);
       before.set(id, inflate(r, (at - r.lastAt) / PERIOD_MS));
     }
-    for (let i = 0; i < order.length; i++) {
+    // Elk tweetal tegenstanders telt als een duel; wie hoger eindigt wint (teamgenoten spelen niet tegen elkaar).
+    const ranks = ranksOf(game);
+    for (const id of order) {
       const results: MatchResult[] = order
-        .map((opp, j) => (j === i ? null : { opponent: before.get(opp)!, score: j > i ? 1 : 0 }))
-        .filter((x): x is MatchResult => x !== null);
-      const prev = before.get(order[i])!;
+        .filter((opp) => areOpponents(game, id, opp) && ranks.get(opp) !== ranks.get(id))
+        .map((opp) => ({ opponent: before.get(opp)!, score: ranks.get(opp)! > ranks.get(id)! ? 1 : 0 }));
+      if (!results.length) continue;
+      const prev = before.get(id)!;
       const next = update(prev, results);
-      const r = ratings.get(order[i])!;
+      const r = ratings.get(id)!;
       const delta = next.rating - r.rating;
       Object.assign(r, next, { games: r.games + 1, lastAt: at });
       r.history.push({ at, rating: next.rating, rd: next.rd, delta, gameId: game.id, tournamentId: tournament.id });

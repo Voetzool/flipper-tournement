@@ -1,4 +1,4 @@
-import { state } from '../../app/state';
+import { machineName, playerName, state } from '../../app/state';
 import { go } from '../../app/router';
 import type { Tournament } from '../../events/types';
 import { formatOf } from '../../formats';
@@ -6,7 +6,9 @@ import { BackupBanner } from '../components/BackupBanner';
 import { Shell } from '../components/Shell';
 
 export function TournamentsScreen() {
-  const list = [...state.value.tournaments.values()].sort((a, b) => b.createdAt - a.createdAt);
+  const all = [...state.value.tournaments.values()].sort((a, b) => b.createdAt - a.createdAt);
+  const list = all.filter((t) => t.format !== 'single');
+  const singles = all.filter((t) => t.format === 'single').slice(0, 10);
   const active = list.filter((t) => t.status === 'active');
   const done = list.filter((t) => t.status === 'finished');
   return (
@@ -19,9 +21,14 @@ export function TournamentsScreen() {
       }
     >
       <BackupBanner />
-      <button class="btn primary block big" onClick={() => go('nieuw')}>
-        + Nieuw toernooi
-      </button>
+      <div class="grid2">
+        <button class="btn primary big" onClick={() => go('nieuw')}>
+          🏆 Toernooi
+        </button>
+        <button class="btn cyan big" onClick={() => go('pot')}>
+          ⚡ Losse pot
+        </button>
+      </div>
       {active.length > 0 && <h2>Bezig</h2>}
       <ul class="list">
         {active.map((t) => (
@@ -34,8 +41,34 @@ export function TournamentsScreen() {
           <Item key={t.id} t={t} />
         ))}
       </ul>
-      {!list.length && <p class="empty">Nog geen toernooien. Voeg eerst spelers (en kasten) toe en start een toernooi.</p>}
+      {singles.length > 0 && <h2>Losse potjes</h2>}
+      <ul class="list">
+        {singles.map((t) => (
+          <SingleItem key={t.id} t={t} />
+        ))}
+      </ul>
+      {!all.length && <p class="empty">Nog geen toernooien of potjes. Voeg eerst spelers (en kasten) toe en start een toernooi of een losse pot.</p>}
     </Shell>
+  );
+}
+
+function SingleItem({ t }: { t: Tournament }) {
+  const s = state.value;
+  const game = t.rounds[0]?.games[0];
+  if (!game) return null;
+  const names = (ids: string[]) => ids.map((id) => playerName(s, id)).join(' & ');
+  const vs = game.teams ? game.teams.map(names).join(' vs ') : game.playerIds.map((id) => playerName(s, id)).join(' · ');
+  const winner = game.result ? (game.teams ? names(game.teams.find((tm) => tm.includes(game.result![0]))!) : playerName(s, game.result[0])) : null;
+  return (
+    <li class="list-item card tap" onClick={() => go('t/' + t.id)}>
+      <div class="name">
+        {vs}
+        <div class="small muted">
+          {machineName(s, game.machineId)} · {t.name.replace('Losse pot · ', '')}
+        </div>
+      </div>
+      {winner ? <span class="badge">🏆 {winner}</span> : <span class="badge live">bezig</span>}
+    </li>
   );
 }
 

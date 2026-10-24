@@ -1,4 +1,5 @@
 import type { AppState, Id } from '../events/types';
+import { ranksOf } from '../events/ranks';
 import { playedGames } from '../rating/ratings';
 
 export interface MachinePlayerStat {
@@ -23,7 +24,9 @@ export function machineStats(state: AppState, machineId: Id): MachineStats {
     if (game.machineId !== machineId) continue;
     games++;
     tournaments.add(tournament.id);
-    game.result!.forEach((pid, pos) => {
+    const ranks = ranksOf(game);
+    game.result!.forEach((pid) => {
+      const pos = ranks.get(pid)!;
       const s = per.get(pid) ?? { playerId: pid, played: 0, wins: 0, avgPosition: 0, posSum: 0 };
       s.played++;
       if (pos === 0) s.wins++;

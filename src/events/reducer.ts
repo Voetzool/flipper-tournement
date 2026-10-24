@@ -136,6 +136,7 @@ export function apply(state: AppState, e: StoredEvent): void {
 function cloneGame(g: GameDraft): Game {
   const game: Game = { id: g.id, machineId: g.machineId, playerIds: g.playerIds.slice() };
   if (g.tiebreak) game.tiebreak = true;
+  if (g.teams) game.teams = g.teams.map((t) => t.slice());
   return game;
 }
 

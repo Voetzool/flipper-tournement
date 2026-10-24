@@ -62,7 +62,7 @@ export function UndoRedo({ tournamentId }: { tournamentId: string }) {
 }
 
 const tabs = [
-  { path: '', match: ['', 't', 'nieuw'], ico: '🏆', label: 'Toernooien' },
+  { path: '', match: ['', 't', 'nieuw', 'pot'], ico: '🏆', label: 'Toernooien' },
   { path: 'ranglijst', match: ['ranglijst'], ico: '📈', label: 'Ranglijst' },
   { path: 'spelers', match: ['spelers', 'speler'], ico: '👤', label: 'Spelers' },
   { path: 'kasten', match: ['kasten', 'kast'], ico: '🕹️', label: 'Kasten' },

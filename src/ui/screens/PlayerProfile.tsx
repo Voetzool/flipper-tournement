@@ -136,7 +136,8 @@ export function PlayerProfileScreen({ id }: { id: string }) {
                   <div class="name">
                     {g.position}e van {g.size} · {machineName(s, g.game.machineId)}
                     <div class="small muted">
-                      {fmtDate(g.game.resultAt ?? 0)} · {g.tournament.name} · {g.points} ptn
+                      {fmtDate(g.game.resultAt ?? 0)} · {g.tournament.name}
+                      {g.tournament.format !== 'single' && ` · ${g.points} ptn`}
                     </div>
                   </div>
                   {h && (

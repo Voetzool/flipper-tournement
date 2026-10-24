@@ -11,7 +11,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
 - Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
 - `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
-- Bundle-doel: < ~60 KB gzip JS (nu ~62 KB, waarvan Dexie het grootste deel).
+- Bundle-doel: < ~60 KB gzip JS (nu ~68 KB, waarvan Dexie het grootste deel).
 
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
@@ -55,6 +55,16 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   (`GameDraft.tiebreak: true`) met alle gelijke koplopers op de eerste gekozen kast; telt niet voor punten (wel voor
   rating); de volgorde daarin bepaalt de rangen binnen die groep (`note: 'wint tie-breaker'`). Deelnemers wijzigen,
   extra ronde en opnieuw indelen zijn uitgeschakeld voor deze vorm. Bestaande vorm heet in de UI "Groepsrondes".
+
+- **Losse ranked pot** (intern format `single`, `src/formats/single/`, scherm `src/ui/screens/Single.tsx`, route
+  `#/pot` en `#/pot/<vorige pot-id>` voor "Nog een pot"): een "toernooi" met één potje, zodat undo, rating, back-up
+  en statistieken gratis meewerken. Naam "Losse pot · <datum tijd>". Iedereen voor zich (uitslag aantikken) of
+  **teams** (`GameDraft.teams: Id[][]`, 2 teams, "Teams loten"; uitslag = winnend team eerst, `ResultSheet` toont dan
+  "Team A/B wint"). Kast: zelf kiezen of 🎲 willekeurig uit een selectie (`pickRandom`; keuze wordt in het event
+  opgeslagen; bij willekeurig bewaart `machineIds` de selectie). Losse potjes staan apart op het startscherm
+  ("Losse potjes", laatste 10) en tellen niet als toernooi in de spelersstatistieken.
+- `src/events/ranks.ts`: `ranksOf(game)` (plek per speler; teams delen hun plek), `areOpponents`, `placesOf`.
+  Rating (`ratings.ts`), `playerStats` en `machineStats` gebruiken dit: teamgenoten zijn geen tegenstanders.
 
 ## Rating & statistieken (fase 2)
 - `src/rating/glicko2.ts`: Glicko-2 (Glickman 2013; getest tegen zijn rekenvoorbeeld). τ = 0.5, start 1500/350/0.06.
@@ -148,6 +158,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
+- [x] Losse ranked pot (iedereen voor zich of teams, kast zelf of willekeurig uit selectie).
 - [x] Nieuwe spelvorm Round Robin 1-tegen-1 met tie-breaker (stap 3 van 4). Volgende: Engels (stap 4).
 - [x] Speelveldfoto bij spelregels (stap 2 van 4).
 - [x] Lichte modus (stap 1 van 4 uit feedback-ronde; volgende: nieuwe 1-tegen-1

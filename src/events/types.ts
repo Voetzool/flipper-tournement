@@ -3,8 +3,11 @@
 
 export type Id = string;
 
-/** roundRobin = "Groepsrondes" (2–4 per kast, punten per plek); headToHead = "Round Robin" (iedereen 1× tegen iedereen). */
-export type FormatId = 'roundRobin' | 'headToHead';
+/**
+ * roundRobin = "Groepsrondes" (2–4 per kast, punten per plek); headToHead = "Round Robin" (iedereen 1× tegen iedereen);
+ * single = losse ranked pot (één potje, iedereen voor zich of teams).
+ */
+export type FormatId = 'roundRobin' | 'headToHead' | 'single';
 
 export interface RoundRobinSettings {
   rounds: number;
@@ -19,6 +22,11 @@ export interface GameDraft {
   playerIds: Id[];
   /** Beslissingspotje bij een gedeelde eerste plaats (alleen Round Robin); telt niet voor punten. */
   tiebreak?: true;
+  /**
+   * Teampotje (alleen losse pot): lijst van teams. De uitslag (`result`) zet dan alle spelers van het winnende team
+   * vooraan; de plek van een speler is de plek van zijn of haar team (zie `ranksOf`).
+   */
+  teams?: Id[][];
 }
 
 export type EventBody =

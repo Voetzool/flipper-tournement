@@ -9,6 +9,7 @@ import { Shell, UndoRedo } from '../components/Shell';
 import { Sheet } from '../components/Sheet';
 import { StandingsTable } from '../components/Standings';
 import { Thumb } from '../components/Thumb';
+import { SingleGameView } from './Single';
 import { machineSubtitle } from './Machines';
 
 type Tab = 'ronde' | 'stand' | 'kasten' | 'geschiedenis';
@@ -25,6 +26,8 @@ export function TournamentScreen({ id, tab }: { id: string; tab: Tab }) {
       </Shell>
     );
   }
+
+  if (t.format === 'single') return <SingleGameView t={t} />;
 
   const base = `t/${t.id}`;
   return (
@@ -255,7 +258,7 @@ function HistoryTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void })
   );
 }
 
-function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; onClose: () => void }) {
+export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; onClose: () => void }) {
   const s = state.value;
   const game = t.rounds.flatMap((r) => r.games).find((g) => g.id === gameId)!;
   const [order, setOrder] = useState<string[]>(game.result ?? []);
@@ -285,7 +288,14 @@ function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; on
   };
 
   const unchanged = !!game.result && game.result.join() === order.join();
-  const machineOptions = [...t.machineIds.map((id) => s.machines.get(id)).filter((m) => !!m), null];
+  // Losse pot: elke actieve kast mag; toernooi: alleen de kasten van het toernooi.
+  const machineOptions = [
+    ...(t.format === 'single' ? [...s.machines.values()].filter((m) => m.active) : t.machineIds.map((id) => s.machines.get(id)).filter((m) => !!m)),
+    null,
+  ];
+  const teams = game.teams;
+  const winnerTeam = teams && order.length ? teams.findIndex((tm) => tm.includes(order[0])) : -1;
+  const pickTeam = (i: number) => setOrder([...teams![i], ...teams!.filter((_, j) => j !== i).flat()]);
 
   return (
     <Sheet onClose={onClose}>
@@ -322,8 +332,22 @@ function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; on
         </div>
       )}
       <p class="muted" style="margin:4px 0 0">
-        {game.result ? 'Uitslag corrigeren. ' : ''}Tik de spelers aan in volgorde van finish: eerst de winnaar.
+        {game.result ? 'Uitslag corrigeren. ' : ''}
+        {teams ? 'Tik op het team dat gewonnen heeft.' : 'Tik de spelers aan in volgorde van finish: eerst de winnaar.'}
       </p>
+      {teams ? (
+        <div class="order-btns">
+          {teams.map((tm, i) => (
+            <button key={i} class={'order-btn' + (winnerTeam === i ? ' set' : '')} onClick={() => pickTeam(i)}>
+              <span class="pos">{winnerTeam === i ? '🏆' : String.fromCharCode(65 + i)}</span>
+              <span>
+                Team {String.fromCharCode(65 + i)} wint
+                <div class="small muted">{tm.map((id) => playerName(s, id)).join(' & ')}</div>
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
       <div class="order-btns">
         {game.playerIds.map((pid) => {
           const pos = order.indexOf(pid);
@@ -331,11 +355,12 @@ function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; on
             <button key={pid} class={'order-btn' + (pos >= 0 ? ' set' : '')} onClick={() => tap(pid)}>
               <span class="pos">{pos >= 0 ? pos + 1 : ''}</span>
               {playerName(s, pid)}
-              {pos >= 0 && !game.tiebreak && <span class="pts">{pointsFor(t.settings.pointsTable, n, pos)} ptn</span>}
+              {pos >= 0 && !game.tiebreak && t.format !== 'single' && <span class="pts">{pointsFor(t.settings.pointsTable, n, pos)} ptn</span>}
             </button>
           );
         })}
       </div>
+      )}
       <div class="stack">
         <button class="btn primary block big" disabled={order.length !== n || unchanged} onClick={save}>
           {game.result ? 'Correctie opslaan' : 'Uitslag opslaan'}

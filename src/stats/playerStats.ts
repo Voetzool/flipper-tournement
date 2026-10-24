@@ -1,5 +1,6 @@
 import type { AppState, Game, Id, Tournament } from '../events/types';
 import { formatOf } from '../formats';
+import { areOpponents, placesOf, ranksOf } from '../events/ranks';
 import { pointsFor } from '../formats/roundRobin/scoring';
 import { playedGames } from '../rating/ratings';
 
@@ -53,13 +54,15 @@ export function playerStats(state: AppState, playerId: Id): PlayerStats {
 
   for (const { game, tournament } of playedGames(state)) {
     const order = game.result!;
-    const pos = order.indexOf(playerId);
-    if (pos < 0) continue;
+    if (!order.includes(playerId)) continue;
+    const ranks = ranksOf(game);
+    const pos = ranks.get(playerId)!;
+    const opponents = order.filter((o) => areOpponents(game, playerId, o));
     games++;
     if (pos === 0) wins++;
     posSum += pos + 1;
-    beaten += order.length - 1 - pos;
-    faced += order.length - 1;
+    beaten += opponents.filter((o) => ranks.get(o)! > pos).length;
+    faced += opponents.length;
 
     const mk = game.machineId ?? '';
     const m = machines.get(mk) ?? { machineId: game.machineId, played: 0, wins: 0, avgPosition: 0, posSum: 0 };
@@ -68,21 +71,20 @@ export function playerStats(state: AppState, playerId: Id): PlayerStats {
     m.posSum += pos + 1;
     machines.set(mk, m);
 
-    order.forEach((opp, j) => {
-      if (opp === playerId) return;
+    for (const opp of opponents) {
       const r = rivals.get(opp) ?? { opponentId: opp, played: 0, won: 0, lost: 0 };
       r.played++;
-      if (pos < j) r.won++;
-      else r.lost++;
+      if (pos < ranks.get(opp)!) r.won++;
+      else if (pos > ranks.get(opp)!) r.lost++;
       rivals.set(opp, r);
-    });
+    }
 
     recent.push({
       game,
       tournament,
       position: pos + 1,
-      size: order.length,
-      points: pointsFor(tournament.settings.pointsTable, order.length, pos),
+      size: placesOf(game),
+      points: tournament.format === 'single' ? 0 : pointsFor(tournament.settings.pointsTable, order.length, pos),
     });
   }
 
@@ -91,7 +93,7 @@ export function playerStats(state: AppState, playerId: Id): PlayerStats {
   let podiums = 0;
   for (const t of state.tournaments.values()) {
     const played = t.rounds.some((r) => r.games.some((g) => g.result?.includes(playerId)));
-    if (!played) continue;
+    if (!played || t.format === 'single') continue; // losse potjes zijn geen toernooien
     tournaments++;
     if (t.status !== 'finished') continue;
     const row = formatOf(t.format).standings(t).find((r) => r.playerId === playerId);

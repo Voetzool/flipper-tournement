@@ -1317,3 +1317,74 @@ textarea.input.notes {
   min-height: 40px;
   font-size: 15px;
 }
+
+/* ---------- Losse pot ---------- */
+
+.team {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: var(--bg-2);
+  min-width: 0;
+}
+
+.team-0 {
+  border-color: var(--pink);
+}
+
+.team-1 {
+  border-color: var(--cyan);
+}
+
+.team.won {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+.team .chip {
+  width: 100%;
+}
+
+.picked {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+}
+
+.machine-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.single-order {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.single-order li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 19px;
+}
+
+.single-order .pos {
+  width: 28px;
+  font-weight: 900;
+  color: var(--yellow);
+}
+
+.player-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  font-size: 18px;
+}
