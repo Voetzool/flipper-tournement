@@ -1,17 +1,26 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { dispatch, state } from '../../app/state';
 import { go } from '../../app/router';
 import type { FormatId, RoundRobinSettings } from '../../events/types';
 import { formatOf } from '../../formats';
 import { headToHeadSettings } from '../../formats/headToHead';
-import { groupSizes } from '../../formats/roundRobin/pairing';
-import { defaultSettings } from '../../formats/roundRobin/scoring';
+import { fairRoundCounts, groupSizes, waitingPerRound } from '../../formats/roundRobin/pairing';
+import { DEFAULT_POINTS, defaultSettings } from '../../formats/roundRobin/scoring';
 import { newId } from '../../lib/id';
 import { shuffle } from '../../lib/rng';
+import { Sheet } from '../components/Sheet';
 import { Shell } from '../components/Shell';
 
 function defaultName() {
   return 'Toernooi ' + new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+}
+
+function pointsSummary(table: Record<number, number[]>, max: number) {
+  return (table[max] ?? []).join(' · ') + ` bij ${max} spelers`;
+}
+
+function isDefaultPoints(table: Record<number, number[]>) {
+  return JSON.stringify(table) === JSON.stringify(DEFAULT_POINTS);
 }
 
 export function NewTournamentScreen() {
@@ -32,8 +41,27 @@ export function NewTournamentScreen() {
     fn(n);
   };
 
-  const sizes = groupSizes(selPlayers.size, settings.maxGroupSize);
+  const [roundsTouched, setRoundsTouched] = useState(false);
+  const [editPoints, setEditPoints] = useState(false);
+
+  const n = selPlayers.size;
+  const sizes = groupSizes(n, settings.maxGroupSize);
   const tooFewMachines = sizes.length > selMachines.size;
+  const waiting = waitingPerRound(n, settings.maxGroupSize);
+  const fair = fairRoundCounts(n, settings.maxGroupSize);
+  const isFair = !fair || fair.includes(settings.rounds);
+
+  const setRounds = (rounds: number) => {
+    setRoundsTouched(true);
+    setSettings({ ...settings, rounds: Math.max(1, Math.min(30, rounds)) });
+  };
+
+  // Moet er iemand wachten, dan het aantal rondes automatisch op een eerlijk aantal zetten (tot je het zelf aanpast).
+  useEffect(() => {
+    if (roundsTouched || !fair) return;
+    const nearest = fair.reduce((a, b) => (Math.abs(b - settings.rounds) < Math.abs(a - settings.rounds) ? b : a));
+    if (nearest !== settings.rounds) setSettings({ ...settings, rounds: nearest });
+  }, [n, settings.maxGroupSize]);
 
   const start = () => {
     const tournamentId = newId();
@@ -137,11 +165,11 @@ export function NewTournamentScreen() {
           <div class="row">
             <span class="grow">Aantal rondes</span>
             <div class="stepper">
-              <button class="iconbtn" onClick={() => setSettings({ ...settings, rounds: Math.max(1, settings.rounds - 1) })}>
+              <button class="iconbtn" onClick={() => setRounds(settings.rounds - 1)}>
                 −
               </button>
               <span class="val">{settings.rounds}</span>
-              <button class="iconbtn" onClick={() => setSettings({ ...settings, rounds: Math.min(30, settings.rounds + 1) })}>
+              <button class="iconbtn" onClick={() => setRounds(settings.rounds + 1)}>
                 +
               </button>
             </div>
@@ -156,29 +184,40 @@ export function NewTournamentScreen() {
               ))}
             </div>
           </div>
-          {selPlayers.size >= 2 && (
-            <p class="small muted">
-              Per ronde: {sizes.length} {sizes.length === 1 ? 'groep' : 'groepen'} ({sizes.join(' + ')} spelers).
+          {n >= 2 && (
+            <p class="small muted" style="margin:0">
+              Per ronde: {sizes.length} {sizes.length === 1 ? 'groep' : 'groepen'} ({sizes.join(' + ')} spelers)
+              {waiting > 0 && ', 1 speler wacht (0 punten)'}.
               {tooFewMachines && ' Er zijn minder kasten dan groepen; sommige groepen wachten op een vrije kast.'}
             </p>
           )}
-          <div class="field">
-            <label>Punten per plek</label>
-            {[4, 3, 2].map((size) => (
-              <div class="points-row" key={size}>
-                <span class="lbl">{size} spelers</span>
-                {settings.pointsTable[size].map((v, i) => (
-                  <input
-                    key={i}
-                    type="number"
-                    inputMode="numeric"
-                    value={v}
-                    aria-label={`${size} spelers, plek ${i + 1}`}
-                    onInput={(e) => setPoints(size, i, e.currentTarget.value)}
-                  />
+          {n >= 2 && fair && (
+            <div class={'advice' + (isFair ? '' : ' warn')}>
+              <div>
+                {isFair
+                  ? `Met ${settings.rounds} rondes wacht iedereen ${settings.rounds / n}× en speelt iedereen ${(settings.rounds / n) * (n - 1)} potjes.`
+                  : `Met ${settings.rounds} rondes speelt niet iedereen even vaak. Kies een aanbevolen aantal:`}
+              </div>
+              <div class="chips" style="margin-top:8px">
+                {fair.slice(0, 4).map((r) => (
+                  <button key={r} class={'chip' + (r === settings.rounds ? ' on' : '')} onClick={() => setRounds(r)}>
+                    {r} rondes · {(r / n) * (n - 1)} potjes p.p.
+                  </button>
                 ))}
               </div>
-            ))}
+            </div>
+          )}
+          <div class="row">
+            <span class="grow">
+              Punten per plek
+              <div class="small muted">
+                {pointsSummary(settings.pointsTable, settings.maxGroupSize)}
+                {isDefaultPoints(settings.pointsTable) ? ' (standaard)' : ' (aangepast)'}
+              </div>
+            </span>
+            <button class="btn" onClick={() => setEditPoints(true)}>
+              Punten aanpassen
+            </button>
           </div>
         </div>
         )}
@@ -188,6 +227,41 @@ export function NewTournamentScreen() {
         </button>
         {selPlayers.size < 2 && <p class="small muted">Kies minstens 2 spelers.</p>}
       </div>
+      {editPoints && (
+        <Sheet onClose={() => setEditPoints(false)}>
+          <div class="stack">
+            <h3>Punten per plek</h3>
+            <p class="small muted" style="margin:0">
+              Hoeveel punten krijgt de 1e, 2e, 3e en 4e plek? Dat hangt af van hoeveel spelers er in het potje zitten.
+            </p>
+            {[4, 3, 2]
+              .filter((size) => size <= settings.maxGroupSize)
+              .map((size) => (
+                <div class="points-row" key={size}>
+                  <span class="lbl">{size} spelers</span>
+                  {settings.pointsTable[size].map((v, i) => (
+                    <input
+                      key={i}
+                      type="number"
+                      inputMode="numeric"
+                      value={v}
+                      aria-label={`${size} spelers, plek ${i + 1}`}
+                      onInput={(e) => setPoints(size, i, e.currentTarget.value)}
+                    />
+                  ))}
+                </div>
+              ))}
+            <div class="grid2">
+              <button class="btn" onClick={() => setSettings({ ...settings, pointsTable: structuredClone(DEFAULT_POINTS) })}>
+                Standaard
+              </button>
+              <button class="btn primary" onClick={() => setEditPoints(false)}>
+                Klaar
+              </button>
+            </div>
+          </div>
+        </Sheet>
+      )}
     </Shell>
   );
 }

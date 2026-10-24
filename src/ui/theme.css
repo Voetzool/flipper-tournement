@@ -1300,3 +1300,20 @@ textarea.input.notes {
   background: rgba(255, 214, 10, 0.12);
   font-size: 20px;
 }
+
+.advice {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  font-size: 15px;
+}
+
+.advice.warn {
+  border-color: var(--yellow);
+}
+
+.advice .chip {
+  min-height: 40px;
+  font-size: 15px;
+}

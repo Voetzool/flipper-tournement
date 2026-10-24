@@ -122,7 +122,7 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
     );
   }
 
-  const waiting = h2h ? waitingPlayers(t, round) : [];
+  const waiting = waitingPlayers(t, round);
   const standings = fmt.standings(t);
   const winner = finished && standings.filter((r) => r.rank === 1).length === 1 ? standings[0] : null;
 

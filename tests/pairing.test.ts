@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateRound, groupSizes, type PastGame } from '../src/formats/roundRobin/pairing';
+import { fairRoundCounts, generateRound, groupSizes, waitingPerRound, type PastGame } from '../src/formats/roundRobin/pairing';
 import { createRng } from '../src/lib/rng';
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => 'p' + (i + 1));
@@ -35,15 +35,32 @@ describe('groupSizes', () => {
     expect(groupSizes(5, 4)).toEqual([3, 2]);
     expect(groupSizes(13, 4)).toEqual([4, 3, 3, 3]);
     expect(groupSizes(6, 2)).toEqual([2, 2, 2]);
+    expect(groupSizes(7, 2)).toEqual([2, 2, 2]);
     expect(groupSizes(2, 4)).toEqual([2]);
   });
-  it('maakt nooit een groep van 1', () => {
+  it('maakt nooit een groep van 1 en nooit groter dan max', () => {
     for (let n = 2; n <= 40; n++)
       for (const max of [2, 3, 4]) {
         const s = groupSizes(n, max);
-        expect(s.reduce((a, b) => a + b, 0)).toBe(n);
+        // bij max 2 en een oneven aantal wacht er één speler; anders speelt iedereen
+        expect(s.reduce((a, b) => a + b, 0)).toBe(max === 2 && n % 2 ? n - 1 : n);
         expect(Math.min(...s)).toBeGreaterThanOrEqual(2);
+        expect(Math.max(...s)).toBeLessThanOrEqual(max);
       }
+  });
+
+  it('max 2 en oneven: één speler wacht', () => {
+    expect(groupSizes(5, 2)).toEqual([2, 2]);
+    expect(groupSizes(3, 2)).toEqual([2]);
+    expect(waitingPerRound(5, 2)).toBe(1);
+    expect(waitingPerRound(6, 2)).toBe(0);
+    expect(waitingPerRound(5, 4)).toBe(0);
+  });
+
+  it('raadt rondes aan waarbij iedereen evenveel speelt', () => {
+    expect(fairRoundCounts(5, 2)).toEqual([5, 10, 15, 20, 25, 30]);
+    expect(fairRoundCounts(6, 2)).toBeNull();
+    expect(fairRoundCounts(7, 4)).toBeNull();
   });
   it('geeft niets bij minder dan 2 spelers', () => {
     expect(groupSizes(1, 4)).toEqual([]);
@@ -79,6 +96,16 @@ describe('generateRound', () => {
   it('geeft groepen zonder kast als er te weinig kasten zijn', () => {
     const { perRound } = play(12, 1, 4, ['a']);
     expect(perRound[0].filter((g) => g.machineId === null)).toHaveLength(2);
+  });
+
+  it('5 spelers, max 2, 5 rondes: iedereen wacht precies één keer en speelt 4 potjes', () => {
+    for (let seed = 1; seed <= 5; seed++) {
+      const { history, perRound } = play(5, 5, 2, ['a', 'b'], seed);
+      expect(perRound.every((games) => games.length === 2 && games.every((g) => g.playerIds.length === 2))).toBe(true);
+      const count = new Map<string, number>();
+      for (const g of history) for (const p of g.playerIds) count.set(p, (count.get(p) ?? 0) + 1);
+      expect(ids(5).map((p) => count.get(p))).toEqual([4, 4, 4, 4, 4]);
+    }
   });
 
   it('8 spelers in groepen van 4: ronde 2 heeft het minimale aantal herhalingen', () => {

@@ -1,7 +1,7 @@
 import { useEffect } from 'preact/hooks';
 import { machineName, playerName, state } from '../../app/state';
 import { formatOf } from '../../formats';
-import { isTiebreakRound } from '../../formats/headToHead';
+import { isTiebreakRound, waitingPlayers } from '../../formats/headToHead';
 import { UndoRedo } from '../components/Shell';
 
 /** Grote weergave voor een tablet aan de muur. Scherm blijft aan (waar de browser dat toestaat). */
@@ -67,6 +67,9 @@ export function ScoreboardScreen({ id }: { id: string }) {
                 <div>{g.playerIds.map((p) => playerName(s, p)).join(' · ')}</div>
               </div>
             ))}
+            {round && waitingPlayers(t, round).length > 0 && (
+              <div class="sub">⏸ Wacht: {waitingPlayers(t, round).map((p) => playerName(s, p)).join(', ')}</div>
+            )}
           </div>
         )}
       </div>

@@ -38,7 +38,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 ## Toernooivormen (plug-ins)
 - Interface `FormatDefinition` in `src/formats/types.ts` (`nextRound`, `standings`); registratie in `src/formats/index.ts`.
 - Round Robin (`src/formats/roundRobin/`):
-  - `groupSizes(n, max)`: zo gelijk mogelijk, nooit een groep van 1 (10 spelers, max 4 → 4+3+3).
+  - `groupSizes(n, max)`: zo gelijk mogelijk, nooit een groep van 1 (10 spelers, max 4 → 4+3+3); max 2 + oneven → één wachter.
   - `generateRound`: random starts + lokale zoekstappen (spelers wisselen tussen groepen, kasten toewijzen/wisselen).
     Strafscore: W_MEET (al samen gespeeld, kwadratisch) ≫ W_SIZE (vaker in groep van deze grootte dan de speler die
     het minst vaak) > W_MACHINE (kast al gespeeld) > W_MACHINE_TOTAL (kastgebruik spreiden). Pogingen schalen met
@@ -129,7 +129,12 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 
 ## Beslissingen (met gebruiker afgestemd)
 - Organisator kiest het aantal rondes (extra ronde kan altijd). Rondes worden één voor één ingedeeld.
-- Bij restspelers: groepen mengen (niemand zit over).
+- Bij restspelers: groepen mengen (niemand zit over) — behalve bij **max 2 per kast en een oneven aantal**: dan wacht
+  er elke ronde één speler (0 punten), om de beurt (wie de meeste potjes speelde wacht; gelijk → loten).
+  `waitingPerRound`/`fairRoundCounts` in `pairing.ts`: het aanmaakscherm raadt dan een veelvoud van n rondes aan
+  (iedereen wacht even vaak, speelt evenveel potjes), zet dat automatisch tot de gebruiker zelf het aantal wijzigt,
+  en waarschuwt bij een ander aantal. "Wacht deze ronde" wordt bij beide spelvormen getoond (ook op het scorebord).
+- Punten per plek staan bij het aanmaken achter de knop "Punten aanpassen" (sheet), niet meer in het hoofdformulier.
 - Puntentabel per groepsgrootte, instelbaar per toernooi.
 - Repo is openbaar (GitHub Pages gratis). Deploy vanaf `main` én de werkbranch.
 - Back-up = alleen actieve events (redo-stapel niet). Herinnering na 7 dagen of na een afgerond toernooi zonder back-up.

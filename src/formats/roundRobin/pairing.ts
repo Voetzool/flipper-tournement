@@ -4,15 +4,33 @@ import type { GameDraft, Id } from '../../events/types';
 
 /**
  * Verdeelt n spelers in groepen van maximaal `max`, zo gelijk mogelijk.
- * 10 spelers, max 4 → [4, 3, 3]. Nooit een groep van 1 (dan wordt één groep max+1).
+ * 10 spelers, max 4 → [4, 3, 3]. Nooit een groep van 1.
+ * Bij max 2 en een oneven aantal past dat niet: dan blijft er één speler over die deze ronde wacht (som = n − 1).
  */
 export function groupSizes(n: number, max: number): number[] {
   if (n < 2) return [];
+  if (max <= 2) return Array.from({ length: Math.floor(n / 2) }, () => 2);
   let k = Math.ceil(n / max);
   if (Math.floor(n / k) < 2) k = Math.floor(n / 2);
   const base = Math.floor(n / k);
   const extra = n % k;
   return Array.from({ length: k }, (_, i) => base + (i < extra ? 1 : 0));
+}
+
+/** Hoeveel spelers per ronde moeten wachten (0, of 1 bij max 2 en een oneven aantal). */
+export function waitingPerRound(n: number, max: number): number {
+  return n < 2 ? 0 : n - groupSizes(n, max).reduce((a, b) => a + b, 0);
+}
+
+/**
+ * Aanbevolen aantallen rondes waarbij iedereen evenveel potjes speelt.
+ * Wacht er niemand, dan is elk aantal eerlijk (null). Anders: veelvouden van n (iedereen wacht even vaak).
+ */
+export function fairRoundCounts(n: number, max: number, limit = 30): number[] | null {
+  if (!waitingPerRound(n, max)) return null;
+  const out: number[] = [];
+  for (let r = n; r <= limit; r += n) out.push(r);
+  return out;
 }
 
 export interface PastGame {
@@ -185,9 +203,21 @@ function improveGroups(groups: Id[][], machines: (Id | null)[], h: History): num
  * kasten zo goed mogelijk verspreid, kleine groepen eerlijk rondgedeeld.
  */
 export function generateRound(input: PairingInput): GameDraft[] {
-  const { playerIds, machineIds, maxGroupSize, rng } = input;
-  const sizes = groupSizes(playerIds.length, maxGroupSize);
+  const { machineIds, maxGroupSize, rng } = input;
+  const sizes = groupSizes(input.playerIds.length, maxGroupSize);
   if (!sizes.length) return [];
+  // Past niet iedereen (max 2, oneven aantal)? Dan wacht de speler die tot nu toe de meeste potjes speelde
+  // (= het minst vaak wachtte); bij gelijkspel wordt geloot. Zo wacht iedereen om de beurt, met 0 punten.
+  let playerIds = input.playerIds;
+  const free = playerIds.length - sizes.reduce((a, b) => a + b, 0);
+  if (free > 0) {
+    const played = new Map<Id, number>();
+    for (const g of input.history) for (const p of g.playerIds) played.set(p, (played.get(p) ?? 0) + 1);
+    const waiters = shuffle(playerIds, rng)
+      .sort((a, b) => (played.get(b) ?? 0) - (played.get(a) ?? 0))
+      .slice(0, free);
+    playerIds = playerIds.filter((p) => !waiters.includes(p));
+  }
   const h = new History(input.history, playerIds);
   // Minder pogingen bij veel spelers (elke poging is dan duurder), zodat het op een telefoon vlot blijft.
   const attempts = input.attempts ?? Math.min(80, Math.max(20, Math.round(1000 / playerIds.length)));
