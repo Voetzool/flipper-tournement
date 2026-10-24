@@ -32,7 +32,7 @@ export function ScoreboardScreen({ id }: { id: string }) {
           ‹
         </a>
         <h1>{t.name}</h1>
-        <UndoRedo />
+        <UndoRedo tournamentId={t.id} />
         <button class="iconbtn" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})} aria-label="Volledig scherm">
           ⛶
         </button>

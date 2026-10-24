@@ -10,12 +10,24 @@ export interface Persistence {
   replaceAll(events: StoredEvent[]): Promise<void>;
 }
 
+/** Undo-bereik van een event: het toernooi waar het bij hoort, of null (spelers/kasten: geen undo). */
+export function undoScope(body: EventBody): string | null {
+  return 'tournamentId' in body ? body.tournamentId : null;
+}
+
+/** Het aanmaken van een toernooi draai je niet terug met undo (verwijderen kan wel). */
+function undoable(e: StoredEvent, scope: string): boolean {
+  return undoScope(e.body) === scope && e.body.type !== 'TournamentCreated';
+}
+
 /**
- * Eventlog met undo/redo.
- * Invariant: de log is altijd [actieve events..., ongedaan gemaakte events...].
- * - undo: laatste actieve event wordt `reverted`.
- * - redo: eerste `reverted` event wordt weer actief.
- * - nieuwe actie: alle `reverted` events worden verwijderd (redo-stapel leeg), daarna toevoegen.
+ * Eventlog met undo/redo per toernooi.
+ * Elk toernooi heeft zijn eigen undo-stapel: undo draait het laatste actieve event van dát toernooi terug,
+ * ook als er daarna spelers of kasten zijn gewijzigd (die zijn onafhankelijk van toernooi-events).
+ * Binnen één toernooi geldt: [actief…, ongedaan gemaakt…].
+ * - undo(t): laatste actieve event van t wordt `reverted`.
+ * - redo(t): eerste `reverted` event van t wordt weer actief.
+ * - nieuwe actie: de `reverted` events met hetzelfde bereik worden verwijderd (redo-stapel leeg), daarna toevoegen.
  */
 export class EventStore {
   private events: StoredEvent[] = [];
@@ -39,19 +51,24 @@ export class EventStore {
     return () => this.listeners.delete(fn);
   }
 
-  get undoTarget(): StoredEvent | undefined {
-    for (let i = this.events.length - 1; i >= 0; i--) if (!this.events[i].reverted) return this.events[i];
+  undoTarget(scope: string): StoredEvent | undefined {
+    for (let i = this.events.length - 1; i >= 0; i--) {
+      const e = this.events[i];
+      if (!e.reverted && undoable(e, scope)) return e;
+    }
     return undefined;
   }
 
-  get redoTarget(): StoredEvent | undefined {
-    return this.events.find((e) => e.reverted);
+  redoTarget(scope: string): StoredEvent | undefined {
+    return this.events.find((e) => e.reverted && undoScope(e.body) === scope);
   }
 
   /** Voegt een event toe. State in geheugen wordt direct bijgewerkt; opslag volgt in volgorde. */
   dispatch(body: EventBody, at = Date.now()): StoredEvent {
-    const dropped = this.events.filter((e) => e.reverted).map((e) => e.seq);
-    const kept = this.events.filter((e) => !e.reverted);
+    const scope = undoScope(body);
+    const drop = (e: StoredEvent) => e.reverted && undoScope(e.body) === scope;
+    const dropped = this.events.filter(drop).map((e) => e.seq);
+    const kept = this.events.filter((e) => !drop(e));
     const seq = (this.events.length ? this.events[this.events.length - 1].seq : 0) + 1;
     const ev: StoredEvent = { seq, id: newId(), at, reverted: false, schema: 1, body };
     this.events = [...kept, ev];
@@ -63,15 +80,15 @@ export class EventStore {
     return ev;
   }
 
-  undo(): StoredEvent | undefined {
-    const target = this.undoTarget;
+  undo(scope: string): StoredEvent | undefined {
+    const target = this.undoTarget(scope);
     if (!target) return undefined;
     this.setReverted(target, true);
     return target;
   }
 
-  redo(): StoredEvent | undefined {
-    const target = this.redoTarget;
+  redo(scope: string): StoredEvent | undefined {
+    const target = this.redoTarget(scope);
     if (!target) return undefined;
     this.setReverted(target, false);
     return target;

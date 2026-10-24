@@ -33,6 +33,9 @@ export function apply(state: AppState, e: StoredEvent): void {
       if (p) p.name = b.name;
       break;
     }
+    case 'PlayerDeleted':
+      state.players.delete(b.playerId);
+      break;
     case 'PlayerArchived':
     case 'PlayerRestored': {
       const p = state.players.get(b.playerId);
@@ -47,6 +50,9 @@ export function apply(state: AppState, e: StoredEvent): void {
       if (m) m.name = b.name;
       break;
     }
+    case 'MachineDeleted':
+      state.machines.delete(b.machineId);
+      break;
     case 'MachineRemoved':
     case 'MachineRestored': {
       const m = state.machines.get(b.machineId);
@@ -122,4 +128,22 @@ export function apply(state: AppState, e: StoredEvent): void {
 
 function cloneGame(g: { id: string; machineId: string | null; playerIds: string[] }): Game {
   return { id: g.id, machineId: g.machineId, playerIds: g.playerIds.slice() };
+}
+
+/** Komt deze speler voor in een toernooi (als deelnemer of in een potje)? */
+export function playerInUse(state: AppState, playerId: string): boolean {
+  for (const t of state.tournaments.values()) {
+    if (t.playerIds.includes(playerId)) return true;
+    if (t.rounds.some((r) => r.games.some((g) => g.playerIds.includes(playerId)))) return true;
+  }
+  return false;
+}
+
+/** Is deze kast ooit voor een toernooi gekozen of in een potje gebruikt? */
+export function machineInUse(state: AppState, machineId: string): boolean {
+  for (const t of state.tournaments.values()) {
+    if (t.machineIds.includes(machineId)) return true;
+    if (t.rounds.some((r) => r.games.some((g) => g.machineId === machineId))) return true;
+  }
+  return false;
 }

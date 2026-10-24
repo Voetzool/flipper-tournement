@@ -21,10 +21,14 @@ export interface GameDraft {
 export type EventBody =
   | { type: 'PlayerAdded'; playerId: Id; name: string }
   | { type: 'PlayerUpdated'; playerId: Id; name: string }
+  /** Alleen voor spelers die nog nooit aan een toernooi meededen. */
+  | { type: 'PlayerDeleted'; playerId: Id }
   | { type: 'PlayerArchived'; playerId: Id }
   | { type: 'PlayerRestored'; playerId: Id }
   | { type: 'MachineAdded'; machineId: Id; name: string }
   | { type: 'MachineUpdated'; machineId: Id; name: string }
+  /** Alleen voor kasten die nog nooit in een toernooi zaten. */
+  | { type: 'MachineDeleted'; machineId: Id }
   | { type: 'MachineRemoved'; machineId: Id }
   | { type: 'MachineRestored'; machineId: Id }
   | {

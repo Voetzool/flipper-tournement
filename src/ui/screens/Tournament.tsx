@@ -1,10 +1,10 @@
 import { useState } from 'preact/hooks';
-import { dispatch, machineName, playerName, state } from '../../app/state';
+import { dispatch, machineName, playerName, showToast, state, undo } from '../../app/state';
 import { go } from '../../app/router';
 import type { Game, Tournament } from '../../events/types';
 import { formatOf } from '../../formats';
 import { pointsFor, roundComplete } from '../../formats/roundRobin/scoring';
-import { Shell } from '../components/Shell';
+import { Shell, UndoRedo } from '../components/Shell';
 import { Sheet } from '../components/Sheet';
 import { StandingsTable } from '../components/Standings';
 
@@ -36,6 +36,7 @@ export function TournamentScreen({ id, tab }: { id: string; tab: Tab }) {
           <button class="iconbtn" onClick={() => setMenu(true)} aria-label="Menu">
             ⋯
           </button>
+          <UndoRedo tournamentId={t.id} />
         </>
       }
     >
@@ -201,6 +202,7 @@ function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: string; on
       order,
     });
     onClose();
+    showToast(game.result ? 'Correctie opgeslagen' : 'Uitslag opgeslagen', { label: 'Ongedaan maken', run: () => undo(t.id) });
   };
 
   const unchanged = !!game.result && game.result.join() === order.join();
@@ -300,10 +302,18 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
         <button
           class="btn danger block"
           onClick={() => {
-            if (!confirm(`"${t.name}" verwijderen? (Je kunt dit nog ongedaan maken.)`)) return;
+            if (!confirm(`"${t.name}" verwijderen?`)) return;
             dispatch({ type: 'TournamentDeleted', tournamentId: t.id });
             onClose();
             go('');
+            const id = t.id;
+            showToast(`${t.name} verwijderd`, {
+              label: 'Herstellen',
+              run: () => {
+                undo(id);
+                go('t/' + id);
+              },
+            });
           }}
         >
           Toernooi verwijderen

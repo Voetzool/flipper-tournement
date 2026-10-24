@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { dispatch, ratings, showToast, state } from '../../app/state';
 import { go } from '../../app/router';
+import { playerInUse } from '../../events/reducer';
 import type { Player } from '../../events/types';
 import { newId } from '../../lib/id';
 import { Shell } from '../components/Shell';
@@ -97,17 +98,37 @@ export function PlayerSheet({ player, onClose }: { player: Player | null; onClos
           {player ? 'Opslaan' : 'Toevoegen'}
         </button>
         {!player && <p class="small muted">Je kunt meteen de volgende naam typen.</p>}
-        {player && (
+        {player && !playerInUse(state.value, player.id) && (
           <button
             type="button"
             class="btn danger block"
             onClick={() => {
-              dispatch({ type: 'PlayerArchived', playerId: player.id });
+              if (!confirm(`${player.name} verwijderen?`)) return;
+              dispatch({ type: 'PlayerDeleted', playerId: player.id });
               onClose();
+              go('spelers');
             }}
           >
-            Archiveren
+            Verwijderen
           </button>
+        )}
+        {player && playerInUse(state.value, player.id) && !player.archived && (
+          <>
+            <button
+              type="button"
+              class="btn danger block"
+              onClick={() => {
+                dispatch({ type: 'PlayerArchived', playerId: player.id });
+                onClose();
+              }}
+            >
+              Archiveren
+            </button>
+            <p class="small muted" style="margin:0">
+              {player.name} heeft al meegedaan aan een toernooi en kan daarom niet verwijderd worden (dan kloppen oude uitslagen niet
+              meer). Archiveren verbergt de speler uit de lijsten; terugzetten kan altijd.
+            </p>
+          </>
         )}
         <button type="button" class="btn ghost block" onClick={onClose}>
           Sluiten

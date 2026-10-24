@@ -16,9 +16,17 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
 - State = `buildState(events)` (`src/events/reducer.ts`), puur; alleen events met `reverted: false` tellen.
-- Undo/redo (`src/events/store.ts`, `EventStore`): log is altijd `[actief…, reverted…]`. Undo zet de laatste actieve op
-  reverted; redo de eerste reverted terug; een nieuwe dispatch verwijdert alle reverted events. Opslag via de
-  `Persistence`-interface (Dexie in de app, `MemoryPersistence` in tests). Schrijfacties lopen in een promise-queue.
+- Undo/redo (`src/events/store.ts`, `EventStore`) werkt **per toernooi** (gebruikerswens): `undoScope(body)` =
+  `tournamentId` of null. Spelers/kasten hebben geen undo (die verwijder/archiveer je handmatig). Undo(t) zet het
+  laatste actieve event van t op reverted; redo(t) de eerste reverted van t terug; een nieuwe dispatch verwijdert de
+  reverted events met hetzelfde bereik. `TournamentCreated` is niet te undo'en (wel verwijderen; daarna toast
+  "Herstellen"). Veilig omdat toernooi-events niet afhangen van latere speler/kast-events en binnen één toernooi de
+  stapelvolgorde behouden blijft. Opslag via de `Persistence`-interface (Dexie in de app, `MemoryPersistence` in
+  tests). Schrijfacties lopen in een promise-queue.
+- Undo-knop alleen in het toernooischerm en op het scorebord (`UndoRedo tournamentId=…`). Na elke uitslag een toast
+  met "Ongedaan maken" (`showToast(text, action)`).
+- Spelers/kasten die nooit in een toernooi zaten kun je echt verwijderen (`PlayerDeleted`/`MachineDeleted`, check via
+  `playerInUse`/`machineInUse` in de reducer); gebruikte spelers archiveren, gebruikte kasten op inactief.
 - Uitslag corrigeren = nieuw event `ResultCorrected` (dus zelf ook te undo'en). Events worden nooit gemuteerd.
 - Random uitkomsten (indeling) worden **in het event opgeslagen** (`firstRound`, `RoundGenerated.games`), zodat replay
   deterministisch is.
@@ -76,6 +84,8 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
       catalogus (OPDB of Pinball Map, nog kiezen) via GitHub Action + token in GitHub Secrets, offline doorzoekbaar.
       `Machine` krijgt dan o.a. `externalIds { opdb?, pinballMap? }` (nieuwe optionele velden in `MachineAdded/Updated`).
 - [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
+
+- [x] Undo alleen per toernooi + echt verwijderen van ongebruikte spelers/kasten (feedback na fase 2).
 
 ## Werkwijze
 - `npm test` en `npm run build` moeten groen zijn vóór een push. Voor UI-wijzigingen: `npx vite preview` +

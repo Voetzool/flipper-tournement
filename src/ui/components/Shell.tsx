@@ -22,7 +22,6 @@ export function Shell({ title, back, actions, children, nav = true }: Props) {
         )}
         <h1>{title}</h1>
         {actions}
-        <UndoRedo />
       </header>
       <main>
         {updateAvailable.value && (
@@ -40,14 +39,21 @@ export function Shell({ title, back, actions, children, nav = true }: Props) {
   );
 }
 
-export function UndoRedo() {
+/** Undo/redo voor één toernooi; alleen zichtbaar in het toernooi en op het scorebord. */
+export function UndoRedo({ tournamentId }: { tournamentId: string }) {
   return (
     <>
-      <button class="iconbtn undo" disabled={!canUndo.value} onClick={undo} aria-label="Ongedaan maken" title="Ongedaan maken">
+      <button
+        class="iconbtn undo"
+        disabled={!canUndo(tournamentId)}
+        onClick={() => undo(tournamentId)}
+        aria-label="Ongedaan maken"
+        title="Ongedaan maken"
+      >
         ↶
       </button>
-      {canRedo.value && (
-        <button class="iconbtn" onClick={redo} aria-label="Opnieuw" title="Opnieuw">
+      {canRedo(tournamentId) && (
+        <button class="iconbtn" onClick={() => redo(tournamentId)} aria-label="Opnieuw" title="Opnieuw">
           ↷
         </button>
       )}

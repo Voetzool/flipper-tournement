@@ -31,13 +31,19 @@ export async function markBackedUp(at = Date.now()) {
 
 // ---------- Meldingen ----------
 
-export const toast = signal<{ text: string; id: number } | null>(null);
+export interface ToastAction {
+  label: string;
+  run: () => void;
+}
+
+export const toast = signal<{ text: string; id: number; action?: ToastAction } | null>(null);
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
-export function showToast(text: string) {
-  toast.value = { text, id: Date.now() };
+/** Korte melding onderin; met een actieknop blijft hij wat langer staan. */
+export function showToast(text: string, action?: ToastAction) {
+  toast.value = { text, id: Date.now(), action };
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (toast.value = null), 2500);
+  toastTimer = setTimeout(() => (toast.value = null), action ? 5000 : 2500);
 }
 
 // ---------- Acties ----------
@@ -46,17 +52,23 @@ export function dispatch(body: EventBody) {
   return store.dispatch(body);
 }
 
-export const canUndo = computed(() => events.value.some((e) => !e.reverted));
-export const canRedo = computed(() => events.value.some((e) => e.reverted));
+// Undo/redo werkt per toernooi (zie EventStore). `events.value` lezen maakt het reactief.
+export function canUndo(tournamentId: string) {
+  return events.value && !!store.undoTarget(tournamentId);
+}
 
-export function undo() {
+export function canRedo(tournamentId: string) {
+  return events.value && !!store.redoTarget(tournamentId);
+}
+
+export function undo(tournamentId: string) {
   const before = state.value;
-  const e = store.undo();
+  const e = store.undo(tournamentId);
   if (e) showToast('Ongedaan: ' + describeEvent(e.body, before));
 }
 
-export function redo() {
-  const e = store.redo();
+export function redo(tournamentId: string) {
+  const e = store.redo(tournamentId);
   if (e) showToast('Opnieuw: ' + describeEvent(e.body, state.value));
 }
 
@@ -78,6 +90,8 @@ export function describeEvent(b: EventBody, s: AppState): string {
       return `speler ${b.name} toegevoegd`;
     case 'PlayerUpdated':
       return `naam gewijzigd in ${b.name}`;
+    case 'PlayerDeleted':
+      return `${playerName(s, b.playerId)} verwijderd`;
     case 'PlayerArchived':
       return `${playerName(s, b.playerId)} gearchiveerd`;
     case 'PlayerRestored':
@@ -86,6 +100,8 @@ export function describeEvent(b: EventBody, s: AppState): string {
       return `kast ${b.name} toegevoegd`;
     case 'MachineUpdated':
       return `kast hernoemd naar ${b.name}`;
+    case 'MachineDeleted':
+      return `${machineName(s, b.machineId)} definitief verwijderd`;
     case 'MachineRemoved':
       return `${machineName(s, b.machineId)} verwijderd`;
     case 'MachineRestored':

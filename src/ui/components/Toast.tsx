@@ -5,7 +5,18 @@ export function Toast() {
   if (!t) return null;
   return (
     <div class="toast" key={t.id} role="status">
-      {t.text}
+      <span>{t.text}</span>
+      {t.action && (
+        <button
+          class="toast-action"
+          onClick={() => {
+            toast.value = null;
+            t.action!.run();
+          }}
+        >
+          {t.action.label}
+        </button>
+      )}
     </div>
   );
 }

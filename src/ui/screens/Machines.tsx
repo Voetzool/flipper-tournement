@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { dispatch, showToast, state } from '../../app/state';
+import { machineInUse } from '../../events/reducer';
 import type { Machine } from '../../events/types';
 import { newId } from '../../lib/id';
 import { Shell } from '../components/Shell';
@@ -88,12 +89,22 @@ function MachineSheet({ machine, onClose }: { machine: Machine | null; onClose: 
             type="button"
             class="btn danger block"
             onClick={() => {
-              dispatch({ type: 'MachineRemoved', machineId: machine.id });
+              if (machineInUse(state.value, machine.id)) {
+                dispatch({ type: 'MachineRemoved', machineId: machine.id });
+              } else {
+                if (!confirm(`${machine.name} verwijderen?`)) return;
+                dispatch({ type: 'MachineDeleted', machineId: machine.id });
+              }
               onClose();
             }}
           >
             Verwijderen
           </button>
+        )}
+        {machine && machineInUse(state.value, machine.id) && (
+          <p class="small muted" style="margin:0">
+            Deze kast is al in een toernooi gebruikt. Na verwijderen blijft hij in oude uitslagen staan en kun je hem terugzetten.
+          </p>
         )}
         <button type="button" class="btn ghost block" onClick={onClose}>
           Sluiten
