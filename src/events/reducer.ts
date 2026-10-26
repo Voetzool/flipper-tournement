@@ -1,3 +1,4 @@
+import { clone } from '../lib/clone';
 import type { AppState, Game, GameDraft, StoredEvent, Tournament } from './types';
 
 export function emptyState(): AppState {
@@ -71,7 +72,7 @@ export function apply(state: AppState, e: StoredEvent): void {
         id: b.tournamentId,
         name: b.name,
         format: b.format,
-        settings: structuredClone(b.settings),
+        settings: clone(b.settings),
         playerIds: b.playerIds.slice(),
         machineIds: b.machineIds.slice(),
         rounds: b.firstRound.length ? [{ index: 0, games: b.firstRound.map(cloneGame) }] : [],

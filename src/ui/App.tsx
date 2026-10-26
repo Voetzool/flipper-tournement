@@ -46,7 +46,7 @@ function Screen() {
       return <NewTournamentScreen />;
     case 't':
       if (c === 'scorebord') return <ScoreboardScreen id={b} />;
-      return <TournamentScreen key={b} id={b} tab={c === 'stand' || c === 'kasten' || c === 'geschiedenis' ? c : 'ronde'} />;
+      return <TournamentScreen key={b} id={b} tab={c === 'ronde' || c === 'stand' || c === 'kasten' || c === 'geschiedenis' ? c : 'auto'} />;
     default:
       return <TournamentsScreen />;
   }

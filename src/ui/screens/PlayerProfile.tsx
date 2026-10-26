@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { locale, ordinal, tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { machineName, playerName, ratings, state } from '../../app/state';
@@ -39,7 +40,7 @@ export function PlayerProfileScreen({ id }: { id: string }) {
       back="spelers"
       actions={
         <button class="iconbtn" onClick={() => setEditing(true)} aria-label={tr('Bewerken')} title={tr('Bewerken')}>
-          ✎
+          <Icon name="edit" />
         </button>
       }
     >
@@ -76,12 +77,12 @@ export function PlayerProfileScreen({ id }: { id: string }) {
             <Tile v={`🏆 ${stats.tournamentWins}`} l={tr('toernooizeges · {n}× podium', { n: stats.podiums })} />
           </div>
 
-          <h2>{tr('Per kast')}</h2>
+          <h2>{tr('Per machine')}</h2>
           <div class="card">
             <table class="table">
               <thead>
                 <tr>
-                  <th>{tr('Kast')}</th>
+                  <th>{tr('Machine')}</th>
                   <th class="num">{tr('Potjes')}</th>
                   <th class="num">{tr('Winst')}</th>
                   <th class="num">{tr('Gem.')}</th>

@@ -1,3 +1,5 @@
+import { Icon } from '../components/Icon';
+import { clone } from '../../lib/clone';
 import { locale, tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { dispatch, state } from '../../app/state';
@@ -84,7 +86,7 @@ export function NewTournamentScreen() {
   };
 
   const setPoints = (size: number, pos: number, value: string) => {
-    const table = structuredClone(settings.pointsTable);
+    const table = clone(settings.pointsTable);
     table[size][pos] = Math.max(0, Math.min(99, parseInt(value, 10) || 0));
     setSettings({ ...settings, pointsTable: table });
   };
@@ -106,7 +108,7 @@ export function NewTournamentScreen() {
           ))}
         </div>
         <p class="small muted" style="margin:4px 0 0">
-          {h2h ? tr('1-tegen-1, iedereen één keer tegen iedereen.') : tr('Groepjes van 2–4 per kast, punten per plek, eerlijk ingedeeld.')}
+          {h2h ? tr('1-tegen-1, iedereen één keer tegen iedereen.') : tr('Groepjes van 2–4 per machine, punten per plek, eerlijk ingedeeld.')}
         </p>
 
         <h2>
@@ -133,10 +135,10 @@ export function NewTournamentScreen() {
           ))}
         </div>
 
-        <h2>{tr('Kasten ({n})', { n: selMachines.size })}</h2>
+        <h2>{tr('Machines ({n})', { n: selMachines.size })}</h2>
         {!machines.length && (
           <p class="muted">
-            {tr('Nog geen kasten.')} <a href="#/kasten">{tr('Voeg kasten toe')}</a> {tr('(mag ook zonder).')}
+            {tr('Nog geen machines.')} <a href="#/kasten">{tr('Voeg machines toe')}</a> {tr('(mag ook zonder).')}
           </p>
         )}
         <div class="chips">
@@ -166,16 +168,16 @@ export function NewTournamentScreen() {
             <span class="grow">{tr('Aantal rondes')}</span>
             <div class="stepper">
               <button class="iconbtn" onClick={() => setRounds(settings.rounds - 1)}>
-                −
+                <Icon name="remove" />
               </button>
               <span class="val">{settings.rounds}</span>
               <button class="iconbtn" onClick={() => setRounds(settings.rounds + 1)}>
-                +
+                <Icon name="add" />
               </button>
             </div>
           </div>
           <div class="field">
-            <label>{tr('Maximaal spelers per kast')}</label>
+            <label>{tr('Maximaal spelers per machine')}</label>
             <div class="seg">
               {([2, 3, 4] as const).map((n) => (
                 <button key={n} class={settings.maxGroupSize === n ? 'on' : ''} onClick={() => setSettings({ ...settings, maxGroupSize: n })}>
@@ -188,7 +190,7 @@ export function NewTournamentScreen() {
             <p class="small muted" style="margin:0">
               {sizes.length === 1 ? tr('Per ronde: 1 groep ({groepen} spelers)', { groepen: sizes.join(' + ') }) : tr('Per ronde: {n} groepen ({groepen} spelers)', { n: sizes.length, groepen: sizes.join(' + ') })}
               {waiting > 0 && tr(', 1 speler wacht (0 punten)')}.
-              {tooFewMachines && ' ' + tr('Er zijn minder kasten dan groepen; sommige groepen wachten op een vrije kast.')}
+              {tooFewMachines && ' ' + tr('Er zijn minder machines dan groepen; sommige groepen wachten op een vrije machine.')}
             </p>
           )}
           {n >= 2 && fair && (
@@ -253,7 +255,7 @@ export function NewTournamentScreen() {
                 </div>
               ))}
             <div class="grid2">
-              <button class="btn" onClick={() => setSettings({ ...settings, pointsTable: structuredClone(DEFAULT_POINTS) })}>
+              <button class="btn" onClick={() => setSettings({ ...settings, pointsTable: clone(DEFAULT_POINTS) })}>
                 {tr('Standaard')}
               </button>
               <button class="btn primary" onClick={() => setEditPoints(false)}>

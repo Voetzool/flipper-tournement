@@ -68,7 +68,7 @@ export function MoreScreen() {
 
   const s = state.value;
   return (
-    <Shell title={tr('Meer')}>
+    <Shell title={tr('Instellingen')}>
       <BackupBanner />
       <h2>Taal / Language</h2>
       <div class="card stack">
@@ -121,16 +121,16 @@ export function MoreScreen() {
         </label>
       </div>
 
-      <h2>{tr('Kastencatalogus (OPDB)')}</h2>
+      <h2>{tr('Machinecatalogus (OPDB)')}</h2>
       <div class="card stack">
         <div>
           {catalog.value
-            ? tr('{n} kasten offline beschikbaar · versie van {datum}', { n: catalog.value.e.length, datum: new Date(catalog.value.generatedAt).toLocaleDateString(locale()) })
+            ? tr('{n} machines offline beschikbaar · versie van {datum}', { n: catalog.value.e.length, datum: new Date(catalog.value.generatedAt).toLocaleDateString(locale()) })
             : tr('Nog niet gedownload.')}
         </div>
         {remote && remote.version !== catalogVersion.value && (
           <div class="small muted">
-            {tr(catalog.value ? 'Er is een nieuwere versie: {n} kasten, ±{kb} KB downloaden.' : 'Beschikbaar: {n} kasten, ±{kb} KB downloaden.', { n: remote.count, kb: Math.max(1, Math.round(remote.gzipBytes / 1024)) })}
+            {tr(catalog.value ? 'Er is een nieuwere versie: {n} machines, ±{kb} KB downloaden.' : 'Beschikbaar: {n} machines, ±{kb} KB downloaden.', { n: remote.count, kb: Math.max(1, Math.round(remote.gzipBytes / 1024)) })}
           </div>
         )}
         {remote === null && <div class="small muted">{tr('Server niet bereikbaar (geen internet?).')}</div>}
@@ -145,14 +145,14 @@ export function MoreScreen() {
           {catalogStatus.value === 'loading' ? tr('Downloaden…') : catalog.value ? '⟳ ' + tr('Catalogus bijwerken') : '⬇ ' + tr('Catalogus downloaden')}
         </button>
         <p class="small muted" style="margin:0">
-          {tr('Kastgegevens en afbeeldingen: OPDB (opdb.org), via Match Play. De catalogus wordt wekelijks ververst.')}
+          {tr('Machinegegevens en afbeeldingen: OPDB (opdb.org), via Match Play. De catalogus wordt wekelijks ververst.')}
         </p>
       </div>
 
       <h2>{tr('Opslag')}</h2>
       <div class="card stack">
         <div>
-          {tr('{spelers} spelers · {kasten} kasten · {toernooien} toernooien · {acties} acties', { spelers: s.players.size, kasten: s.machines.size, toernooien: s.tournaments.size, acties: events.value.length })}
+          {tr('{spelers} spelers · {kasten} machines · {toernooien} toernooien · {acties} acties', { spelers: s.players.size, kasten: s.machines.size, toernooien: s.tournaments.size, acties: events.value.length })}
         </div>
         <div class="small muted">{usage}</div>
         <div class="row">

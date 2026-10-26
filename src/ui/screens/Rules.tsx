@@ -21,7 +21,7 @@ export function RulesScreen({ id }: { id: string }) {
   if (!m) {
     return (
       <Shell title={tr('Spelregels')} back="kasten">
-        <p class="empty">{tr('Deze kast bestaat niet (meer).')}</p>
+        <p class="empty">{tr('Deze machine bestaat niet (meer).')}</p>
       </Shell>
     );
   }
@@ -98,9 +98,9 @@ export function RulesScreen({ id }: { id: string }) {
               <p style="margin:0">
                 {canFetch
                   ? navigator.onLine
-                    ? tr('Er zijn (nog) geen spelregels gevonden voor deze kast.')
+                    ? tr('Er zijn (nog) geen spelregels gevonden voor deze machine.')
                     : tr('Nog niet opgehaald. Zodra er internet is, worden de spelregels automatisch opgehaald.')
-                  : tr('Voor deze kast zijn geen online spelregels bekend. Voeg de kast toe via de catalogus, of zet de regels in je eigen notities.')}
+                  : tr('Voor deze machine zijn geen online spelregels bekend. Voeg de machine toe via de catalogus, of zet de regels in je eigen notities.')}
               </p>
               {canFetch && (
                 <button class="btn cyan block" disabled={!navigator.onLine} onClick={() => ensureRules(m.id, true)}>

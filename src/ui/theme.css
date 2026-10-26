@@ -86,6 +86,24 @@ body {
   line-height: 1.35;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior-y: none;
+  /* App-gevoel: tikken op tekst geeft geen tekstcursor of selectie (behalve in velden en leesteksten). */
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+textarea,
+.rules,
+.notes-text {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+input,
+textarea {
+  caret-color: auto;
 }
 
 button,
@@ -103,6 +121,7 @@ a {
 /* ---------- Layout ---------- */
 
 .app {
+  min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -167,18 +186,45 @@ main {
   min-height: 64px;
   color: var(--muted);
   text-decoration: none;
-  font-size: 12px;
+  font-size: min(12px, 3.1vw);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .bottomnav a .ico {
-  font-size: 24px;
-  line-height: 1;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 30px;
+  border-radius: 15px;
+  transition: background 0.15s;
+}
+
+.bottomnav a .icon {
+  width: 24px;
+  height: 24px;
 }
 
 .bottomnav a.active {
   color: var(--cyan);
-  text-shadow: 0 0 12px rgba(34, 228, 255, 0.6);
+}
+
+.bottomnav a.active .ico {
+  background: var(--card-2);
+}
+
+/* Material-iconen (inline SVG, kleur volgt de tekst) */
+.icon {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  flex: none;
+  display: block;
+}
+
+.iconbtn .icon {
+  width: 24px;
+  height: 24px;
 }
 
 /* ---------- Knoppen ---------- */
@@ -647,6 +693,7 @@ h2:first-child {
 .sheet {
   width: 100%;
   max-width: 640px;
+  max-height: 92vh;
   max-height: 92dvh;
   overflow-y: auto;
   background: var(--bg-2);
@@ -705,6 +752,37 @@ h2:first-child {
   background: var(--pink);
   color: #fff;
   box-shadow: 0 0 14px rgba(255, 46, 147, 0.6);
+}
+
+/* Winnaar: groen met vinkje; de andere geplaatste spelers neutraal met hun plek. */
+.order-btn.set:not(.win) {
+  border-color: var(--muted);
+}
+
+.order-btn.set:not(.win) .pos {
+  background: var(--line);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.order-btn.win {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.order-btn.win .pos {
+  background: var(--green);
+  color: var(--bg);
+  box-shadow: none;
+}
+
+.order-btn.win .pos .icon {
+  width: 30px;
+  height: 30px;
+}
+
+.order-btn.lose {
+  opacity: 0.6;
 }
 
 .order-btn .pts {
@@ -778,11 +856,21 @@ h2:first-child {
   background: linear-gradient(135deg, var(--pink), #b5179e);
   box-shadow: 0 0 22px rgba(255, 46, 147, 0.6);
   cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #fff;
+}
+
+.fab .icon {
+  width: 36px;
+  height: 36px;
 }
 
 /* ---------- Scorebord ---------- */
 
 .scoreboard {
+  min-height: 100vh;
   min-height: 100dvh;
   padding: calc(var(--safe-top) + 16px) 4vw 24px;
   background: radial-gradient(ellipse at top, var(--sb-glow) 0%, var(--bg) 60%);

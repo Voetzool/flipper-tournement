@@ -11,7 +11,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
 - Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
 - `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
-- Bundle-doel: < ~60 KB gzip JS (nu ~76 KB, waarvan Dexie het grootste deel; Engels woordenboek ~6 KB).
+- Bundle-doel: < ~60 KB gzip JS (nu ~81 KB, waarvan Dexie het grootste deel; Engels woordenboek ~6 KB, iconen ~4 KB).
 
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
@@ -150,6 +150,21 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - Bewust niet vertaald: spelregels zelf, namen van spelers/kasten/toernooien (ook opgeslagen "Losse pot · …"-namen),
   eigen notities, het PWA-manifest.
 
+## Oudere apparaten & iconen (feedbackronde na stap 4)
+- Moet werken op **iOS 15** (iPad Air 2): `build.target ['es2020','safari14']` + `cssTarget`. Geen `structuredClone`
+  (gebruik `clone()` uit `src/lib/clone.ts`), `.at()`, `Object.hasOwn`, `findLast`, `toSorted` — `tests/compat.test.ts`
+  bewaakt dit. `dvh` altijd met `vh`-fallback ervoor. Vangnet in `main.tsx`: leeg scherm na een fout → foutmelding.
+- Iconen: Material Symbols Rounded (Apache 2.0) als inline SVG in `src/ui/components/Icon.tsx` (`<Icon name fill?>`),
+  paden gekopieerd uit npm `@material-symbols/svg-400` (geen runtime-afhankelijkheid). Onderbalk met M3-"pill" bij
+  de actieve tab; topbar-knoppen en plusknop (`.fab`, grid-gecentreerd) gebruiken ook `Icon`.
+- Geen tekstcursor/selectie bij tikken: `user-select: none` + `caret-color: transparent` op `body`; velden, spelregels
+  en notities blijven selecteerbaar.
+- Teksten: in het Nederlands heet een kast overal **"machine"** (gebruikerskeuze; interne namen/routes blijven
+  `kast(en)`), tab "Meer" heet **"Instellingen"**, knop "Ronde {n}" (geen "indelen").
+- Afronden → naar `#/t/:id/stand` met winnaarsbanner bovenaan; `#/t/:id` zonder tab opent een afgerond toernooi op
+  Stand (`TabRoute 'auto'`), de tab Ronde linkt naar `#/t/:id/ronde`.
+- Uitslag-sheet: plek 1 groen met vinkje (`.order-btn.win`), overige plekken neutraal; bij teams verliezend team vaag.
+
 ## Schermen (`src/ui/screens/`)
 Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Kasten/Uitslagen, uitslag-sheet,
 menu: deelnemers aan/afmelden, afronden/heropenen, verwijderen; "ronde opnieuw indelen" zolang er geen uitslag is) ·
@@ -180,6 +195,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 
 - [x] Vooruit spelen in de volgende ronde + tab "Spelen".
 - [x] Losse ranked pot (iedereen voor zich of teams, kast zelf of willekeurig uit selectie).
+- [x] Feedbackronde: iOS 15-fix, Material-iconen, geen tekstcursor, afronden → Stand, winnaar groen, tabnamen.
 - [x] Engels als tweede taal (stap 4 van 4).
 - [x] Nieuwe spelvorm Round Robin 1-tegen-1 met tie-breaker (stap 3 van 4).
 - [x] Speelveldfoto bij spelregels (stap 2 van 4).

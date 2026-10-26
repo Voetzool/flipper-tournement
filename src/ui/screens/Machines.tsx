@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { dispatch, showToast, state } from '../../app/state';
@@ -23,8 +24,8 @@ export function MachinesScreen() {
   const removed = all.filter((m) => !m.active);
 
   return (
-    <Shell title={tr('Kasten')}>
-      {!active.length && <p class="empty">{tr('Nog geen kasten. Tik op + om een flipperkast toe te voegen.')}</p>}
+    <Shell title={tr('Machines')}>
+      {!active.length && <p class="empty">{tr('Nog geen machines. Tik op + om een flipperkast toe te voegen.')}</p>}
       <ul class="list">
         {active.map((m) => (
           <MachineItem key={m.id} m={m} />
@@ -40,8 +41,8 @@ export function MachinesScreen() {
           </ul>
         </>
       )}
-      <button class="fab" onClick={() => setAdding(true)} aria-label={tr('Kast toevoegen')}>
-        +
+      <button class="fab" onClick={() => setAdding(true)} aria-label={tr('Machine toevoegen')}>
+        <Icon name="add" />
       </button>
       {adding && <AddMachineSheet onClose={() => setAdding(false)} />}
     </Shell>
@@ -109,7 +110,7 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet onClose={onClose}>
       <div class="stack">
-        <h3>{tr('Kast toevoegen')}</h3>
+        <h3>{tr('Machine toevoegen')}</h3>
         <div class="seg">
           <button class={mode === 'zoeken' ? 'on' : ''} onClick={() => setMode('zoeken')}>
             🔍 {tr('Zoeken')}
@@ -135,7 +136,7 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
             ) : (
               <div class="banner">
                 <span class="grow">
-                  {tr(catalogError.value || 'De kastencatalogus is nog niet gedownload.')} {tr('Je kunt de kast ook handmatig toevoegen.')}
+                  {tr(catalogError.value || 'De machinecatalogus is nog niet gedownload.')} {tr('Je kunt de machine ook handmatig toevoegen.')}
                 </span>
                 <button class="btn" onClick={() => updateCatalog(true)}>
                   {tr('Opnieuw')}
@@ -160,8 +161,8 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
                 </li>
               ))}
             </ul>
-            {index && query.trim() && !results.length && <p class="muted">{tr('Niets gevonden. Voeg de kast handmatig toe.')}</p>}
-            {index && <p class="small muted">{tr('Kastgegevens: OPDB (opdb.org), via Match Play.')}</p>}
+            {index && query.trim() && !results.length && <p class="muted">{tr('Niets gevonden. Voeg de machine handmatig toe.')}</p>}
+            {index && <p class="small muted">{tr('Machinegegevens: OPDB (opdb.org), via Match Play.')}</p>}
           </>
         ) : (
           <MachineForm

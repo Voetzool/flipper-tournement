@@ -80,8 +80,8 @@ export function playerName(s: AppState, id: string) {
 }
 
 export function machineName(s: AppState, id: string | null) {
-  if (!id) return tr('Vrije kast');
-  return s.machines.get(id)?.name ?? tr('Onbekende kast');
+  if (!id) return tr('Vrije machine');
+  return s.machines.get(id)?.name ?? tr('Onbekende machine');
 }
 
 export function describeEvent(b: EventBody, s: AppState): string {
@@ -101,9 +101,9 @@ export function describeEvent(b: EventBody, s: AppState): string {
     case 'PlayerRestored':
       return tr('{naam} teruggezet', { naam: p });
     case 'MachineAdded':
-      return tr('kast {naam} toegevoegd', { naam: b.name });
+      return tr('machine {naam} toegevoegd', { naam: b.name });
     case 'MachineUpdated':
-      return b.name ? tr('kast hernoemd naar {naam}', { naam: b.name }) : tr('{naam} bijgewerkt', { naam: m });
+      return b.name ? tr('machine hernoemd naar {naam}', { naam: b.name }) : tr('{naam} bijgewerkt', { naam: m });
     case 'MachineDeleted':
       return tr('{naam} definitief verwijderd', { naam: m });
     case 'MachineRemoved':
@@ -123,7 +123,7 @@ export function describeEvent(b: EventBody, s: AppState): string {
     case 'ResultCorrected':
       return tr('correctie ({spelers})', { spelers: order });
     case 'GameMachineChanged':
-      return tr('kast gewisseld naar {naam}', { naam: m });
+      return tr('machine gewisseld naar {naam}', { naam: m });
     case 'TournamentFinished':
       return tr('{naam} afgerond', { naam: t });
     case 'TournamentReopened':

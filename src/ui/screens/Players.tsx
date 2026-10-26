@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { dispatch, ratings, showToast, state } from '../../app/state';
@@ -51,7 +52,7 @@ export function PlayersScreen() {
         </>
       )}
       <button class="fab" onClick={() => setEditing('new')} aria-label={tr('Speler toevoegen')}>
-        +
+        <Icon name="add" />
       </button>
       {editing && <PlayerSheet player={null} onClose={() => setEditing(null)} />}
     </Shell>

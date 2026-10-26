@@ -8,6 +8,8 @@ const base = '/flipper-tournement/';
 
 export default defineConfig({
   base,
+  // Ook oudere iPads (iOS 15, bijv. iPad Air 2) moeten de app kunnen draaien.
+  build: { target: ['es2020', 'safari14'], cssTarget: ['safari14'] },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev'),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),

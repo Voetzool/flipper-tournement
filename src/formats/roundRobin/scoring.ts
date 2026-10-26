@@ -1,3 +1,4 @@
+import { clone } from '../../lib/clone';
 import type { Id, RoundRobinSettings, Tournament } from '../../events/types';
 
 export const DEFAULT_POINTS: Record<number, number[]> = {
@@ -7,7 +8,7 @@ export const DEFAULT_POINTS: Record<number, number[]> = {
 };
 
 export function defaultSettings(): RoundRobinSettings {
-  return { rounds: 5, maxGroupSize: 4, pointsTable: structuredClone(DEFAULT_POINTS) };
+  return { rounds: 5, maxGroupSize: 4, pointsTable: clone(DEFAULT_POINTS) };
 }
 
 /** Punten voor plek `position` (0 = eerste) in een groep van `size` spelers. */

@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { tr } from '../../i18n';
 import { useState } from 'preact/hooks';
 import { dispatch, playerName, state } from '../../app/state';
@@ -21,8 +22,8 @@ export function MachineDetailScreen({ id }: { id: string }) {
 
   if (!m) {
     return (
-      <Shell title={tr('Kast')} back="kasten">
-        <p class="empty">{tr('Deze kast bestaat niet (meer).')}</p>
+      <Shell title={tr('Machine')} back="kasten">
+        <p class="empty">{tr('Deze machine bestaat niet (meer).')}</p>
       </Shell>
     );
   }
@@ -36,13 +37,13 @@ export function MachineDetailScreen({ id }: { id: string }) {
       back="kasten"
       actions={
         <button class="iconbtn" onClick={() => setEditing(true)} aria-label={tr('Bewerken')} title={tr('Bewerken')}>
-          ✎
+          <Icon name="edit" />
         </button>
       }
     >
       {!m.active && (
         <div class="banner">
-          <span class="grow">{tr('Deze kast is verwijderd.')}</span>
+          <span class="grow">{tr('Deze machine is verwijderd.')}</span>
           <button class="btn" onClick={() => dispatch({ type: 'MachineRestored', machineId: m.id })}>
             {tr('Terugzetten')}
           </button>
@@ -81,7 +82,7 @@ export function MachineDetailScreen({ id }: { id: string }) {
 
       {stats.games > 0 && (
         <>
-          <h2>{tr('Op deze kast')}</h2>
+          <h2>{tr('Op deze machine')}</h2>
           <div class="tiles">
             <div class="tile">
               <div class="v">{stats.games}</div>
@@ -153,7 +154,7 @@ function EditMachineSheet({ m, onClose }: { m: Machine; onClose: () => void }) {
   return (
     <Sheet onClose={onClose}>
       <div class="stack">
-        <h3>{tr('Kast bewerken')}</h3>
+        <h3>{tr('Machine bewerken')}</h3>
         <MachineForm
           initial={m}
           onSave={(v) => {
@@ -189,7 +190,7 @@ function EditMachineSheet({ m, onClose }: { m: Machine; onClose: () => void }) {
         )}
         {m.active && inUse && (
           <p class="small muted" style="margin:0">
-            {tr('Deze kast is al in een toernooi gebruikt. Na verwijderen blijft hij in oude uitslagen staan en kun je hem terugzetten.')}
+            {tr('Deze machine is al in een toernooi gebruikt. Na verwijderen blijft hij in oude uitslagen staan en kun je hem terugzetten.')}
           </p>
         )}
         <button type="button" class="btn ghost block" onClick={onClose}>

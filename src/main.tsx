@@ -7,6 +7,24 @@ import { syncMissingRules, syncPlayfields } from './rules/rules';
 import { App } from './ui/App';
 import './ui/theme.css';
 
+// Vangnet: blijft het scherm leeg door een fout, toon dan wat er misging (i.p.v. een wit scherm).
+function showCrash(message: string) {
+  setTimeout(() => {
+    const app = document.getElementById('app')!;
+    if (app.textContent?.trim()) return;
+    const box = document.createElement('div');
+    box.className = 'empty';
+    box.textContent = 'Er ging iets mis / Something went wrong: ' + message;
+    const btn = document.createElement('button');
+    btn.className = 'btn primary';
+    btn.textContent = '⟳';
+    btn.onclick = () => location.reload();
+    box.append(document.createElement('br'), btn);
+    app.replaceChildren(box);
+  }, 50);
+}
+addEventListener('error', (e) => showCrash(e.message));
+
 initSettings();
 render(<App />, document.getElementById('app')!);
 

@@ -1,3 +1,4 @@
+import { Icon } from './Icon';
 import { tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 
@@ -34,7 +35,7 @@ export function ImageViewer({ src, fallback, alt, onClose }: { src: string; fall
           </button>
         ))}
         <button class="iconbtn" onClick={onClose} aria-label={tr('Sluiten')}>
-          ✕
+          <Icon name="close" />
         </button>
       </div>
     </div>

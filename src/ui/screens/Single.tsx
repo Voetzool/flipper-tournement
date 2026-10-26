@@ -114,7 +114,7 @@ export function NewSingleScreen({ from }: { from?: string }) {
             </button>
           ))}
         </div>
-        {mode === 'ffa' && sel.length > 4 && <p class="small" style="color:var(--yellow);margin:0">{tr('Let op: de meeste kasten hebben maximaal 4 spelers.')}</p>}
+        {mode === 'ffa' && sel.length > 4 && <p class="small" style="color:var(--yellow);margin:0">{tr('Let op: de meeste machines hebben maximaal 4 spelers.')}</p>}
 
         {mode === 'teams' && sel.length > 0 && (
           <div class="card stack">
@@ -143,7 +143,7 @@ export function NewSingleScreen({ from }: { from?: string }) {
           </div>
         )}
 
-        <h2>{tr('Kast')}</h2>
+        <h2>{tr('Machine')}</h2>
         <div class="seg">
           <button class={machineMode === 'choose' ? 'on' : ''} onClick={() => setMachineMode('choose')}>
             {tr('Zelf kiezen')}
@@ -154,7 +154,7 @@ export function NewSingleScreen({ from }: { from?: string }) {
         </div>
         {!machines.length && (
           <p class="muted">
-            {tr('Nog geen kasten.')} <a href="#/kasten">{tr('Voeg kasten toe')}</a> {tr('(mag ook zonder).')}
+            {tr('Nog geen machines.')} <a href="#/kasten">{tr('Voeg machines toe')}</a> {tr('(mag ook zonder).')}
           </p>
         )}
         {machineMode === 'choose' ? (
@@ -168,7 +168,7 @@ export function NewSingleScreen({ from }: { from?: string }) {
         ) : (
           <div class="card stack">
             <div class="row">
-              <span class="grow small muted">{tr('Kies uit welke kasten geloot wordt ({n}):', { n: poolList.length })}</span>
+              <span class="grow small muted">{tr('Kies uit welke machines geloot wordt ({n}):', { n: poolList.length })}</span>
               <button class="btn ghost small" onClick={() => setPool(poolList.length === machines.length ? new Set() : new Set(machines.map((m) => m.id)))}>
                 {poolList.length === machines.length ? tr('Geen') : tr('Alle')}
               </button>
@@ -190,7 +190,7 @@ export function NewSingleScreen({ from }: { from?: string }) {
               ))}
             </div>
             <button class="btn cyan block" disabled={!poolList.length} onClick={roll}>
-              🎲 {picked ? tr('Opnieuw loten') : tr('Kies een kast')}
+              🎲 {picked ? tr('Opnieuw loten') : tr('Kies een machine')}
             </button>
             {picked && (
               <div class="picked">

@@ -48,7 +48,7 @@ export function TournamentsScreen() {
           <SingleItem key={t.id} t={t} />
         ))}
       </ul>
-      {!all.length && <p class="empty">{tr('Nog geen toernooien of potjes. Voeg eerst spelers (en kasten) toe en start een toernooi of een losse pot.')}</p>}
+      {!all.length && <p class="empty">{tr('Nog geen toernooien of potjes. Voeg eerst spelers (en machines) toe en start een toernooi of een losse pot.')}</p>}
     </Shell>
   );
 }

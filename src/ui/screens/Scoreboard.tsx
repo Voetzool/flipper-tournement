@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { tr } from '../../i18n';
 import { useEffect } from 'preact/hooks';
 import { machineName, playerName, state } from '../../app/state';
@@ -34,12 +35,12 @@ export function ScoreboardScreen({ id }: { id: string }) {
     <div class="scoreboard">
       <header>
         <a class="iconbtn" href={`#/t/${t.id}`} aria-label={tr('Terug')}>
-          ‹
+          <Icon name="arrow_back_ios_new" />
         </a>
         <h1>{t.name}</h1>
         <UndoRedo tournamentId={t.id} />
         <button class="iconbtn" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})} aria-label={tr('Volledig scherm')}>
-          ⛶
+          <Icon name="fullscreen" />
         </button>
       </header>
       <div class="sub" style="margin-bottom:2vh">
