@@ -215,11 +215,29 @@ main {
 
 /* Material-iconen (inline SVG, kleur volgt de tekst) */
 .icon {
-  width: 1em;
-  height: 1em;
+  width: 1.25em;
+  height: 1.25em;
   fill: currentColor;
   flex: none;
-  display: block;
+  display: inline-block;
+  vertical-align: -0.28em;
+}
+
+.btn .icon {
+  width: 1.3em;
+  height: 1.3em;
+}
+
+.error-details {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+  background: var(--card-2);
+  padding: 10px;
+  border-radius: 10px;
+  margin: 0;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .iconbtn .icon {
@@ -335,6 +353,11 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.grid2 .btn {
+  white-space: nowrap;
+  padding: 0 12px;
 }
 
 /* ---------- Kaarten & lijsten ---------- */
@@ -475,6 +498,10 @@ h2:first-child {
 
 .seg button {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 48px;
   border-radius: 12px;
   border: 2px solid var(--line);

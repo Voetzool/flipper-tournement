@@ -24,7 +24,7 @@ export function PlayersScreen() {
           <li key={p.id} class="list-item card tap" onClick={() => go('speler/' + p.id)}>
             <span class="name">{p.name}</span>
             {ratings.value.has(p.id) && <span class="muted">{Math.round(ratings.value.get(p.id)!.rating)}</span>}
-            <span class="muted">›</span>
+            <span class="muted"><Icon name="chevron_right" /></span>
           </li>
         ))}
       </ul>
@@ -32,7 +32,7 @@ export function PlayersScreen() {
         <>
           <h2>
             <button class="btn ghost" onClick={() => setShowArchived(!showArchived)}>
-              {tr('Gearchiveerd ({n})', { n: archived.length })} {showArchived ? '▲' : '▼'}
+              {tr('Gearchiveerd ({n})', { n: archived.length })} {showArchived ? <Icon name="arrow_drop_up" /> : <Icon name="arrow_drop_down" />}
             </button>
           </h2>
           {showArchived && (

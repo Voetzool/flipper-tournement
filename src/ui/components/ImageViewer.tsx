@@ -31,7 +31,7 @@ export function ImageViewer({ src, fallback, alt, onClose }: { src: string; fall
       <div class="viewer-bar">
         {[1, 2, 3].map((z) => (
           <button key={z} class={'iconbtn' + (zoom === z ? ' on' : '')} onClick={() => setZoom(z)} aria-label={`Zoom ${z}×`}>
-            {z === 1 ? '⤢' : z + '×'}
+            {z === 1 ? <Icon name="zoom_in" /> : z + '×'}
           </button>
         ))}
         <button class="iconbtn" onClick={onClose} aria-label={tr('Sluiten')}>

@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
+import legacy from '@vitejs/plugin-legacy';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // GitHub Pages serveert de app op /<repo-naam>/
@@ -8,7 +9,7 @@ const base = '/flipper-tournement/';
 
 export default defineConfig({
   base,
-  // Ook oudere iPads (iOS 15, bijv. iPad Air 2) moeten de app kunnen draaien.
+  // Ook oudere iPads (iOS 14/15, bijv. iPad Air 2) moeten de app kunnen draaien.
   build: { target: ['es2020', 'safari14'], cssTarget: ['safari14'] },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev'),
@@ -16,6 +17,8 @@ export default defineConfig({
   },
   plugins: [
     preact(),
+    // Alleen polyfills (geen aparte legacy-bundel) voor functies die oudere Safari mist.
+    legacy({ modernPolyfills: true, renderLegacyChunks: false, modernTargets: ['safari >= 14', 'ios >= 14', 'chrome >= 90', 'firefox >= 90'] }),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['icons/*.png', 'icons/*.svg'],

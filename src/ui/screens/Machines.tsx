@@ -57,7 +57,7 @@ function MachineItem({ m }: { m: Machine }) {
         {m.name}
         {machineSubtitle(m) && <div class="small muted">{machineSubtitle(m)}</div>}
       </div>
-      <span class="muted">›</span>
+      <span class="muted"><Icon name="chevron_right" /></span>
     </li>
   );
 }
@@ -113,10 +113,10 @@ function AddMachineSheet({ onClose }: { onClose: () => void }) {
         <h3>{tr('Machine toevoegen')}</h3>
         <div class="seg">
           <button class={mode === 'zoeken' ? 'on' : ''} onClick={() => setMode('zoeken')}>
-            🔍 {tr('Zoeken')}
+            <Icon name="search" /> {tr('Zoeken')}
           </button>
           <button class={mode === 'handmatig' ? 'on' : ''} onClick={() => setMode('handmatig')}>
-            ✎ {tr('Handmatig')}
+            <Icon name="edit" /> {tr('Handmatig')}
           </button>
         </div>
         {mode === 'zoeken' ? (

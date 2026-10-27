@@ -17,13 +17,14 @@ function showCrash(message: string) {
     box.textContent = 'Er ging iets mis / Something went wrong: ' + message;
     const btn = document.createElement('button');
     btn.className = 'btn primary';
-    btn.textContent = '⟳';
+    btn.textContent = 'Opnieuw laden / Reload';
     btn.onclick = () => location.reload();
     box.append(document.createElement('br'), btn);
     app.replaceChildren(box);
   }, 50);
 }
 addEventListener('error', (e) => showCrash(e.message));
+addEventListener('unhandledrejection', (e) => showCrash(String((e.reason as Error)?.message ?? e.reason)));
 
 initSettings();
 render(<App />, document.getElementById('app')!);

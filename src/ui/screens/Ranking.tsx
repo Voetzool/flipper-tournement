@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { tr } from '../../i18n';
 import { go } from '../../app/router';
 import { playerName, ratings, state } from '../../app/state';
@@ -7,7 +8,8 @@ import { Shell } from '../components/Shell';
 export function Delta({ value }: { value: number }) {
   const v = Math.round(value);
   if (!v) return <span class="muted">±0</span>;
-  return <span class={v > 0 ? 'delta-up' : 'delta-down'}>{v > 0 ? `▲ +${v}` : `▼ ${v}`}</span>;
+  return <span class={v > 0 ? 'delta-up' : 'delta-down'}>{v > 0 ? <Icon name="arrow_drop_up" /> : <Icon name="arrow_drop_down" />}
+      {v > 0 ? `+${v}` : v}</span>;
 }
 
 export function RankingScreen() {

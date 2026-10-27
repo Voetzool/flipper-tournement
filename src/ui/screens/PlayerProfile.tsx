@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { Icon } from '../components/Icon';
 import { locale, ordinal, tr } from '../../i18n';
 import { useState } from 'preact/hooks';
@@ -74,7 +75,7 @@ export function PlayerProfileScreen({ id }: { id: string }) {
             <Tile v={stats.avgPosition.toFixed(2)} l={tr('gem. plek')} />
             <Tile v={pct(stats.beatenPct)} l={tr('tegenstanders verslagen')} />
             <Tile v={stats.tournaments} l={tr('toernooien')} />
-            <Tile v={`🏆 ${stats.tournamentWins}`} l={tr('toernooizeges · {n}× podium', { n: stats.podiums })} />
+            <Tile v={<><Icon name="trophy" /> {stats.tournamentWins}</>} l={tr('toernooizeges · {n}× podium', { n: stats.podiums })} />
           </div>
 
           <h2>{tr('Per machine')}</h2>
@@ -159,7 +160,7 @@ export function PlayerProfileScreen({ id }: { id: string }) {
   );
 }
 
-function Tile({ v, l }: { v: string | number; l: string }) {
+function Tile({ v, l }: { v: ComponentChildren; l: string }) {
   return (
     <div class="tile">
       <div class="v">{v}</div>

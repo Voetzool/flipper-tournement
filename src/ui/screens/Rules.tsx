@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { locale, tr } from '../../i18n';
 import { useMemo, useState } from 'preact/hooks';
 import { state } from '../../app/state';
@@ -35,7 +36,7 @@ export function RulesScreen({ id }: { id: string }) {
       {m.playfieldMedium && !pfFailed && (
         <button class="playfield" onClick={() => setViewer(true)} aria-label={tr('Speelveld vergroten')}>
           <img src={m.playfieldMedium} alt={tr('Speelveld {naam}', { naam: m.name })} onError={() => setPfFailed(true)} />
-          <span class="playfield-hint">🔍 {tr('Tik om te vergroten')}</span>
+          <span class="playfield-hint"><Icon name="zoom_in" /> {tr('Tik om te vergroten')}</span>
         </button>
       )}
 
@@ -85,7 +86,7 @@ export function RulesScreen({ id }: { id: string }) {
               </a>
             </div>
             <button class="btn block" disabled={loading || !navigator.onLine} onClick={() => ensureRules(m.id, true)}>
-              {loading ? tr('Bezig…') : '⟳ ' + tr('Opnieuw ophalen')}
+              {loading ? tr('Bezig…') : <><Icon name="refresh" /> {tr('Opnieuw ophalen')}</>}
             </button>
           </div>
         </>
@@ -110,7 +111,7 @@ export function RulesScreen({ id }: { id: string }) {
             </>
           )}
           <a class="btn ghost block" href={'#/kast/' + m.id}>
-            ✎ {tr('Eigen notities schrijven')}
+            <Icon name="edit" /> {tr('Eigen notities schrijven')}
           </a>
         </div>
       )}
@@ -125,7 +126,7 @@ export function RulesScreen({ id }: { id: string }) {
 
       {m.playfieldMedium && !pfFailed && (
         <button class="playfield-fab" onClick={() => setViewer(true)} aria-label={tr('Speelveld bekijken')}>
-          🗺️ {tr('Speelveld')}
+          <Icon name="map" /> {tr('Speelveld')}
         </button>
       )}
       {viewer && m.playfieldMedium && (

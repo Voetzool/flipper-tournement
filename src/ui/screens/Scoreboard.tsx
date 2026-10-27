@@ -47,7 +47,7 @@ export function ScoreboardScreen({ id }: { id: string }) {
         {t.status === 'finished'
           ? tr('Eindstand')
           : isTiebreakRound(round)
-            ? '⚔️ ' + tr('Tie-breaker')
+            ? <><Icon name="swords" /> {tr('Tie-breaker')}</>
             : round
               ? tr('Ronde {n} van {totaal}', { n: running.length > 1 ? `${round.index + 1}–${running[running.length - 1].index + 1}` : round.index + 1, totaal: Math.max(t.settings.rounds, t.rounds.length) })
               : ''}
@@ -73,7 +73,7 @@ export function ScoreboardScreen({ id }: { id: string }) {
               </div>
             ))}
             {round && waitingPlayers(t, round).length > 0 && (
-              <div class="sub">⏸ {tr('Wacht:')} {waitingPlayers(t, round).map((p) => playerName(s, p)).join(', ')}</div>
+              <div class="sub"><Icon name="pause_circle" /> {tr('Wacht:')} {waitingPlayers(t, round).map((p) => playerName(s, p)).join(', ')}</div>
             )}
           </div>
         )}

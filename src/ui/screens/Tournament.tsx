@@ -91,7 +91,7 @@ function WinnerBanner({ t }: { t: Tournament }) {
   return (
     <div class="banner winner">
       <span class="grow">
-        🏆 {tr('Winnaar:')} <b>{playerName(state.value, winner.playerId)}</b>
+        <Icon name="trophy" /> {tr('Winnaar:')} <b>{playerName(state.value, winner.playerId)}</b>
         {winner.note ? ` (${tr(winner.note)})` : ''}
       </span>
     </div>
@@ -108,11 +108,11 @@ function GameCard({ t, game, onClick, showStatus }: { t: Tournament; game: Game;
       <div class="machine">
         {machineName(s, game.machineId)} {game.tiebreak && <span class="badge live">{tr('tie-breaker')}</span>}{' '}
         {game.corrected && <span class="badge warn">{tr('gecorrigeerd')}</span>}
-        {status?.state === 'ready' && <span class="badge live">▶ {tr('speel nu')}</span>}
+        {status?.state === 'ready' && <span class="badge live"><Icon name="play_arrow" /> {tr('speel nu')}</span>}
       </div>
       {status?.state === 'busy' && (
         <div class="small muted wait-reason">
-          ⏳ {status.waitingFor.length ? tr('Wacht op {namen}', { namen: status.waitingFor.map((id) => playerName(s, id)).join(', ') }) : ''}
+          <Icon name="hourglass_top" /> {status.waitingFor.length ? tr('Wacht op {namen}', { namen: status.waitingFor.map((id) => playerName(s, id)).join(', ') }) : ''}
           {status.waitingFor.length && status.machineBusy ? ' · ' : ''}
           {status.machineBusy ? tr('machine nog bezet') : ''}
         </div>
@@ -179,7 +179,7 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
           <div key={round.index} class="stack">
             <div class="row">
               <h2 class="grow" style="margin:0">
-                {isTiebreakRound(round) ? '⚔️ ' + tr('Tie-breaker') : tr('Ronde {n} van {totaal}', { n: round.index + 1, totaal: Math.max(target, regularCount) })}
+                {isTiebreakRound(round) ? <><Icon name="swords" /> {tr('Tie-breaker')}</> : tr('Ronde {n} van {totaal}', { n: round.index + 1, totaal: Math.max(target, regularCount) })}
               </h2>
               {i > 0 && <span class="badge warn">{tr('vooruit')}</span>}
               {finished ? <span class="badge">{tr('afgerond')}</span> : <span class="badge live">{tr('{n}/{totaal} ingevoerd', { n: doneCount, totaal: round.games.length })}</span>}
@@ -198,7 +198,7 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
             </div>
             {waiting.length > 0 && (
               <div class="card small">
-                ⏸ {tr('Wacht deze ronde:')} <b>{waiting.map((id) => playerName(s, id)).join(', ')}</b>
+                <Icon name="pause_circle" /> {tr('Wacht deze ronde:')} <b>{waiting.map((id) => playerName(s, id)).join(', ')}</b>
               </div>
             )}
           </div>
@@ -207,7 +207,7 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
       {lookAhead && (
         <>
           <button class="btn cyan block" onClick={nextRound}>
-            ⏩ {tr('Ronde {n}', { n: t.rounds.length + 1 })}
+            <Icon name="fast_forward" /> {tr('Ronde {n}', { n: t.rounds.length + 1 })}
           </button>
           <p class="small muted" style="margin:-4px 0 0">{tr('Wie klaar is, kan alvast beginnen aan de volgende ronde.')}</p>
         </>
@@ -225,14 +225,14 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
             </span>
           </div>
           <button class="btn primary block big" onClick={nextRound}>
-            ⚔️ {tr('Tie-breaker starten')}
+            <Icon name="swords" /> {tr('Tie-breaker starten')}
           </button>
         </>
       )}
       {!finished && complete && regularCount >= target && !needsTiebreak && (
         <>
           <button class="btn primary block big" onClick={finish}>
-            🏁 {tr('Toernooi afronden')}
+            <Icon name="sports_score" /> {tr('Toernooi afronden')}
           </button>
           {!h2h && (
             <button class="btn block" onClick={nextRound}>
@@ -243,7 +243,7 @@ function RoundTab({ t, onGame }: { t: Tournament; onGame: (g: Game) => void }) {
       )}
       {!finished && !h2h && last.games.every((g) => !g.result) && (
         <button class="btn ghost block" onClick={regenerate}>
-          🔀 {tr('Ronde {n} opnieuw indelen', { n: last.index + 1 })}
+          <Icon name="shuffle" /> {tr('Ronde {n} opnieuw indelen', { n: last.index + 1 })}
         </button>
       )}
     </div>
@@ -265,11 +265,11 @@ function MachinesTab({ t }: { t: Tournament }) {
               <b>{m.name}</b>
               {machineSubtitle(m) && <div class="small muted">{machineSubtitle(m)}</div>}
             </div>
-            <span class="muted">›</span>
+            <span class="muted"><Icon name="chevron_right" /></span>
           </a>
           {m.notes && <p class="notes-text">{m.notes}</p>}
           <a class="btn block" href={`#/kast/${m.id}/regels`}>
-            📖 {tr('Spelregels')}
+            <Icon name="menu_book" /> {tr('Spelregels')}
           </a>
         </li>
       ))}
@@ -347,7 +347,7 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
         <h3 class="grow">
           {game.machineId ? (
             <a class="plain" href={'#/kast/' + game.machineId}>
-              {machineName(s, game.machineId)} <span class="muted small">ⓘ</span>
+              {machineName(s, game.machineId)} <span class="muted small"><Icon name="info" /></span>
             </a>
           ) : (
             machineName(s, game.machineId)
@@ -431,7 +431,7 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
         <h3>{t.name}</h3>
         {t.status === 'active' && t.format !== 'headToHead' && (
           <button class="btn block" onClick={() => setPlayers(true)}>
-            👤 {tr('Deelnemers aan-/afmelden')}
+            <Icon name="person" /> {tr('Deelnemers aan-/afmelden')}
           </button>
         )}
         {t.status === 'active' ? (
@@ -442,7 +442,7 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
               onClose();
             }}
           >
-            🏁 {tr('Toernooi afronden')}
+            <Icon name="sports_score" /> {tr('Toernooi afronden')}
           </button>
         ) : (
           <button
@@ -452,7 +452,7 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
               onClose();
             }}
           >
-            ↩ {tr('Toernooi heropenen')}
+            <Icon name="undo" /> {tr('Toernooi heropenen')}
           </button>
         )}
         <button

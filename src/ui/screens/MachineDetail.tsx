@@ -58,7 +58,7 @@ export function MachineDetailScreen({ id }: { id: string }) {
       <h2>{tr('Spelregels')}</h2>
       <div class="stack">
         <a class="btn cyan block big" href={`#/kast/${m.id}/regels`}>
-          📖 {tr('Spelregels')} {m.rules ? '' : fetchingRules.value.has(m.id) ? tr('(ophalen…)') : ''}
+          <Icon name="menu_book" /> {tr('Spelregels')} {m.rules ? '' : fetchingRules.value.has(m.id) ? tr('(ophalen…)') : ''}
         </a>
         {m.rules && <p class="small muted" style="margin:0">{tr('Opgeslagen op dit apparaat, ook offline te lezen.')}</p>}
         {(m.primerUrl || m.ipdbId) && (

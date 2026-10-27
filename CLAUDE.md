@@ -11,7 +11,7 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
 - vite-plugin-pwa (Workbox `generateSW`, `registerType: 'prompt'` → banner "Nieuwe versie").
 - Vitest voor unit tests. Playwright (voorgeïnstalleerd in de cloud-omgeving) voor e2e-checks en `npm run icons`.
 - `base: '/flipper-tournement/'` in `vite.config.ts` (GitHub Pages-pad). Hash-router (`#/…`, `src/app/router.ts`).
-- Bundle-doel: < ~60 KB gzip JS (nu ~81 KB, waarvan Dexie het grootste deel; Engels woordenboek ~6 KB, iconen ~4 KB).
+- Bundle-doel: < ~60 KB gzip JS (nu ~89 KB + ~21 KB polyfills; Dexie het grootste deel, Engels ~6 KB, iconen ~10 KB).
 
 ## Architectuur: event sourcing
 - Elke gebruikersactie = event (`src/events/types.ts`, `EventBody`). Opgeslagen in IndexedDB-tabel `events` (key `seq`).
@@ -151,10 +151,14 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   eigen notities, het PWA-manifest.
 
 ## Oudere apparaten & iconen (feedbackronde na stap 4)
-- Moet werken op **iOS 15** (iPad Air 2): `build.target ['es2020','safari14']` + `cssTarget`. Geen `structuredClone`
+- Moet werken op **iOS 14.5** (iPad Air 2 van de gebruiker): `build.target ['es2020','safari14']` + `cssTarget`;
+  `@vitejs/plugin-legacy` met alleen `modernPolyfills` (core-js, ~21 KB gzip extra, geen legacy-bundel). Geen `structuredClone`
   (gebruik `clone()` uit `src/lib/clone.ts`), `.at()`, `Object.hasOwn`, `findLast`, `toSorted` — `tests/compat.test.ts`
-  bewaakt dit. `dvh` altijd met `vh`-fallback ervoor. Vangnet in `main.tsx`: leeg scherm na een fout → foutmelding.
-- Iconen: Material Symbols Rounded (Apache 2.0) als inline SVG in `src/ui/components/Icon.tsx` (`<Icon name fill?>`),
+  bewaakt dit. `dvh` altijd met `vh`-fallback ervoor. Vangnet in `main.tsx` (error/unhandledrejection) en
+  `ErrorBoundary` rond elk scherm (`App.tsx`, key = route): foutmelding + stack + versie + userAgent i.p.v. leeg scherm.
+  Instellingen → Over: bouwdatum + knop "Controleren op update" (`checkForUpdate()` in `pwa.ts`).
+  Controle gedaan met `eslint-plugin-compat` (browserslist `ios_saf >= 14`): alles wat ontbreekt is afgevangen.
+- **Alle** iconen (geen emoji meer in de UI): Material Symbols Rounded (Apache 2.0) als inline SVG in `src/ui/components/Icon.tsx` (`<Icon name fill?>`),
   paden gekopieerd uit npm `@material-symbols/svg-400` (geen runtime-afhankelijkheid). Onderbalk met M3-"pill" bij
   de actieve tab; topbar-knoppen en plusknop (`.fab`, grid-gecentreerd) gebruiken ook `Icon`.
 - Geen tekstcursor/selectie bij tikken: `user-select: none` + `caret-color: transparent` op `body`; velden, spelregels

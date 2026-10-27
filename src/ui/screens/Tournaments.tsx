@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon';
 import { locale, tr } from '../../i18n';
 import { machineName, playerName, state } from '../../app/state';
 import { go } from '../../app/router';
@@ -24,10 +25,10 @@ export function TournamentsScreen() {
       <BackupBanner />
       <div class="grid2">
         <button class="btn primary big" onClick={() => go('nieuw')}>
-          🏆 {tr('Toernooi')}
+          <Icon name="trophy" /> {tr('Toernooi')}
         </button>
         <button class="btn cyan big" onClick={() => go('pot')}>
-          ⚡ {tr('Losse pot')}
+          <Icon name="bolt" /> {tr('Losse pot')}
         </button>
       </div>
       {active.length > 0 && <h2>{tr('Bezig')}</h2>}
@@ -68,7 +69,7 @@ function SingleItem({ t }: { t: Tournament }) {
           {machineName(s, game.machineId)} · {t.name.replace(/^[^·]*· /, '')}
         </div>
       </div>
-      {winner ? <span class="badge">🏆 {winner}</span> : <span class="badge live">{tr('bezig')}</span>}
+      {winner ? <span class="badge"><Icon name="trophy" /> {winner}</span> : <span class="badge live">{tr('bezig')}</span>}
     </li>
   );
 }

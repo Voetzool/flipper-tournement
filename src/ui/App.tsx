@@ -1,5 +1,6 @@
 import { loaded } from '../app/state';
 import { route } from '../app/router';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toast } from './components/Toast';
 import { MachineDetailScreen } from './screens/MachineDetail';
 import { MachinesScreen } from './screens/Machines';
@@ -18,7 +19,9 @@ export function App() {
   if (!loaded.value) return <p class="empty">Laden…</p>;
   return (
     <>
-      <Screen />
+      <ErrorBoundary key={route.value.join('/')}>
+        <Screen />
+      </ErrorBoundary>
       <Toast />
     </>
   );

@@ -1,7 +1,8 @@
 import { locale, tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../../app/state';
-import { offlineReady } from '../../app/pwa';
+import { checkForUpdate, offlineReady } from '../../app/pwa';
+import { Icon, type IconName } from '../components/Icon';
 import { lang, setLang, setTheme, theme, type Lang, type ThemeChoice } from '../../app/settings';
 import { backupFileName, makeBackup, parseBackup } from '../../backup/backup';
 import { requestPersistence } from '../../db/db';
@@ -15,6 +16,7 @@ export function MoreScreen() {
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
   const [remote, setRemote] = useState<CatalogMeta | null | undefined>(undefined);
+  const [updateCheck, setUpdateCheck] = useState<'busy' | 'updating' | 'latest' | 'offline' | null>(null);
 
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(false));
@@ -91,13 +93,13 @@ export function MoreScreen() {
         <div class="seg" role="radiogroup" aria-label={tr('Weergave')}>
           {(
             [
-              ['auto', 'Automatisch'],
-              ['light', '☀️ Licht'],
-              ['dark', '🌙 Donker'],
-            ] as [ThemeChoice, string][]
-          ).map(([v, label]) => (
+              ['auto', 'Automatisch', 'brightness_auto'],
+              ['light', 'Licht', 'light_mode'],
+              ['dark', 'Donker', 'dark_mode'],
+            ] as [ThemeChoice, string, IconName][]
+          ).map(([v, label, icon]) => (
             <button key={v} class={theme.value === v ? 'on' : ''} role="radio" aria-checked={theme.value === v} onClick={() => setTheme(v)}>
-              {tr(label)}
+              <Icon name={icon} /> {tr(label)}
             </button>
           ))}
         </div>
@@ -113,10 +115,10 @@ export function MoreScreen() {
           {tr('Laatste back-up:')} {lastBackupAt.value ? new Date(lastBackupAt.value).toLocaleString(locale()) : tr('nog nooit')}
         </p>
         <button class="btn cyan block" onClick={exportData}>
-          💾 {tr('Back-up maken')}
+          <Icon name="save" /> {tr('Back-up maken')}
         </button>
         <label class="btn block">
-          📂 {tr('Back-up terugzetten')}
+          <Icon name="upload_file" /> {tr('Back-up terugzetten')}
           <input type="file" accept="application/json,.json" style="display:none" onChange={importData} />
         </label>
       </div>
@@ -142,7 +144,7 @@ export function MoreScreen() {
             if (await updateCatalog(true)) await syncPlayfields().then(syncMissingRules);
           }}
         >
-          {catalogStatus.value === 'loading' ? tr('Downloaden…') : catalog.value ? '⟳ ' + tr('Catalogus bijwerken') : '⬇ ' + tr('Catalogus downloaden')}
+          {catalogStatus.value === 'loading' ? tr('Downloaden…') : catalog.value ? <><Icon name="refresh" /> {tr('Catalogus bijwerken')}</> : <><Icon name="download" /> {tr('Catalogus downloaden')}</>}
         </button>
         <p class="small muted" style="margin:0">
           {tr('Machinegegevens en afbeeldingen: OPDB (opdb.org), via Match Play. De catalogus wordt wekelijks ververst.')}
@@ -157,7 +159,7 @@ export function MoreScreen() {
         <div class="small muted">{usage}</div>
         <div class="row">
           <span class="grow">
-            {persisted ? '✅ ' + tr('Browser bewaart de gegevens permanent') : '⚠️ ' + tr('Browser mag gegevens opruimen bij weinig ruimte')}
+            {persisted ? <><Icon name="check_circle" /> {tr('Browser bewaart de gegevens permanent')}</> : <><Icon name="warning" /> {tr('Browser mag gegevens opruimen bij weinig ruimte')}</>}
           </span>
           {!persisted && (
             <button class="btn" onClick={async () => setPersisted(await requestPersistence())}>
@@ -175,17 +177,32 @@ export function MoreScreen() {
       <h2>{tr('Installeren')}</h2>
       <div class="card stack small">
         <div>
-          <b>Android (Chrome):</b> {tr('menu ⋮ →')} <i>{tr('App installeren')}</i> {tr('of')} <i>{tr('Toevoegen aan startscherm')}</i>.
+          <b>Android (Chrome):</b> {tr('menu')} <Icon name="more_vert" /> → <i>{tr('App installeren')}</i> {tr('of')} <i>{tr('Toevoegen aan startscherm')}</i>.
         </div>
         <div>
-          <b>iPhone/iPad (Safari):</b> {tr('deelknop ⬆︎ →')} <i>{tr('Zet op beginscherm')}</i>.
+          <b>iPhone/iPad (Safari):</b> {tr('deelknop')} <Icon name="ios_share" /> → <i>{tr('Zet op beginscherm')}</i>.
         </div>
-        <div class="muted">{offlineReady.value ? '✅ ' + tr('Klaar voor offline gebruik.') : tr('Werkt offline zodra de app één keer volledig geladen is.')}</div>
+        <div class="muted">{offlineReady.value ? <><Icon name="check_circle" /> {tr('Klaar voor offline gebruik.')}</> : tr('Werkt offline zodra de app één keer volledig geladen is.')}</div>
       </div>
 
       <h2>{tr('Over')}</h2>
-      <div class="card small muted">
-        {tr('Flipper Toernooi')} v{__APP_VERSION__} · {tr('gebouwd')} {new Date(__BUILD_TIME__).toLocaleDateString(locale())}
+      <div class="card stack small">
+        <div class="muted">
+          {tr('Flipper Toernooi')} v{__APP_VERSION__} · {tr('gebouwd')} {new Date(__BUILD_TIME__).toLocaleString(locale())}
+        </div>
+        <button
+          class="btn block"
+          disabled={updateCheck === 'busy'}
+          onClick={async () => {
+            setUpdateCheck('busy');
+            setUpdateCheck(await checkForUpdate());
+          }}
+        >
+          <Icon name="refresh" /> {tr('Controleren op update')}
+        </button>
+        {updateCheck === 'latest' && <div class="muted">{tr('Je hebt de nieuwste versie.')}</div>}
+        {updateCheck === 'updating' && <div class="muted">{tr('Nieuwe versie wordt geladen…')}</div>}
+        {updateCheck === 'offline' && <div class="muted">{tr('Geen internetverbinding.')}</div>}
       </div>
     </Shell>
   );
