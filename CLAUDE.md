@@ -23,8 +23,11 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   "Herstellen"). Veilig omdat toernooi-events niet afhangen van latere speler/kast-events en binnen één toernooi de
   stapelvolgorde behouden blijft. Opslag via de `Persistence`-interface (Dexie in de app, `MemoryPersistence` in
   tests). Schrijfacties lopen in een promise-queue.
-- Undo-knop alleen in het toernooischerm en op het scorebord (`UndoRedo tournamentId=…`). Na elke uitslag een toast
-  met "Ongedaan maken" (`showToast(text, action)`).
+- Undo-knop alleen in het toernooischerm en op het scorebord (`UndoRedo tournamentId=…`). Na een uitslag géén toast
+  meer (gebruikerswens); toasts met actie alleen nog bij verwijderen ("Herstellen").
+- **Meerdere vensters** (scorebord op tv via tweede venster): `EventStore.onWritten` seint na elke schrijfactie via
+  `localStorage['flipper-sync']`; andere vensters krijgen een `storage`-event en doen `store.reload()` (`state.ts`).
+  Werkt ook op iOS 14 (geen BroadcastChannel nodig).
 - Spelers/kasten die nooit in een toernooi zaten kun je echt verwijderen (`PlayerDeleted`/`MachineDeleted`, check via
   `playerInUse`/`machineInUse` in de reducer); gebruikte spelers archiveren, gebruikte kasten op inactief.
 - Uitslag corrigeren = nieuw event `ResultCorrected` (dus zelf ook te undo'en). Events worden nooit gemuteerd.

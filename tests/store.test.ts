@@ -183,3 +183,27 @@ describe('back-up', () => {
     expect(needsBackupReminder([ev(3 * day, 'TournamentFinished')], 2 * day, 3 * day)).toBe(true);
   });
 });
+
+describe('meerdere vensters', () => {
+  it('seint na elke schrijfactie en een tweede venster ziet de wijziging na reload', async () => {
+    const p = new MemoryPersistence();
+    const main = new EventStore(p);
+    const board = new EventStore(p);
+    await main.load();
+    await board.load();
+    let signals = 0;
+    main.onWritten = () => signals++;
+    main.dispatch(created('t'));
+    main.dispatch(result('t', 'g1', ['b', 'a']));
+    await main.flush();
+    expect(signals).toBe(2);
+    expect(board.all).toHaveLength(0);
+    await board.reload();
+    expect(games(board, 't')).toEqual(['ba', undefined]);
+    main.undo('t');
+    await main.flush();
+    expect(signals).toBe(3);
+    await board.reload();
+    expect(games(board, 't')).toEqual([undefined, undefined]);
+  });
+});

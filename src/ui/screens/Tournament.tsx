@@ -328,7 +328,6 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
       order,
     });
     onClose();
-    showToast(game.result ? tr('Correctie opgeslagen') : tr('Uitslag opgeslagen'), { label: tr('Ongedaan maken'), run: () => undo(t.id) });
   };
 
   const unchanged = !!game.result && game.result.join() === order.join();

@@ -33,6 +33,8 @@ export class EventStore {
   private events: StoredEvent[] = [];
   private queue: Promise<void> = Promise.resolve();
   private listeners = new Set<(events: readonly StoredEvent[]) => void>();
+  /** Wordt aangeroepen nadat een schrijfactie in de opslag staat (om andere vensters te seinen). */
+  onWritten?: () => void;
 
   constructor(private persistence: Persistence) {}
 
@@ -101,6 +103,12 @@ export class EventStore {
     await this.flush();
   }
 
+  /** Opnieuw inlezen nadat een ander venster de opslag heeft gewijzigd. */
+  async reload(): Promise<void> {
+    await this.flush();
+    await this.load();
+  }
+
   /** Wacht tot alle schrijfacties klaar zijn. */
   flush(): Promise<void> {
     return this.queue;
@@ -114,7 +122,7 @@ export class EventStore {
   }
 
   private enqueue(job: () => Promise<void>) {
-    this.queue = this.queue.then(job).catch((err) => {
+    this.queue = this.queue.then(job).then(() => this.onWritten?.()).catch((err) => {
       console.error('Opslaan mislukt', err);
     });
   }

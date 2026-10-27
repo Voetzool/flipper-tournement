@@ -19,6 +19,22 @@ store.subscribe((all) => {
   events.value = all;
 });
 
+// Meerdere vensters (bijv. het scorebord op een tv via een tweede venster) blijven gelijk: na elke schrijfactie
+// seint dit venster via localStorage; de andere vensters krijgen een 'storage'-event en lezen de opslag opnieuw in.
+const SYNC_KEY = 'flipper-sync';
+store.onWritten = () => {
+  try {
+    localStorage.setItem(SYNC_KEY, String(Date.now()) + Math.random());
+  } catch {
+    // privé-venster of geen opslag: dan geen synchronisatie tussen vensters
+  }
+};
+if (typeof addEventListener !== 'undefined') {
+  addEventListener('storage', (e) => {
+    if (e.key === SYNC_KEY) store.reload();
+  });
+}
+
 export async function initState() {
   await store.load();
   lastBackupAt.value = await getMeta<number>('lastBackupAt');
