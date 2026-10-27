@@ -360,4 +360,7 @@ export const en: Record<string, string> = {
   'Server niet bereikbaar.': 'Server unreachable.',
   'Download een kopie van alle gegevens op de server, om apart te bewaren of op een andere server terug te zetten.': 'Download a copy of all data on the server, to keep separately or to restore on another server.',
   'Nieuwe versie installeren: op de server': 'Install a new version: on the server run',
+  'Raspberry Pi-versie': 'Raspberry Pi version',
+  'Wil je de gegevens op een Raspberry Pi bewaren en het scorebord op meerdere schermen tonen? Daar is een aparte versie voor.': 'Want to keep the data on a Raspberry Pi and show the scoreboard on several screens? There is a separate version for that.',
+  Installatiehandleiding: 'Installation guide (Dutch)',
 };

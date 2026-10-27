@@ -193,6 +193,10 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   via NetworkManager (`pinball-ap`, SSID `Pinball-Tournament`, ww `flipper123`, 10.42.0.1, `ipv4.method shared`,
   dnsmasq-regel voor `pinball-tournament.local`). Opties `--no-wifi`, `--update`, `--dry-run`. Hulpcommando
   `sudo pinball-tournament update|wifi|status|logs|restart`. Uitleg voor de gebruiker: `server/README.md`.
+- Beginnershandleiding: `server/HANDLEIDING.md` (Pi 4/5, manier A met scherm en manier B via ssh, problemen oplossen).
+  `scripts/build-handleiding.mjs` (eigen mini-Markdown met codeblokken + kopieerknop) maakt er in CI
+  `dist/pi/index.html` van → https://voetzool.github.io/flipper-tournement/pi/ (niet in de precache: `pi/**`).
+  Link in de telefoon-app: Instellingen → Raspberry Pi-versie. Commando's/namen gelijk houden met `install.sh`.
 - Tests: `tests/server.test.ts` (eigen `server/tsconfig.json` met Node-types; root-tsconfig sluit die test uit).
 
 ## Schermen (`src/ui/screens/`)

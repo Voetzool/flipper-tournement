@@ -41,6 +41,7 @@ jobs:
           mkdir -p dist/pi
           tar -czf dist/pi/pinball-tournament.tar.gz -C dist-server .
           cp server/install.sh dist/pi/install.sh
+          node scripts/build-handleiding.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

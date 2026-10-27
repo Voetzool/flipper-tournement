@@ -4,6 +4,9 @@ Dezelfde app als de telefoon-app, maar de gegevens staan op een Raspberry Pi (of
 Pi verbonden zijn zien hetzelfde: voer uitslagen in op een iPad of telefoon en laat het scorebord op een laptop of tv
 zien. Alles werkt vanzelf bij, zonder te verversen.
 
+> **Nog nooit met een Raspberry Pi gewerkt?** Volg de stap-voor-stap-handleiding:
+> https://voetzool.github.io/flipper-tournement/pi/ (ook als bestand: [HANDLEIDING.md](HANDLEIDING.md)).
+
 ## Wat heb je nodig
 - Een Raspberry Pi met wifi (Pi 3, 4 of 5, of Pi Zero 2 W) en een SD-kaart met **Raspberry Pi OS (Bookworm)**.
 - Bij het installeren: internet via een **netwerkkabel**.
