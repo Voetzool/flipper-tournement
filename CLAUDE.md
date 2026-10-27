@@ -172,6 +172,29 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   Stand (`TabRoute 'auto'`), de tab Ronde linkt naar `#/t/:id/ronde`.
 - Uitslag-sheet: plek 1 groen met vinkje (`.order-btn.win`), overige plekken neutraal; bij teams verliezend team vaag.
 
+## Pi-versie (server-modus, `server/`)
+- Zelfde app, gebouwd met `vite build --mode server` (`SERVER_MODE` in `src/lib/serverMode.ts`): base `/`, geen
+  service worker (`VitePWA disable`), polyfills blijven. Data op de server; de telefoon-app (GitHub Pages) blijft los.
+- Server: `server/app.ts` (`node:http`, geen dependencies, Node ≥ 18), gebundeld met `vite.server.config.ts` tot
+  `dist-server/server.mjs` + `dist-server/public/`. Hergebruikt `EventStore` met `FilePersistence` (`events.json`
+  atomisch + dagelijkse kopie in `backups/`, 14 bewaard) en `MetaFile` (`meta.json`).
+- API: `GET /api/events` → `{version, events}`; `POST /api/command` `{op: dispatch|undo|redo|replaceAll}`;
+  `GET /api/stream` (SSE, stuurt `version` bij elke wijziging); `GET/PUT /api/meta/:key` (alleen `lastBackupAt` gaat
+  naar de server, catalogus blijft per apparaat in IndexedDB); `GET /img?u=` (alleen opdb.org/digitaloceanspaces,
+  bewaard in `DATA_DIR/img`); `GET /api/fetch?u=` (alleen pinballprimer.github.io); `POST /api/catalog/update`
+  (OPDB-export → `DATA_DIR/catalog`, gaat vóór de meegeleverde `/catalog/`).
+- Client: `src/app/remoteStore.ts` (`RemoteStore`, zelfde methodes als `EventStore`): optimistisch lokaal (spiegel-
+  `EventStore`), wachtrij naar de server (bij netwerkfout opnieuw proberen), daarna en bij elk SSE-signaal de events
+  van de server laden (server wint). `serverConnected` → banner "Geen verbinding met de server" in `Shell`.
+  Afbeeldingen via `imgUrl()`, Primer via `remoteUrl()`.
+- Installatie: `server/install.sh` (CI zet hem met `pinball-tournament.tar.gz` op Pages onder `/pi/`):
+  `curl -fsSL https://voetzool.github.io/flipper-tournement/pi/install.sh | sudo bash`. Node uit apt, systemd-service
+  op poort 80 (`CAP_NET_BIND_SERVICE`, gebruiker `pinball`), hostname `pinball-tournament` (+avahi → `.local`), wifi-AP
+  via NetworkManager (`pinball-ap`, SSID `Pinball-Tournament`, ww `flipper123`, 10.42.0.1, `ipv4.method shared`,
+  dnsmasq-regel voor `pinball-tournament.local`). Opties `--no-wifi`, `--update`, `--dry-run`. Hulpcommando
+  `sudo pinball-tournament update|wifi|status|logs|restart`. Uitleg voor de gebruiker: `server/README.md`.
+- Tests: `tests/server.test.ts` (eigen `server/tsconfig.json` met Node-types; root-tsconfig sluit die test uit).
+
 ## Schermen (`src/ui/screens/`)
 Toernooien (lijst + back-upherinnering) · Nieuw toernooi · Toernooi (tabs Ronde/Stand/Kasten/Uitslagen, uitslag-sheet,
 menu: deelnemers aan/afmelden, afronden/heropenen, verwijderen; "ronde opnieuw indelen" zolang er geen uitslag is) ·
@@ -198,8 +221,9 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
       geschiedenis/correctie, scorebord, back-up, GitHub Pages-deploy, unit tests.
 - [x] **Fase 2** — Glicko-2 rating, ranglijst, spelersprofiel met statistieken en ratingverloop. Logo (icon.svg) i.p.v. 🎰.
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
-- [ ] **Fase 4** — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
+- [ ] **Fase 4** (geparkeerd door gebruiker) — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
+- [x] Pi-versie: server op Raspberry Pi met eigen wifi, data op de Pi, live bijwerken tussen apparaten.
 - [x] Vooruit spelen in de volgende ronde + tab "Spelen".
 - [x] Losse ranked pot (iedereen voor zich of teams, kast zelf of willekeurig uit selectie).
 - [x] Feedbackronde: iOS 15-fix, Material-iconen, geen tekstcursor, afronden → Stand, winnaar groen, tabnamen.

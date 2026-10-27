@@ -1,3 +1,5 @@
+import { RemoteStore } from './remoteStore';
+import { SERVER_MODE } from '../lib/serverMode';
 import { tr } from '../i18n';
 import { computed, signal } from '@preact/signals';
 import { dexiePersistence, getMeta, setMeta } from '../db/db';
@@ -6,7 +8,8 @@ import { EventStore } from '../events/store';
 import { computeRatings } from '../rating/ratings';
 import type { AppState, EventBody, StoredEvent } from '../events/types';
 
-export const store = new EventStore(dexiePersistence);
+export const store: EventStore | RemoteStore = SERVER_MODE ? new RemoteStore() : new EventStore(dexiePersistence);
+export { serverConnected } from './remoteStore';
 
 export const events = signal<readonly StoredEvent[]>([]);
 export const loaded = signal(false);
@@ -22,14 +25,14 @@ store.subscribe((all) => {
 // Meerdere vensters (bijv. het scorebord op een tv via een tweede venster) blijven gelijk: na elke schrijfactie
 // seint dit venster via localStorage; de andere vensters krijgen een 'storage'-event en lezen de opslag opnieuw in.
 const SYNC_KEY = 'flipper-sync';
-store.onWritten = () => {
+if (store instanceof EventStore) store.onWritten = () => {
   try {
     localStorage.setItem(SYNC_KEY, String(Date.now()) + Math.random());
   } catch {
     // privé-venster of geen opslag: dan geen synchronisatie tussen vensters
   }
 };
-if (typeof addEventListener !== 'undefined') {
+if (!SERVER_MODE && typeof addEventListener !== 'undefined') {
   addEventListener('storage', (e) => {
     if (e.key === SYNC_KEY) store.reload();
   });

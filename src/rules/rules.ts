@@ -1,3 +1,4 @@
+import { remoteUrl } from '../lib/serverMode';
 import { signal } from '@preact/signals';
 import { dispatch, state } from '../app/state';
 import { catalogIndex, loadStoredCatalog, prefetchImage } from '../catalog/catalog';
@@ -23,7 +24,7 @@ export async function fetchRules(m: Pick<Machine, 'rulesheetPath' | 'primerUrl'>
     }
   }
   if (m.primerUrl && new URL(m.primerUrl).hostname === 'pinballprimer.github.io') {
-    const res = await fetch(m.primerUrl, { mode: 'cors' });
+    const res = await fetch(remoteUrl(m.primerUrl), { mode: 'cors' });
     if (res.ok) {
       const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
       const text = primerToMarkdown(doc, m.primerUrl);

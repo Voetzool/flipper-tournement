@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && tsc -p server --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "build:server": "vite build --mode server && vite build -c vite.server.config.ts",
+    "start:server": "PORT=8080 node dist-server/server.mjs"
   },
   "dependencies": {
     "@preact/signals": "^2.11.3",
@@ -18,6 +20,7 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.6",
+    "@types/node": "^22.20.5",
     "@vitejs/plugin-legacy": "^8.2.3",
     "fake-indexeddb": "^6.2.6",
     "happy-dom": "^20.14.6",

@@ -5,3 +5,4 @@ dev-dist
 .DS_Store
 public/catalog
 public/rules
+dist-server

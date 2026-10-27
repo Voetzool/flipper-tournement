@@ -1,3 +1,4 @@
+import { SERVER_MODE } from '../../lib/serverMode';
 import { locale, tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../../app/state';
@@ -6,6 +7,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { lang, setLang, setTheme, theme, type Lang, type ThemeChoice } from '../../app/settings';
 import { backupFileName, makeBackup, parseBackup } from '../../backup/backup';
 import { requestPersistence } from '../../db/db';
+import { updateServerCatalog } from '../../catalog/serverCatalog';
 import { catalog, catalogError, catalogStatus, catalogVersion, fetchRemoteMeta, loadStoredCatalog, updateCatalog } from '../../catalog/catalog';
 import type { CatalogMeta } from '../../catalog/types';
 import { syncMissingRules, syncPlayfields } from '../../rules/rules';
@@ -109,7 +111,9 @@ export function MoreScreen() {
       <h2>{tr('Back-up')}</h2>
       <div class="card stack">
         <p style="margin:0">
-          {tr('Al je gegevens staan alleen op dit apparaat. Maak regelmatig een back-up en bewaar die ergens anders (bijv. Google Drive, iCloud of mail).')}
+          {SERVER_MODE
+            ? tr('Download een kopie van alle gegevens op de server, om apart te bewaren of op een andere server terug te zetten.')
+            : tr('Al je gegevens staan alleen op dit apparaat. Maak regelmatig een back-up en bewaar die ergens anders (bijv. Google Drive, iCloud of mail).')}
         </p>
         <p class="small muted" style="margin:0">
           {tr('Laatste back-up:')} {lastBackupAt.value ? new Date(lastBackupAt.value).toLocaleString(locale()) : tr('nog nooit')}
@@ -139,8 +143,11 @@ export function MoreScreen() {
         {catalogStatus.value === 'error' && <div class="small" style="color:var(--yellow)">{tr(catalogError.value ?? '')}</div>}
         <button
           class="btn block"
-          disabled={catalogStatus.value === 'loading' || !remote || remote.version === catalogVersion.value}
+          disabled={catalogStatus.value === 'loading' || (!SERVER_MODE && (!remote || remote.version === catalogVersion.value))}
           onClick={async () => {
+            // Pi-versie: eerst laat de Pi (als hij internet heeft) de nieuwste catalogus ophalen.
+            if (SERVER_MODE && !(await updateServerCatalog())) return;
+            if (SERVER_MODE) fetchRemoteMeta().then(setRemote);
             if (await updateCatalog(true)) await syncPlayfields().then(syncMissingRules);
           }}
         >
@@ -152,6 +159,16 @@ export function MoreScreen() {
       </div>
 
       <h2>{tr('Opslag')}</h2>
+      {SERVER_MODE ? (
+        <div class="card stack">
+          <div>
+            {tr('{spelers} spelers · {kasten} machines · {toernooien} toernooien · {acties} acties', { spelers: s.players.size, kasten: s.machines.size, toernooien: s.tournaments.size, acties: events.value.length })}
+          </div>
+          <div class="small muted">
+            {tr('Alle gegevens staan op de server ({adres}). Die maakt elke dag zelf een kopie.', { adres: location.host })}
+          </div>
+        </div>
+      ) : (
       <div class="card stack">
         <div>
           {tr('{spelers} spelers · {kasten} machines · {toernooien} toernooien · {acties} acties', { spelers: s.players.size, kasten: s.machines.size, toernooien: s.tournaments.size, acties: events.value.length })}
@@ -173,8 +190,10 @@ export function MoreScreen() {
           </p>
         )}
       </div>
+      )}
 
-      <h2>{tr('Installeren')}</h2>
+      {!SERVER_MODE && <h2>{tr('Installeren')}</h2>}
+      {!SERVER_MODE && (
       <div class="card stack small">
         <div>
           <b>Android (Chrome):</b> {tr('menu')} <Icon name="more_vert" /> → <i>{tr('App installeren')}</i> {tr('of')} <i>{tr('Toevoegen aan startscherm')}</i>.
@@ -184,12 +203,16 @@ export function MoreScreen() {
         </div>
         <div class="muted">{offlineReady.value ? <><Icon name="check_circle" /> {tr('Klaar voor offline gebruik.')}</> : tr('Werkt offline zodra de app één keer volledig geladen is.')}</div>
       </div>
+      )}
 
       <h2>{tr('Over')}</h2>
       <div class="card stack small">
         <div class="muted">
           {tr('Flipper Toernooi')} v{__APP_VERSION__} · {tr('gebouwd')} {new Date(__BUILD_TIME__).toLocaleString(locale())}
         </div>
+        {SERVER_MODE ? (
+          <div class="muted">{tr('Nieuwe versie installeren: op de server')} <code>sudo pinball-tournament update</code></div>
+        ) : (
         <button
           class="btn block"
           disabled={updateCheck === 'busy'}
@@ -200,6 +223,7 @@ export function MoreScreen() {
         >
           <Icon name="refresh" /> {tr('Controleren op update')}
         </button>
+        )}
         {updateCheck === 'latest' && <div class="muted">{tr('Je hebt de nieuwste versie.')}</div>}
         {updateCheck === 'updating' && <div class="muted">{tr('Nieuwe versie wordt geladen…')}</div>}
         {updateCheck === 'offline' && <div class="muted">{tr('Geen internetverbinding.')}</div>}

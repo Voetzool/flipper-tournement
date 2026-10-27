@@ -1,3 +1,4 @@
+import { imgUrl } from '../../lib/serverMode';
 import { Icon } from '../components/Icon';
 import { tr } from '../../i18n';
 import { useState } from 'preact/hooks';
@@ -51,7 +52,7 @@ export function MachineDetailScreen({ id }: { id: string }) {
       )}
 
       {m.imageMedium && !imgFailed && (
-        <img class="machine-hero" src={m.imageMedium} alt={m.name} onError={() => setImgFailed(true)} />
+        <img class="machine-hero" src={imgUrl(m.imageMedium)} alt={m.name} onError={() => setImgFailed(true)} />
       )}
       {details && <p class="muted">{details}</p>}
 

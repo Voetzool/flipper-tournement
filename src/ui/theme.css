@@ -498,6 +498,8 @@ h2:first-child {
 
 .seg button {
   flex: 1;
+  min-width: 0;
+  padding: 0 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -4,13 +4,15 @@ import preact from '@preact/preset-vite';
 import legacy from '@vitejs/plugin-legacy';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// GitHub Pages serveert de app op /<repo-naam>/
-const base = '/flipper-tournement/';
-
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // `--mode server`: de Pi-versie. Die draait op de root van de Pi, zonder service worker (de Pi ís de opslag).
+  const server = mode === 'server';
+  // GitHub Pages serveert de app op /<repo-naam>/
+  const base = server ? '/' : '/flipper-tournement/';
+  return {
   base,
   // Ook oudere iPads (iOS 14/15, bijv. iPad Air 2) moeten de app kunnen draaien.
-  build: { target: ['es2020', 'safari14'], cssTarget: ['safari14'] },
+  build: { target: ['es2020', 'safari14'], cssTarget: ['safari14'], outDir: server ? 'dist-server/public' : 'dist' },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev'),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
@@ -20,6 +22,7 @@ export default defineConfig({
     // Alleen polyfills (geen aparte legacy-bundel) voor functies die oudere Safari mist.
     legacy({ modernPolyfills: true, renderLegacyChunks: false, modernTargets: ['safari >= 14', 'ios >= 14', 'chrome >= 90', 'firefox >= 90'] }),
     VitePWA({
+      disable: server,
       registerType: 'prompt',
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
@@ -63,4 +66,5 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.test.ts'],
   },
+};
 });

@@ -1,3 +1,4 @@
+import { imgUrl } from '../lib/serverMode';
 import { computed, signal } from '@preact/signals';
 import { getMeta, setMeta } from '../db/db';
 import { buildIndex, type CatalogIndex } from './search';
@@ -69,5 +70,5 @@ export async function updateCatalog(force = false): Promise<boolean> {
 export function prefetchImage(url?: string) {
   if (!url) return;
   const img = new Image();
-  img.src = url;
+  img.src = imgUrl(url);
 }

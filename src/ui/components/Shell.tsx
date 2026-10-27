@@ -1,7 +1,7 @@
 import { tr } from '../../i18n';
 import type { ComponentChildren } from 'preact';
 import { Icon, type IconName } from './Icon';
-import { canRedo, canUndo, redo, undo } from '../../app/state';
+import { canRedo, canUndo, redo, serverConnected, undo } from '../../app/state';
 import { route } from '../../app/router';
 import { applyUpdate, updateAvailable } from '../../app/pwa';
 
@@ -26,6 +26,11 @@ export function Shell({ title, back, actions, children, nav = true }: Props) {
         {actions}
       </header>
       <main>
+        {!serverConnected.value && (
+          <div class="banner warn">
+            <Icon name="warning" /> <span class="grow">{tr('Geen verbinding met de server. Opnieuw verbinden…')}</span>
+          </div>
+        )}
         {updateAvailable.value && (
           <div class="banner info">
             <span class="grow">{tr('Er is een nieuwe versie van de app.')}</span>

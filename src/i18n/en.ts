@@ -355,4 +355,9 @@ export const en: Record<string, string> = {
   'Controleren op update': 'Check for updates',
   'Je hebt de nieuwste versie.': 'You have the latest version.',
   'Nieuwe versie wordt geladen…': 'Loading new version…',
+  'Geen verbinding met de server. Opnieuw verbinden…': 'No connection to the server. Reconnecting…',
+  'Alle gegevens staan op de server ({adres}). Die maakt elke dag zelf een kopie.': 'All data is stored on the server ({adres}). It makes a copy every day.',
+  'Server niet bereikbaar.': 'Server unreachable.',
+  'Download een kopie van alle gegevens op de server, om apart te bewaren of op een andere server terug te zetten.': 'Download a copy of all data on the server, to keep separately or to restore on another server.',
+  'Nieuwe versie installeren: op de server': 'Install a new version: on the server run',
 };

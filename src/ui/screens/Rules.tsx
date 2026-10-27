@@ -1,3 +1,4 @@
+import { imgUrl } from '../../lib/serverMode';
 import { Icon } from '../components/Icon';
 import { locale, tr } from '../../i18n';
 import { useMemo, useState } from 'preact/hooks';
@@ -35,7 +36,7 @@ export function RulesScreen({ id }: { id: string }) {
     <Shell title={m.name} back={'kast/' + m.id}>
       {m.playfieldMedium && !pfFailed && (
         <button class="playfield" onClick={() => setViewer(true)} aria-label={tr('Speelveld vergroten')}>
-          <img src={m.playfieldMedium} alt={tr('Speelveld {naam}', { naam: m.name })} onError={() => setPfFailed(true)} />
+          <img src={imgUrl(m.playfieldMedium)} alt={tr('Speelveld {naam}', { naam: m.name })} onError={() => setPfFailed(true)} />
           <span class="playfield-hint"><Icon name="zoom_in" /> {tr('Tik om te vergroten')}</span>
         </button>
       )}
@@ -131,8 +132,8 @@ export function RulesScreen({ id }: { id: string }) {
       )}
       {viewer && m.playfieldMedium && (
         <ImageViewer
-          src={m.playfieldLarge ?? m.playfieldMedium}
-          fallback={m.playfieldMedium}
+          src={imgUrl(m.playfieldLarge ?? m.playfieldMedium)}
+          fallback={imgUrl(m.playfieldMedium)}
           alt={tr('Speelveld {naam}', { naam: m.name })}
           onClose={() => setViewer(false)}
         />
