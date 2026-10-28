@@ -496,6 +496,14 @@ h2:first-child {
   gap: 6px;
 }
 
+.seg.wrap {
+  flex-wrap: wrap;
+}
+
+.seg.wrap button {
+  flex: 1 1 30%;
+}
+
 .seg button {
   flex: 1;
   min-width: 0;
@@ -509,7 +517,7 @@ h2:first-child {
   border: 2px solid var(--line);
   background: var(--card);
   font-weight: 800;
-  font-size: 18px;
+  font-size: min(18px, 4.1vw);
 }
 
 .seg button.on {

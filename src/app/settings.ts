@@ -33,6 +33,18 @@ export function setLang(l: Lang) {
   save('lang', l);
 }
 
+/** Na hoeveel dagen zonder back-up de app een herinnering toont (0 = nooit). */
+export const REMINDER_CHOICES = [1, 3, 7, 14, 30, 0] as const;
+export type ReminderDays = (typeof REMINDER_CHOICES)[number];
+export const backupReminderDays = signal<ReminderDays>(
+  Number(load('backupReminderDays', REMINDER_CHOICES.map(String), '7')) as ReminderDays,
+);
+
+export function setBackupReminderDays(d: ReminderDays) {
+  backupReminderDays.value = d;
+  save('backupReminderDays', String(d));
+}
+
 const media = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)') : null;
 const systemLight = signal(media?.matches ?? false);
 media?.addEventListener?.('change', (e) => (systemLight.value = e.matches));

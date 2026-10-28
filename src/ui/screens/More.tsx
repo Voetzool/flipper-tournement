@@ -4,7 +4,9 @@ import { useEffect, useState } from 'preact/hooks';
 import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../../app/state';
 import { checkForUpdate, offlineReady } from '../../app/pwa';
 import { Icon, type IconName } from '../components/Icon';
-import { lang, setLang, setTheme, theme, type Lang, type ThemeChoice } from '../../app/settings';
+import { backupReminderDays, lang, REMINDER_CHOICES, setBackupReminderDays, setLang, setTheme, theme, type Lang, type ThemeChoice } from '../../app/settings';
+
+const REMINDER_LABELS: Record<number, string> = { 1: '1 dag', 3: '3 dagen', 7: '1 week', 14: '2 weken', 30: '1 maand', 0: 'Nooit' };
 import { backupFileName, makeBackup, parseBackup } from '../../backup/backup';
 import { requestPersistence } from '../../db/db';
 import { updateServerCatalog } from '../../catalog/serverCatalog';
@@ -125,6 +127,16 @@ export function MoreScreen() {
           <Icon name="upload_file" /> {tr('Back-up terugzetten')}
           <input type="file" accept="application/json,.json" style="display:none" onChange={importData} />
         </label>
+        <div class="field">
+          <label>{tr('Herinnering om een back-up te maken')}</label>
+          <div class="seg wrap" role="radiogroup" aria-label={tr('Herinnering om een back-up te maken')}>
+            {REMINDER_CHOICES.map((d) => (
+              <button key={d} class={backupReminderDays.value === d ? 'on' : ''} role="radio" aria-checked={backupReminderDays.value === d} onClick={() => setBackupReminderDays(d)}>
+                {tr(REMINDER_LABELS[d])}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <h2>{tr('Machinecatalogus (OPDB)')}</h2>
@@ -210,7 +222,7 @@ export function MoreScreen() {
           <h2>{tr('Raspberry Pi-versie')}</h2>
           <div class="card stack small">
             <div>{tr('Wil je de gegevens op een Raspberry Pi bewaren en het scorebord op meerdere schermen tonen? Daar is een aparte versie voor.')}</div>
-            <a class="btn block" href={import.meta.env.BASE_URL + 'pi/index.html'} target="_blank" rel="noopener">
+            <a class="btn block" href={import.meta.env.BASE_URL + (lang.value === 'en' ? 'pi/en/index.html' : 'pi/index.html')} target="_blank" rel="noopener">
               {tr('Installatiehandleiding')}
             </a>
           </div>

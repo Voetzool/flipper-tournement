@@ -2,6 +2,7 @@ import type { StoredEvent } from '../events/types';
 
 export const BACKUP_APP = 'flipper-toernooi';
 export const BACKUP_VERSION = 1;
+/** Standaard: één keer per week een herinnering (instelbaar in Instellingen, per apparaat). */
 export const REMINDER_DAYS = 7;
 
 export interface BackupFile {
@@ -49,13 +50,13 @@ export function backupFileName(now = new Date()): string {
 }
 
 /**
- * Herinnering nodig? Ja als er iets is veranderd sinds de laatste back-up én
- * (de back-up ouder is dan REMINDER_DAYS dagen, of er sindsdien een toernooi is afgerond).
+ * Herinnering nodig? Ja als er iets is veranderd sinds de laatste back-up én de laatste back-up (of, zonder back-up,
+ * de eerste wijziging) langer dan `days` dagen geleden is. `days` = 0: nooit herinneren.
  */
-export function needsBackupReminder(events: readonly StoredEvent[], lastBackupAt: number | undefined, now = Date.now()): boolean {
+export function needsBackupReminder(events: readonly StoredEvent[], lastBackupAt: number | undefined, now = Date.now(), days = REMINDER_DAYS): boolean {
+  if (days <= 0) return false;
   const changed = events.filter((e) => !e.reverted && e.at > (lastBackupAt ?? 0));
   if (!changed.length) return false;
-  if (changed.some((e) => e.body.type === 'TournamentFinished')) return true;
   const since = lastBackupAt ?? Math.min(...changed.map((e) => e.at));
-  return now - since > REMINDER_DAYS * 24 * 3600 * 1000;
+  return now - since > days * 24 * 3600 * 1000;
 }

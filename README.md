@@ -1,22 +1,38 @@
-# Flipper Toernooi
+# Pinball Tournament (Flipper Toernooi)
 
-Offline-first web-app (PWA) voor het organiseren van kleine flipperkast-toernooien.
-Werkt zonder internet, alle gegevens blijven op je eigen apparaat.
+An offline-first web app (PWA) for running small pinball tournaments. It works without internet and keeps all data
+on your own device. The app is available in Dutch and English (Settings → *Taal / Language*).
 
 **App:** https://voetzool.github.io/flipper-tournement/
 
-## Installeren op je telefoon/tablet
-- **Android (Chrome):** open de link → menu ⋮ → *App installeren* / *Toevoegen aan startscherm*.
-- **iPhone/iPad (Safari):** open de link → deelknop → *Zet op beginscherm*.
+## Features
+- Players, machines (with the OPDB machine catalogue, rules and playfield photos) and tournaments.
+- Formats: *Group rounds* (groups of 2–4 per machine, points per position), *Round Robin* (1-on-1, everyone plays
+  everyone, with a tie-breaker) and *single ranked games* (free for all or teams).
+- Glicko-2 rating, ranking and player statistics.
+- Scoreboard for a big screen, undo per tournament, backup/restore as a JSON file.
 
-Maak regelmatig een back-up via **Meer → Back-up maken**.
+## Install on your phone or tablet
+- **Android (Chrome):** open the link → menu ⋮ → *Install app* / *Add to Home screen*.
+- **iPhone/iPad (Safari):** open the link → share button → *Add to Home Screen*.
 
-## Ontwikkelen
+Make a backup now and then via **Settings → Make backup**. The app reminds you once a week (adjustable in Settings).
+
+## Raspberry Pi version
+There is also a version that runs on a Raspberry Pi (or another computer) as a server: the data lives on the Pi,
+the Pi creates its own Wi-Fi network and every connected phone, tablet and laptop sees the same live data — enter
+results on a tablet and show the scoreboard on a TV.
+
+- Step-by-step guide for beginners: https://voetzool.github.io/flipper-tournement/pi/en/ (also as
+  [server/MANUAL.md](server/MANUAL.md); Dutch: [server/HANDLEIDING.md](server/HANDLEIDING.md))
+- Technical summary: [server/README.md](server/README.md)
+
+## Development
 ```bash
 npm install
-npm run dev      # lokale ontwikkelserver
-npm test         # unit tests
-npm run build    # productie-build in dist/
+npm run dev            # local development server
+npm test               # unit tests
+npm run build          # production build in dist/
+npm run build:server   # Raspberry Pi version in dist-server/
+npm run start:server   # run it locally on port 8080
 ```
-Elke push naar `main` (of de werkbranch) wordt automatisch getest en gepubliceerd via GitHub Actions.
-Zie `CLAUDE.md` voor architectuur en voortgang.

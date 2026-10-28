@@ -172,7 +172,7 @@ describe('back-up', () => {
     expect(() => parseBackup('{"app":"flipper-toernooi","version":99,"events":[]}')).toThrow(/nieuwere/);
   });
 
-  it('herinnering na 7 dagen of na een afgerond toernooi', () => {
+  it('herinnering standaard na een week, instelbaar, nooit zonder wijzigingen', () => {
     const day = 24 * 3600 * 1000;
     const ev = (at: number, type = 'PlayerAdded') =>
       ({ seq: at, id: String(at), at, reverted: false, schema: 1, body: { type } }) as never;
@@ -180,7 +180,13 @@ describe('back-up', () => {
     expect(needsBackupReminder([ev(1 * day)], undefined, 3 * day)).toBe(false);
     expect(needsBackupReminder([ev(1 * day)], undefined, 9 * day)).toBe(true);
     expect(needsBackupReminder([ev(1 * day)], 2 * day, 30 * day)).toBe(false);
-    expect(needsBackupReminder([ev(3 * day, 'TournamentFinished')], 2 * day, 3 * day)).toBe(true);
+    // Een afgerond toernooi geeft niet meer meteen een herinnering; pas na het interval.
+    expect(needsBackupReminder([ev(3 * day, 'TournamentFinished')], 2 * day, 3 * day)).toBe(false);
+    expect(needsBackupReminder([ev(3 * day, 'TournamentFinished')], 2 * day, 10 * day)).toBe(true);
+    // Ander interval en "nooit".
+    expect(needsBackupReminder([ev(3 * day)], 2 * day, 4 * day, 1)).toBe(true);
+    expect(needsBackupReminder([ev(3 * day)], 2 * day, 10 * day, 14)).toBe(false);
+    expect(needsBackupReminder([ev(3 * day)], 2 * day, 400 * day, 0)).toBe(false);
   });
 });
 

@@ -1,10 +1,11 @@
 import { Icon } from './Icon';
 import { tr } from '../../i18n';
 import { events, lastBackupAt } from '../../app/state';
+import { backupReminderDays } from '../../app/settings';
 import { needsBackupReminder } from '../../backup/backup';
 
 export function BackupBanner() {
-  if (!needsBackupReminder(events.value, lastBackupAt.value)) return null;
+  if (!needsBackupReminder(events.value, lastBackupAt.value, Date.now(), backupReminderDays.value)) return null;
   const last = lastBackupAt.value;
   const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
   return (

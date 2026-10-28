@@ -193,6 +193,8 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   via NetworkManager (`pinball-ap`, SSID `Pinball-Tournament`, ww `flipper123`, 10.42.0.1, `ipv4.method shared`,
   dnsmasq-regel voor `pinball-tournament.local`). Opties `--no-wifi`, `--update`, `--dry-run`. Hulpcommando
   `sudo pinball-tournament update|wifi|status|logs|restart`. Uitleg voor de gebruiker: `server/README.md`.
+- Engelse handleiding: `server/MANUAL.md` → `dist/pi/en/index.html` (zelfde script; taalwissel bovenaan; de app-knop
+  kiest op basis van `lang`). README's (`README.md`, `server/README.md`) zijn Engels (gebruikerswens).
 - Beginnershandleiding: `server/HANDLEIDING.md` (Pi 3B+/4/5 — gebruiker heeft een 3B+; code werkt daar ongewijzigd, manier A met scherm en manier B via ssh, problemen oplossen).
   `scripts/build-handleiding.mjs` (eigen mini-Markdown met codeblokken + kopieerknop) maakt er in CI
   `dist/pi/index.html` van → https://voetzool.github.io/flipper-tournement/pi/ (niet in de precache: `pi/**`, en `navigateFallbackDenylist` voor `/pi/` — anders toont de service worker de app i.p.v. de handleiding).
@@ -216,7 +218,9 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - Punten per plek staan bij het aanmaken achter de knop "Punten aanpassen" (sheet), niet meer in het hoofdformulier.
 - Puntentabel per groepsgrootte, instelbaar per toernooi.
 - Repo is openbaar (GitHub Pages gratis). Deploy vanaf `main` én de werkbranch.
-- Back-up = alleen actieve events (redo-stapel niet). Herinnering na 7 dagen of na een afgerond toernooi zonder back-up.
+- Back-up = alleen actieve events (redo-stapel niet). Herinnering alleen na een interval (sinds laatste back-up, als er
+  iets veranderd is): standaard 7 dagen, per apparaat instelbaar in Instellingen → Back-up (1/3/7/14/30 dagen of nooit;
+  `backupReminderDays` in `settings.ts`). Niet meer direct na een afgerond toernooi (gebruikerswens).
 - Export via Web Share (telefoon) met download als fallback.
 - Tegenstanders-spreiding gaat voor kast- en groepsgrootte-spreiding (gemiddelde punten bij 4 en 3 spelers zijn gelijk: 4).
 

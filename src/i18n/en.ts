@@ -362,5 +362,12 @@ export const en: Record<string, string> = {
   'Nieuwe versie installeren: op de server': 'Install a new version: on the server run',
   'Raspberry Pi-versie': 'Raspberry Pi version',
   'Wil je de gegevens op een Raspberry Pi bewaren en het scorebord op meerdere schermen tonen? Daar is een aparte versie voor.': 'Want to keep the data on a Raspberry Pi and show the scoreboard on several screens? There is a separate version for that.',
-  Installatiehandleiding: 'Installation guide (Dutch)',
+  Installatiehandleiding: 'Installation guide',
+  'Herinnering om een back-up te maken': 'Backup reminder',
+  '1 dag': '1 day',
+  '3 dagen': '3 days',
+  '1 week': '1 week',
+  '2 weken': '2 weeks',
+  '1 maand': '1 month',
+  Nooit: 'Never',
 };

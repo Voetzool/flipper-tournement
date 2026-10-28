@@ -1,51 +1,56 @@
-# Pinball Tournament op een Raspberry Pi
+# Pinball Tournament on a Raspberry Pi
 
-Dezelfde app als de telefoon-app, maar de gegevens staan op een Raspberry Pi (of andere pc). Alle apparaten die met de
-Pi verbonden zijn zien hetzelfde: voer uitslagen in op een iPad of telefoon en laat het scorebord op een laptop of tv
-zien. Alles werkt vanzelf bij, zonder te verversen.
+The same app as the phone app, but the data is stored on a Raspberry Pi (or another computer). All devices connected
+to the Pi see the same thing: enter results on an iPad or phone and show the scoreboard on a laptop or TV.
+Everything updates automatically, without refreshing.
 
-> **Nog nooit met een Raspberry Pi gewerkt?** Volg de stap-voor-stap-handleiding:
-> https://voetzool.github.io/flipper-tournement/pi/ (ook als bestand: [HANDLEIDING.md](HANDLEIDING.md)).
+> **Never used a Raspberry Pi before?** Follow the step-by-step guide:
+> https://voetzool.github.io/flipper-tournement/pi/en/ (also as a file: [MANUAL.md](MANUAL.md)).
+> Nederlandse handleiding: https://voetzool.github.io/flipper-tournement/pi/ ([HANDLEIDING.md](HANDLEIDING.md)).
 
-## Wat heb je nodig
-- Een Raspberry Pi met wifi (Pi 3B+, 4 of 5, of Pi Zero 2 W) en een SD-kaart met **Raspberry Pi OS (Bookworm)**.
-- Bij het installeren: internet via een **netwerkkabel**.
+## What you need
+- A Raspberry Pi with Wi-Fi (Pi 3B+, 4 or 5, or Pi Zero 2 W) and an SD card with **Raspberry Pi OS (Bookworm or
+  newer)**.
+- While installing: internet through a **network cable**.
 
-## Installeren
-1. Zet Raspberry Pi OS op de SD-kaart (Raspberry Pi Imager), start de Pi en sluit de netwerkkabel aan.
-2. Open een terminal op de Pi (of log in via ssh) en plak deze regel:
+## Install
+1. Put Raspberry Pi OS on the SD card (Raspberry Pi Imager), start the Pi and connect the network cable.
+2. Open a terminal on the Pi (or log in with ssh) and paste this line:
 
    ```
    curl -fsSL https://voetzool.github.io/flipper-tournement/pi/install.sh | sudo bash
    ```
 
-3. Na een paar minuten staat er "Klaar!" met de naam en het wachtwoord van het wifi-netwerk van de Pi.
+3. After a few minutes you'll see "Klaar!" ("Done!") with the name and password of the Pi's Wi-Fi network.
+4. Restart the Pi: `sudo reboot`.
 
-Eigen wifi-naam of wachtwoord? Zet ze vóór `sudo bash`:
-`curl -fsSL …/install.sh | sudo PINBALL_SSID=Flipperavond PINBALL_WIFI_PASSWORD=geheim123 bash`
+Your own Wi-Fi name or password? Put them before `bash`:
+`curl -fsSL …/install.sh | sudo PINBALL_SSID=PinballNight PINBALL_WIFI_PASSWORD=secret123 bash`
 
-## Gebruiken
-1. Verbind je iPad/telefoon/laptop met het wifi-netwerk **Pinball-Tournament** (wachtwoord standaard `flipper123`).
-2. Open **http://pinball-tournament.local** (lukt dat niet: **http://10.42.0.1**).
-3. Scorebord op de laptop: open het toernooi en klik op het scorebord-icoon; zet het venster op volledig scherm.
+## Use
+1. Connect your iPad/phone/laptop to the Wi-Fi network **Pinball-Tournament** (default password `flipper123`).
+2. Open **http://pinball-tournament.local** (if that doesn't work: **http://10.42.0.1**).
+3. Scoreboard on the laptop: open the tournament and click the scoreboard icon; make the window full screen.
 
-## Handige commando's (op de Pi)
-| Commando | Wat het doet |
+## Useful commands (on the Pi)
+| Command | What it does |
 |---|---|
-| `sudo pinball-tournament update` | Nieuwste versie installeren (gegevens blijven bewaard; Pi heeft dan internet nodig) |
-| `sudo pinball-tournament wifi <wachtwoord>` | Wifi-wachtwoord wijzigen |
-| `sudo pinball-tournament status` | Kijken of de server draait |
-| `sudo pinball-tournament logs` | Laatste meldingen van de server |
+| `sudo pinball-tournament update` | Install the latest version (data is kept; the Pi needs internet) |
+| `sudo pinball-tournament wifi <password>` | Change the Wi-Fi password |
+| `sudo pinball-tournament status` | Check whether the server is running |
+| `sudo pinball-tournament logs` | Latest messages from the server |
+| `sudo pinball-tournament restart` | Restart the server |
 
-De gegevens staan in `/var/lib/pinball-tournament` (met elke dag automatisch een kopie in `backups/`). In de app kun je
-via Instellingen → Back-up ook een kopie downloaden of terugzetten.
+The data is stored in `/var/lib/pinball-tournament` (with an automatic daily copy in `backups/`, the last 14 are
+kept). In the app you can also download or restore a backup via Settings → Backup.
 
-## Zonder internet
-Tijdens een toernooi heeft de Pi geen internet nodig. Machinecatalogus en meegeleverde spelregels staan op de Pi.
-Afbeeldingen van machines worden bewaard zodra ze één keer (met internet op de Pi) zijn bekeken. Heeft de Pi via de
-netwerkkabel internet, dan kun je in Instellingen de catalogus bijwerken.
+## Without internet
+During a tournament the Pi does not need internet. The machine catalogue and the bundled rules are stored on the Pi.
+Machine images are kept once they've been viewed while the Pi had internet. When the Pi has internet through the
+network cable, you can update the catalogue in Settings.
 
-## Op een gewone pc
-Werkt ook op Debian/Ubuntu: `curl -fsSL …/install.sh | sudo bash -s -- --no-wifi`. Gebruik dan het gewone netwerk.
+## On a regular computer
+Also works on Debian/Ubuntu: `curl -fsSL …/install.sh | sudo bash -s -- --no-wifi`. Then use your normal network.
 
-Voor ontwikkelaars: `npm run build:server` en daarna `npm run start:server` (poort 8080, gegevens in `dist-server/data`).
+For developers: `npm run build:server` and then `npm run start:server` (port 8080, data in `dist-server/data`).
+Installer options: `--no-wifi`, `--update`, `--dry-run`.

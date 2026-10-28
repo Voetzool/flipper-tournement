@@ -1,13 +1,19 @@
-// Zet server/HANDLEIDING.md om naar een losse webpagina (dist/pi/index.html) voor GitHub Pages.
+// Zet de Pi-handleiding om naar losse webpagina's voor GitHub Pages:
+//   server/HANDLEIDING.md (Nederlands) → dist/pi/index.html
+//   server/MANUAL.md      (Engels)     → dist/pi/en/index.html
 // Kleine eigen Markdown-omzetting voor precies wat de handleiding gebruikt: kopjes, alinea's, lijsten (ook genest),
 // tabellen, codeblokken (met kopieerknop), citaten, vet, `code` en links. Alle tekst wordt ge-escaped.
 //
-// Gebruik: node scripts/build-handleiding.mjs [uitvoerbestand]
+// Gebruik: node scripts/build-handleiding.mjs [uitvoermap, standaard dist/pi]
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 
-const src = new URL('../server/HANDLEIDING.md', import.meta.url);
-const out = process.argv[2] ?? new URL('../dist/pi/index.html', import.meta.url).pathname;
+const outDir = process.argv[2] ?? new URL('../dist/pi', import.meta.url).pathname;
+
+const LANGS = {
+  nl: { src: 'HANDLEIDING.md', out: 'index.html', root: '../', toc: 'Inhoud', copy: 'Kopiëren', copied: 'Gekopieerd!', back: '← Naar de app' },
+  en: { src: 'MANUAL.md', out: 'en/index.html', root: '../../', toc: 'Contents', copy: 'Copy', copied: 'Copied!', back: '← Back to the app' },
+};
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -28,7 +34,7 @@ function slug(text, used) {
   return id;
 }
 
-export function markdownToHtml(md) {
+export function markdownToHtml(md, copyLabel = 'Kopiëren') {
   const lines = md.replace(/\r\n?/g, '\n').split('\n');
   const html = [];
   const toc = [];
@@ -86,7 +92,7 @@ export function markdownToHtml(md) {
       flushAll();
       const code = [];
       while (++i < lines.length && !lines[i].trim().startsWith('```')) code.push(lines[i]);
-      html.push(`<div class="code"><pre><code>${esc(code.join('\n'))}</code></pre><button type="button" class="copy">Kopiëren</button></div>`);
+      html.push(`<div class="code"><pre><code>${esc(code.join('\n'))}</code></pre><button type="button" class="copy">${copyLabel}</button></div>`);
     } else if (!t) {
       flushAll();
     } else if ((m = /^(#{1,6})\s+(.*)$/.exec(t))) {
@@ -123,15 +129,19 @@ export function markdownToHtml(md) {
   return { title, toc, body: html.join('\n') };
 }
 
-const { title, toc, body } = markdownToHtml(readFileSync(src, 'utf8'));
+for (const [lang, L] of Object.entries(LANGS)) {
+const { title, toc, body } = markdownToHtml(readFileSync(new URL('../server/' + L.src, import.meta.url), 'utf8'), L.copy);
+const switcher = Object.keys(LANGS)
+  .map((l) => (l === lang ? `<strong>${l === 'nl' ? 'Nederlands' : 'English'}</strong>` : `<a href="${L.root}pi/${LANGS[l].out.replace('index.html', '')}">${l === 'nl' ? 'Nederlands' : 'English'}</a>`))
+  .join(' · ');
 
 const page = `<!doctype html>
-<html lang="nl">
+<html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<link rel="icon" href="../icons/icon.svg">
+<link rel="icon" href="${L.root}icons/icon.svg">
 <style>
 :root { --bg:#f5f6fa; --card:#fff; --text:#1a1a2e; --muted:#5b5f73; --line:#dfe2ec; --accent:#0b7390; --code-bg:#1b1b2e; --code-text:#e8e8f2; --tip:#fff7d6; --tip-line:#e0b400; }
 @media (prefers-color-scheme: dark) { :root { --bg:#0b0b12; --card:#1b1b2e; --text:#ececf4; --muted:#a3a6bd; --line:#2d2d45; --accent:#22e4ff; --code-bg:#05050a; --tip:#2a2610; --tip-line:#ffd60a; } }
@@ -159,20 +169,22 @@ nav.toc { background:var(--card); border:1px solid var(--line); border-radius:12
 nav.toc ol { margin:6px 0 0; padding-left:22px; }
 li { margin:4px 0; }
 .back { display:inline-block; margin-top:32px; }
+.lang { text-align:right; font-size:15px; margin-bottom:8px; }
 </style>
 </head>
 <body>
 <main>
-<header><img src="../icons/icon.svg" alt=""><h1>${inline(title)}</h1></header>
-<nav class="toc"><strong>Inhoud</strong><ol>${toc.map((h) => `<li><a href="#${h.id}">${inline(h.text)}</a></li>`).join('')}</ol></nav>
+<div class="lang">${switcher}</div>
+<header><img src="${L.root}icons/icon.svg" alt=""><h1>${inline(title)}</h1></header>
+<nav class="toc"><strong>${L.toc}</strong><ol>${toc.map((h) => `<li><a href="#${h.id}">${inline(h.text)}</a></li>`).join('')}</ol></nav>
 ${body}
-<a class="back" href="../">← Naar de telefoon-app</a>
+<a class="back" href="${L.root}">${L.back}</a>
 </main>
 <script>
 document.querySelectorAll('.copy').forEach(function (b) {
   b.addEventListener('click', function () {
     var text = b.parentNode.querySelector('code').textContent;
-    var done = function () { b.textContent = 'Gekopieerd!'; b.classList.add('done'); setTimeout(function () { b.textContent = 'Kopiëren'; b.classList.remove('done'); }, 2000); };
+    var done = function () { b.textContent = '${L.copied}'; b.classList.add('done'); setTimeout(function () { b.textContent = '${L.copy}'; b.classList.remove('done'); }, 2000); };
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done);
     else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); done(); }
   });
@@ -182,6 +194,8 @@ document.querySelectorAll('.copy').forEach(function (b) {
 </html>
 `;
 
+const out = join(outDir, L.out);
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, page);
 console.log('Handleiding geschreven naar', out);
+}
