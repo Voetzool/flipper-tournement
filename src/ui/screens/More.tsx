@@ -210,7 +210,7 @@ export function MoreScreen() {
           <h2>{tr('Raspberry Pi-versie')}</h2>
           <div class="card stack small">
             <div>{tr('Wil je de gegevens op een Raspberry Pi bewaren en het scorebord op meerdere schermen tonen? Daar is een aparte versie voor.')}</div>
-            <a class="btn block" href={import.meta.env.BASE_URL + 'pi/'} target="_blank" rel="noopener">
+            <a class="btn block" href={import.meta.env.BASE_URL + 'pi/index.html'} target="_blank" rel="noopener">
               {tr('Installatiehandleiding')}
             </a>
           </div>

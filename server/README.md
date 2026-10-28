@@ -8,7 +8,7 @@ zien. Alles werkt vanzelf bij, zonder te verversen.
 > https://voetzool.github.io/flipper-tournement/pi/ (ook als bestand: [HANDLEIDING.md](HANDLEIDING.md)).
 
 ## Wat heb je nodig
-- Een Raspberry Pi met wifi (Pi 3, 4 of 5, of Pi Zero 2 W) en een SD-kaart met **Raspberry Pi OS (Bookworm)**.
+- Een Raspberry Pi met wifi (Pi 3B+, 4 of 5, of Pi Zero 2 W) en een SD-kaart met **Raspberry Pi OS (Bookworm)**.
 - Bij het installeren: internet via een **netwerkkabel**.
 
 ## Installeren

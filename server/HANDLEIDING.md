@@ -1,6 +1,7 @@
 # Pinball Tournament op een Raspberry Pi installeren
 
-Deze handleiding is voor iemand die **nog nooit** iets met een Raspberry Pi heeft gedaan. Je hebt ongeveer
+Deze handleiding is voor iemand die **nog nooit** iets met een Raspberry Pi heeft gedaan. Hij werkt voor een
+**Raspberry Pi 3B+, 4 of 5**. Je hebt ongeveer
 **30 minuten** nodig. Je hoeft niets te programmeren: je plakt één regel tekst en de rest gaat vanzelf.
 
 Na afloop maakt de Pi een eigen wifi-netwerk. Telefoons, iPads en laptops die daarmee verbonden zijn openen de app
@@ -12,19 +13,20 @@ op **http://pinball-tournament.local**. Alle gegevens staan op de Pi, en alle sc
 
 | Wat | Toelichting |
 |---|---|
-| **Raspberry Pi 4 of 5** | Elke geheugengrootte is goed (2 GB is ruim genoeg). |
-| **Officiële voeding** | Pi 5: de 27 W USB-C-voeding. Pi 4: de 15 W USB-C-voeding. Een telefoonlader werkt vaak níet goed. |
+| **Raspberry Pi 3B+, 4 of 5** | Elke geheugengrootte is goed; de 1 GB van de Pi 3B+ is genoeg. |
+| **Officiële voeding** | Pi 3B+: de micro-USB-voeding van 5 V / 2,5 A. Pi 4: de 15 W USB-C-voeding. Pi 5: de 27 W USB-C-voeding. Een telefoonlader werkt vaak níet goed. |
 | **microSD-kaart** | Minimaal 16 GB, liefst met "A1" of "A2" erop (sneller). |
 | **SD-kaartlezer** | Om de kaart vanaf je laptop klaar te maken (zit soms in de laptop). |
 | **Netwerkkabel** | Om de Pi tijdens het installeren met internet (je router) te verbinden. |
 | **Laptop of pc** | Windows of Mac. |
-| Behuizing (optioneel) | Beschermt de Pi; bij een Pi 5 is een behuizing met ventilator handig. |
+| Behuizing (optioneel) | Beschermt de Pi. Bij een Pi 5 is een behuizing met ventilator handig. |
 
 Er zijn **twee manieren** om de Pi de eerste keer te bedienen. Kies er één:
 
 - **Manier A — met een scherm**: je sluit een scherm (of tv), toetsenbord en muis aan op de Pi. Hiervoor heb je
-  ook een **micro-HDMI-kabel** nodig (de Pi 4 en 5 hebben de kleine micro-HDMI-aansluiting, niet de gewone HDMI),
-  plus een USB-toetsenbord en -muis.
+  ook een HDMI-kabel nodig, plus een USB-toetsenbord en -muis. Let op welke kabel:
+  - **Pi 3B+**: een **gewone HDMI-kabel** (zoals bij een tv).
+  - **Pi 4 en 5**: een **micro-HDMI-kabel** (de kleine aansluiting).
 - **Manier B — vanaf je laptop**: de Pi heeft geen scherm nodig; je bedient hem op afstand vanaf je laptop. Je
   laptop moet dan op hetzelfde (thuis)netwerk zitten als de Pi.
 
@@ -37,7 +39,8 @@ De SD-kaart is de "harde schijf" van de Pi. Daar zetten we eerst het besturingss
 1. Download en installeer **Raspberry Pi Imager** van **https://www.raspberrypi.com/software/**.
 2. Stop de microSD-kaart in je laptop (eventueel via de kaartlezer).
 3. Start Raspberry Pi Imager en kies:
-   - **Apparaat / Device**: Raspberry Pi 4 of Raspberry Pi 5 (welke je hebt).
+   - **Apparaat / Device**: Raspberry Pi 3, Raspberry Pi 4 of Raspberry Pi 5 (welke je hebt; een 3B+ valt onder
+     Raspberry Pi 3).
    - **Besturingssysteem / Operating System**:
      - manier A: **Raspberry Pi OS (64-bit)**;
      - manier B: kies **Raspberry Pi OS (other)** en dan **Raspberry Pi OS Lite (64-bit)**.
@@ -57,11 +60,12 @@ De SD-kaart is de "harde schijf" van de Pi. Daar zetten we eerst het besturingss
 
 1. Stop de microSD-kaart in de Pi (aan de onderkant, de contactjes naar de printplaat toe).
 2. Sluit de **netwerkkabel** aan tussen de Pi en je **router** (het internetkastje thuis).
-3. Alleen manier A: sluit het **scherm** aan (micro-HDMI-poort het dichtst bij de voedingsaansluiting), en het
+3. Alleen manier A: sluit het **scherm** aan (Pi 3B+: de HDMI-poort; Pi 4/5: de micro-HDMI-poort het dichtst bij de
+   voedingsaansluiting), en het
    **toetsenbord** en de **muis**.
 4. Sluit **als laatste** de voeding aan. De Pi heeft geen aan/uit-knop: hij start meteen.
 
-De eerste keer opstarten duurt een paar minuten. Bij manier A zie je uiteindelijk een bureaublad (of een
+De eerste keer opstarten duurt een paar minuten (bij een Pi 3B+ tot ongeveer 5 minuten). Bij manier A zie je uiteindelijk een bureaublad (of een
 inlogscherm: log dan in met de gebruikersnaam en het wachtwoord uit stap 1).
 
 ## Stap 3 — Een terminal openen
@@ -108,7 +112,7 @@ Plak hem in de terminal en druk op **Enter**:
 
 Vraagt hij om een wachtwoord? Typ het wachtwoord van de Pi uit stap 1 (je ziet weer niets terwijl je typt).
 
-Nu wordt alles geïnstalleerd. Dat duurt **2 tot 10 minuten**; er komt veel tekst voorbij. Het is klaar als je
+Nu wordt alles geïnstalleerd. Dat duurt **2 tot 10 minuten** (bij een Pi 3B+ tot ongeveer 15 minuten); er komt veel tekst voorbij. Het is klaar als je
 **"Klaar!"** ziet, met daaronder de naam en het wachtwoord van het wifi-netwerk.
 
 Liever een eigen naam en wachtwoord voor het wifi-netwerk? Gebruik dan deze regel in plaats van de regel hierboven

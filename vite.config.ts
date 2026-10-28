@@ -45,6 +45,8 @@ export default defineConfig(({ mode }) => {
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
         navigateFallback: 'index.html',
+        // De Pi-handleiding (pi/) is een losse pagina: die niet door de app laten overnemen.
+        navigateFallbackDenylist: [/\/pi\//],
         // De kastencatalogus staat niet in de precache; die downloadt de app zelf als hij nodig is.
         globIgnores: ['catalog/**', 'rules/**', 'pi/**'],
         runtimeCaching: [
