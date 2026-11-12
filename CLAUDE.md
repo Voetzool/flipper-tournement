@@ -273,3 +273,6 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - `npm test` en `npm run build` moeten groen zijn vóór een push. Voor UI-wijzigingen: `npx vite preview` +
   Playwright-screenshot (telefoon 400×860 en tablet 1280×800).
 - CLAUDE.md bijwerken bij elke fase/beslissing.
+- **Versienummer** (`package.json`, getoond in Instellingen → Over): bij elke push die de gebruiker te zien krijgt
+  verhogen met `npm version <x.y.z> --no-git-tag-version` — 1.0.x reparaties/kleine aanpassingen, 1.x.0 nieuwe
+  functies, x.0.0 grote veranderingen (bijv. fase 4). Kort noteren in `CHANGELOG.md` (Engels). 1.0.0 = 12 nov 2026.
