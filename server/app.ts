@@ -16,6 +16,21 @@ export interface ServerOptions {
   dataDir: string;
   /** Mag de server zelf naar internet (afbeeldingen, catalogus, spelregels)? Uit in tests. */
   fetchImpl?: typeof fetch;
+  /** Eigen versie (standaard de versie uit package.json, ingebakken bij het bouwen). */
+  version?: string;
+  /** Waar de nieuwste versie staat (map met version.json en pinball-tournament.tar.gz). */
+  updateUrl?: string;
+}
+
+/** Vergelijkt versies als 1.2.3; positief als a nieuwer is dan b. */
+export function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d) return d;
+  }
+  return 0;
 }
 
 const OPDB_EXPORT = 'https://mp-data.sfo3.cdn.digitaloceanspaces.com/opdb-v2.json';
@@ -70,6 +85,21 @@ export async function createPinballServer(opts: ServerOptions): Promise<PinballS
   await store.load();
   const meta = new MetaFile(opts.dataDir);
   const imgDir = join(opts.dataDir, 'img');
+  const appVersion = opts.version ?? (typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev');
+  const updateUrl = (opts.updateUrl ?? process.env.PINBALL_URL ?? 'https://voetzool.github.io/flipper-tournement/pi').replace(/\/$/, '');
+  // Bijwerken gebeurt door een aparte systemd-taak (als root) die op dit verzoek-bestand let; zie install.sh.
+  const updateRequest = join(opts.dataDir, 'update-requested');
+  const updateStatusFile = join(opts.dataDir, 'update-status.json');
+
+  async function latestVersion(): Promise<string | null> {
+    try {
+      const r = await doFetch(updateUrl + '/version.json', { cache: 'no-store', signal: AbortSignal.timeout?.(8000) } as RequestInit);
+      if (!r.ok) return null;
+      return ((await r.json()) as { version?: string }).version ?? null;
+    } catch {
+      return null;
+    }
+  }
   const catalogDir = join(opts.dataDir, 'catalog');
 
   // Versienummer: verandert bij elke wijziging; begint bij de starttijd zodat apparaten na een herstart opnieuw laden.
@@ -203,6 +233,27 @@ export async function createPinballServer(opts: ServerOptions): Promise<PinballS
           return json(res, 200, { ok: true });
         } catch (e) {
           return json(res, 502, { error: (e as Error).message.includes('fetch') ? 'Geen internetverbinding.' : (e as Error).message });
+        }
+      }
+      if (path === '/api/version' && req.method === 'GET') return json(res, 200, { version: appVersion });
+      if (path === '/api/update/check' && req.method === 'GET') {
+        const latest = await latestVersion();
+        if (!latest) return json(res, 200, { current: appVersion, offline: true });
+        return json(res, 200, { current: appVersion, latest, available: compareVersions(latest, appVersion) > 0 });
+      }
+      if (path === '/api/update/install' && req.method === 'POST') {
+        const latest = await latestVersion();
+        if (!latest) return json(res, 503, { error: 'De Pi heeft geen internet.' });
+        if (compareVersions(latest, appVersion) <= 0) return json(res, 409, { error: 'Je hebt de nieuwste versie.' });
+        writeAtomic(updateStatusFile, JSON.stringify({ state: 'requested', at: Date.now(), from: appVersion, to: latest }));
+        writeAtomic(updateRequest, String(Date.now()));
+        return json(res, 202, { ok: true, latest });
+      }
+      if (path === '/api/update/status' && req.method === 'GET') {
+        try {
+          return json(res, 200, JSON.parse(readFileSync(updateStatusFile, 'utf8')));
+        } catch {
+          return json(res, 200, { state: 'idle' });
         }
       }
       if (path === '/api/fetch' && req.method === 'GET') {

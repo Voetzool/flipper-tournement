@@ -173,14 +173,22 @@ Note: this replaces everything that was already on the Pi.
 
 ## Updating to a new version
 
-1. Reconnect the network cable to the Pi and your router (the Pi needs internet for this).
-2. Open a terminal (step 3) and type:
+You can do this right from the app:
+
+1. Plug the **network cable** into the Pi and your router (the Pi downloads the new version itself).
+2. Open the app (connected to the Pi's Wi-Fi network) and go to **Settings** → **About**.
+3. Tap **Check for updates**. If there is a new version, tap **Update the Pi**.
+4. Wait a few minutes (a bit longer on a Pi 3B+) and keep the Pi on. The app is briefly unavailable and then
+   reloads by itself. Your data is kept.
+
+Not working from the app? Open a terminal (step 3) and type:
 
 ```
 sudo pinball-tournament update
 ```
 
-Your data is kept.
+> Installed the Pi before version 1.1.0? Then do it **once** from the terminal. After that the button in the app
+> works.
 
 ## Changing the Wi-Fi password
 

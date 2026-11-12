@@ -38,8 +38,8 @@ say() { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 run() {
   if [ "$DRY" = 1 ]; then echo "+ $*"; else "$@"; fi
 }
-write() { # write <bestand>  (inhoud via stdin)
-  if [ "$DRY" = 1 ]; then echo "+ schrijf $1:"; sed 's/^/    /'; else cat > "$1"; fi
+write() { # write <bestand>  (inhoud via stdin; via een tijdelijk bestand, zodat een draaiend script heel blijft)
+  if [ "$DRY" = 1 ]; then echo "+ schrijf $1:"; sed 's/^/    /'; else cat > "$1.tmp" && mv "$1.tmp" "$1"; fi
 }
 
 if [ "$DRY" = 0 ] && [ "$(id -u)" != 0 ]; then
@@ -52,9 +52,13 @@ if [ ${#WIFI_PASS} -lt 8 ]; then
 fi
 
 # ---------- 1. Benodigde programma's ----------
-say "Programma's installeren (Node.js, mDNS)"
-run apt-get update -qq
-run apt-get install -y -qq nodejs avahi-daemon curl ca-certificates tar
+if [ "$UPDATE" = 1 ] && command -v node >/dev/null 2>&1; then
+  say "Programma's zijn al geïnstalleerd"
+else
+  say "Programma's installeren (Node.js, mDNS)"
+  run apt-get update -qq
+  run apt-get install -y -qq nodejs avahi-daemon curl ca-certificates tar
+fi
 if [ "$DRY" = 0 ]; then
   NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
   if [ "$NODE_MAJOR" -lt 18 ]; then
@@ -100,6 +104,43 @@ NoNewPrivileges=true
 WantedBy=multi-user.target
 EOF
 
+# Bijwerken vanuit de app: de server (gebruiker pinball, zonder rechten) zet een verzoek-bestand neer;
+# de path-unit hieronder ziet dat en start de bijwerk-taak als root. Die schrijft de voortgang in update-status.json.
+write /usr/local/lib/pinball-tournament-update <<EOF
+#!/usr/bin/env bash
+# Draait als root, gestart door $SERVICE-update.path. Status voor de app: $DATA_DIR/update-status.json
+rm -f "$DATA_DIR/update-requested"
+status() {
+  node -e 'const fs=require("fs");const f=process.argv[1];fs.writeFileSync(f+".tmp",JSON.stringify({state:process.argv[2],at:Date.now(),message:process.argv[3]||""}));fs.renameSync(f+".tmp",f)' "$DATA_DIR/update-status.json" "\$1" "\${2:-}"
+  chown pinball:pinball "$DATA_DIR/update-status.json" 2>/dev/null || true
+}
+status running
+if curl -fsSL "$BASE_URL/install.sh" -o /tmp/pinball-install.sh && bash /tmp/pinball-install.sh --update > /tmp/pinball-update.log 2>&1; then
+  status done
+else
+  status error "\$(tail -n 5 /tmp/pinball-update.log 2>/dev/null)"
+fi
+EOF
+run chmod 755 /usr/local/lib/pinball-tournament-update
+write /etc/systemd/system/$SERVICE-update.service <<EOF
+[Unit]
+Description=Pinball Tournament bijwerken (aangevraagd vanuit de app)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/pinball-tournament-update
+EOF
+write /etc/systemd/system/$SERVICE-update.path <<EOF
+[Unit]
+Description=Let op verzoeken om Pinball Tournament bij te werken
+
+[Path]
+PathExists=$DATA_DIR/update-requested
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Hulpcommando: sudo pinball-tournament update | wifi <wachtwoord> | status | logs
 write /usr/local/bin/pinball-tournament <<EOF
 #!/usr/bin/env bash
@@ -119,6 +160,7 @@ EOF
 run chmod 755 /usr/local/bin/pinball-tournament
 run systemctl daemon-reload
 run systemctl enable $SERVICE
+run systemctl enable --now $SERVICE-update.path
 run systemctl restart $SERVICE
 
 if [ "$UPDATE" = 1 ]; then

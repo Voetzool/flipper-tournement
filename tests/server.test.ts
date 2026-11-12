@@ -1,9 +1,9 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
-import { allowedImage, allowedPage, createPinballServer } from '../server/app';
+import { allowedImage, allowedPage, compareVersions, createPinballServer } from '../server/app';
 import { buildState } from '../src/events/reducer';
 import type { StoredEvent } from '../src/events/types';
 
@@ -107,5 +107,53 @@ describe('Pi-server', () => {
     expect(allowedImage('https://evil.com/opdb.org.jpg')).toBe(false);
     expect(allowedPage('https://pinballprimer.github.io/x.html')).toBe(true);
     expect(allowedPage('https://example.com/')).toBe(false);
+  });
+});
+
+describe('Pi bijwerken vanuit de app', () => {
+  const withLatest = (latest: string | null) =>
+    (async (u: string) => {
+      if (!latest) throw new TypeError('fetch failed');
+      expect(String(u)).toContain('/version.json');
+      return new Response(JSON.stringify({ version: latest }));
+    }) as unknown as typeof fetch;
+
+  async function startWith(latest: string | null) {
+    const d = dirs();
+    const s = await createPinballServer({ ...d, version: '1.0.0', updateUrl: 'https://example.test/pi', fetchImpl: withLatest(latest) });
+    await new Promise<void>((r) => s.server.listen(0, r));
+    servers.push({ close: () => (s.server.closeAllConnections(), s.server.close()) });
+    return { base: `http://127.0.0.1:${(s.server.address() as AddressInfo).port}`, d };
+  }
+
+  it('vergelijkt versies', () => {
+    expect(compareVersions('1.1.0', '1.0.9')).toBeGreaterThan(0);
+    expect(compareVersions('1.0.0', '1.0.0')).toBe(0);
+    expect(compareVersions('1.0.10', '1.0.9')).toBeGreaterThan(0);
+    expect(compareVersions('0.9', '1.0.0')).toBeLessThan(0);
+  });
+
+  it('meldt de eigen versie en of er een nieuwere is', async () => {
+    const { base } = await startWith('1.1.0');
+    expect(await fetch(base + '/api/version').then((r) => r.json())).toEqual({ version: '1.0.0' });
+    expect(await fetch(base + '/api/update/check').then((r) => r.json())).toEqual({ current: '1.0.0', latest: '1.1.0', available: true });
+  });
+
+  it('zegt het als de Pi geen internet heeft', async () => {
+    const { base } = await startWith(null);
+    expect(await fetch(base + '/api/update/check').then((r) => r.json())).toEqual({ current: '1.0.0', offline: true });
+    expect((await fetch(base + '/api/update/install', { method: 'POST' })).status).toBe(503);
+  });
+
+  it('vraagt de bijwerk-taak alleen aan als er een nieuwere versie is', async () => {
+    const same = await startWith('1.0.0');
+    expect((await fetch(same.base + '/api/update/install', { method: 'POST' })).status).toBe(409);
+    expect(existsSync(join(same.d.dataDir, 'update-requested'))).toBe(false);
+
+    const newer = await startWith('1.2.0');
+    expect(await fetch(newer.base + '/api/update/status').then((r) => r.json())).toEqual({ state: 'idle' });
+    expect((await fetch(newer.base + '/api/update/install', { method: 'POST' })).status).toBe(202);
+    expect(existsSync(join(newer.d.dataDir, 'update-requested'))).toBe(true);
+    expect(await fetch(newer.base + '/api/update/status').then((r) => r.json())).toMatchObject({ state: 'requested', to: '1.2.0' });
   });
 });

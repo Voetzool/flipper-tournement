@@ -9,6 +9,9 @@ export default defineConfig({
     target: 'node18',
     rollupOptions: { output: { entryFileNames: 'server.mjs', format: 'es' } },
   },
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev'),
+  },
   publicDir: false,
   ssr: { noExternal: true },
 });

@@ -1,5 +1,6 @@
 import { shareOrDownload } from '../../lib/share';
 import { SERVER_MODE } from '../../lib/serverMode';
+import { PiUpdateCard } from '../components/PiUpdateCard';
 import { locale, tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../../app/state';
@@ -244,7 +245,7 @@ export function MoreScreen() {
           {tr('Flipper Toernooi')} v{__APP_VERSION__} · {tr('gebouwd')} {new Date(__BUILD_TIME__).toLocaleString(locale())}
         </div>
         {SERVER_MODE ? (
-          <div class="muted">{tr('Nieuwe versie installeren: op de server')} <code>sudo pinball-tournament update</code></div>
+          <PiUpdateCard />
         ) : (
         <button
           class="btn block"

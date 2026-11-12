@@ -170,14 +170,22 @@ Let op: dit vervangt alles wat al op de Pi stond.
 
 ## Bijwerken naar een nieuwe versie
 
-1. Sluit de netwerkkabel weer aan op de Pi en je router (de Pi heeft hiervoor internet nodig).
-2. Open een terminal (stap 3) en typ:
+Dat kan gewoon vanuit de app:
+
+1. Steek de **netwerkkabel** in de Pi en je router (de Pi haalt de nieuwe versie zelf van internet).
+2. Open de app (verbonden met het wifi-netwerk van de Pi) en ga naar **Instellingen** → **Over**.
+3. Tik op **Controleren op update**. Is er een nieuwe versie, tik dan op **Pi bijwerken**.
+4. Wacht een paar minuten (bij een Pi 3B+ iets langer) en laat de Pi aan. De app is even niet bereikbaar en
+   herlaadt daarna vanzelf. Je gegevens blijven gewoon bewaard.
+
+Lukt het niet via de app? Open dan een terminal (stap 3) en typ:
 
 ```
 sudo pinball-tournament update
 ```
 
-Je gegevens blijven gewoon bewaard.
+> Heb je de Pi geïnstalleerd vóór versie 1.1.0? Doe het dan **één keer** via de terminal. Daarna werkt de knop in
+> de app.
 
 ## Wifi-wachtwoord wijzigen
 

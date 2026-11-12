@@ -3,6 +3,12 @@
 Version numbers: **1.0.x** for fixes and small tweaks, **1.x.0** for new features, **x.0.0** for big changes.
 The version is shown in the app under Settings → About.
 
+## 1.1.0 — 2026-11-12
+
+- **Update the Raspberry Pi from the app**: Settings → About → Check for updates → Update the Pi (with the network
+  cable plugged into the Pi). All connected devices reload by themselves once the new version runs.
+  A Pi installed before 1.1.0 needs one last `sudo pinball-tournament update` first.
+
 ## 1.0.0 — 2026-11-12
 
 First full version. Everything built so far:

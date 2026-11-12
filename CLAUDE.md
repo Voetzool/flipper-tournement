@@ -224,6 +224,16 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   `scripts/build-handleiding.mjs` (eigen mini-Markdown met codeblokken + kopieerknop) maakt er in CI
   `dist/pi/index.html` van → https://voetzool.github.io/flipper-tournement/pi/ (niet in de precache: `pi/**`, en `navigateFallbackDenylist` voor `/pi/` — anders toont de service worker de app i.p.v. de handleiding).
   Link in de telefoon-app: Instellingen → Raspberry Pi-versie. Commando's/namen gelijk houden met `install.sh`.
+- **Bijwerken vanuit de app** (1.1.0): CI zet `pi/version.json`. Server: `GET /api/version`, `GET /api/update/check`
+  (haalt `PINBALL_URL/version.json`, `compareVersions`), `POST /api/update/install` (alleen bij nieuwere versie: schrijft
+  `DATA_DIR/update-requested` + status `requested`), `GET /api/update/status` (`DATA_DIR/update-status.json`). Op de Pi
+  ziet `pinball-tournament-update.path` het verzoek-bestand en start `pinball-tournament-update.service` (root,
+  `/usr/local/lib/pinball-tournament-update`): haalt de nieuwste `install.sh` en draait `--update` (apt wordt dan
+  overgeslagen als Node er al is), schrijft `running`/`done`/`error` (+ laatste logregels). De server zelf blijft
+  zonder rechten. App: `src/app/piUpdate.ts` + `PiUpdateCard` (Instellingen → Over, alleen Pi-modus); na herverbinden
+  vergelijkt `RemoteStore` `/api/version` met `__APP_VERSION__` en herlaadt (alle apparaten). `write()` in install.sh
+  schrijft via tmp + mv (het bijwerk-script herschrijft zichzelf terwijl het draait). Pi's van vóór 1.1.0: één keer
+  `sudo pinball-tournament update`.
 - Tests: `tests/server.test.ts` (eigen `server/tsconfig.json` met Node-types; root-tsconfig sluit die test uit).
 
 ## Schermen (`src/ui/screens/`)

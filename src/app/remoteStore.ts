@@ -4,6 +4,16 @@ import type { EventBody, StoredEvent } from '../events/types';
 
 type Command = { op: 'dispatch'; body: EventBody } | { op: 'undo' | 'redo'; scope: string };
 
+/** Herlaadt de pagina als de server inmiddels een andere versie van de app heeft (na het bijwerken van de Pi). */
+export async function reloadIfServerUpdated(): Promise<void> {
+  try {
+    const { version } = await api<{ version: string }>('/api/version');
+    if (version && version !== __APP_VERSION__) location.reload();
+  } catch {
+    // server (nog) niet bereikbaar: later opnieuw
+  }
+}
+
 /** false zodra de server (de Pi) niet bereikbaar is; de app probeert het dan vanzelf opnieuw. */
 export const serverConnected = signal(true);
 
@@ -128,6 +138,8 @@ export class RemoteStore {
     if (this.stream || typeof EventSource === 'undefined') return;
     this.stream = new EventSource('/api/stream');
     this.stream.onmessage = (m) => {
+      // Weer verbonden na een onderbreking (bijv. na het bijwerken van de Pi): nieuwe versie? Dan de app herladen.
+      if (!serverConnected.value) reloadIfServerUpdated();
       serverConnected.value = true;
       if (Number(m.data) !== this.version) this.reload().catch(() => {});
     };

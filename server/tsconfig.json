@@ -3,5 +3,5 @@
   "compilerOptions": {
     "types": ["node", "vite/client"]
   },
-  "include": [".", "../src/events", "../src/lib", "../tests/server.test.ts"]
+  "include": [".", "../src/events", "../src/lib", "../src/env.d.ts", "../tests/server.test.ts"]
 }

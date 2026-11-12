@@ -35,7 +35,7 @@ Your own Wi-Fi name or password? Put them before `bash`:
 ## Useful commands (on the Pi)
 | Command | What it does |
 |---|---|
-| `sudo pinball-tournament update` | Install the latest version (data is kept; the Pi needs internet) |
+| `sudo pinball-tournament update` | Install the latest version (data is kept; the Pi needs internet). Usually easier from the app: Settings → About → Check for updates → Update the Pi |
 | `sudo pinball-tournament wifi <password>` | Change the Wi-Fi password |
 | `sudo pinball-tournament status` | Check whether the server is running |
 | `sudo pinball-tournament logs` | Latest messages from the server |
