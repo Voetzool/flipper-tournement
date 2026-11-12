@@ -2,6 +2,7 @@ import { loaded } from '../app/state';
 import { route } from '../app/router';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toast } from './components/Toast';
+import { ArchiveScreen, FolderScreen } from './screens/Folder';
 import { MachineDetailScreen } from './screens/MachineDetail';
 import { MachinesScreen } from './screens/Machines';
 import { MoreScreen } from './screens/More';
@@ -47,6 +48,10 @@ function Screen() {
       return <NewSingleScreen key={b ?? 'nieuw'} from={b} />;
     case 'nieuw':
       return <NewTournamentScreen />;
+    case 'map':
+      return <FolderScreen key={b} id={b} />;
+    case 'archief':
+      return <ArchiveScreen />;
     case 't':
       if (c === 'scorebord') return <ScoreboardScreen id={b} />;
       return <TournamentScreen key={b} id={b} tab={c === 'ronde' || c === 'stand' || c === 'kasten' || c === 'geschiedenis' ? c : 'auto'} />;

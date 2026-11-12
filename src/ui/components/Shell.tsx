@@ -69,7 +69,7 @@ export function UndoRedo({ tournamentId }: { tournamentId: string }) {
 }
 
 const tabs = [
-  { path: '', match: ['', 't', 'nieuw', 'pot'], ico: 'sports_esports', label: 'Spelen' },
+  { path: '', match: ['', 't', 'nieuw', 'pot', 'map', 'archief'], ico: 'sports_esports', label: 'Spelen' },
   { path: 'ranglijst', match: ['ranglijst'], ico: 'leaderboard', label: 'Ranglijst' },
   { path: 'spelers', match: ['spelers', 'speler'], ico: 'group', label: 'Spelers' },
   { path: 'kasten', match: ['kasten', 'kast'], ico: 'joystick', label: 'Machines' },

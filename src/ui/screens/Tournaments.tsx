@@ -1,18 +1,29 @@
 import { Icon } from '../components/Icon';
-import { locale, tr } from '../../i18n';
-import { machineName, playerName, state } from '../../app/state';
+import { tr } from '../../i18n';
+import { dispatch, state } from '../../app/state';
 import { go } from '../../app/router';
-import type { Tournament } from '../../events/types';
-import { formatOf } from '../../formats';
 import { BackupBanner } from '../components/BackupBanner';
+import { HomeViewToggle } from '../components/HomeViewToggle';
 import { Shell } from '../components/Shell';
+import { createFolder, FolderItems, isDone, TournamentItems } from '../components/TournamentItems';
 
 export function TournamentsScreen() {
-  const all = [...state.value.tournaments.values()].sort((a, b) => b.createdAt - a.createdAt);
-  const list = all.filter((t) => t.format !== 'single');
-  const singles = all.filter((t) => t.format === 'single').slice(0, 10);
-  const active = list.filter((t) => t.status === 'active');
-  const done = list.filter((t) => t.status === 'finished');
+  const s = state.value;
+  const all = [...s.tournaments.values()].sort((a, b) => b.createdAt - a.createdAt);
+  const visible = all.filter((t) => !t.archived);
+  // Wat nog bezig is staat altijd bovenaan, ook als het in een map zit.
+  const active = visible.filter((t) => !isDone(t));
+  const loose = visible.filter((t) => isDone(t) && !t.folderId);
+  const done = loose.filter((t) => t.format !== 'single');
+  const singles = loose.filter((t) => t.format === 'single');
+  const folders = [...s.folders.values()].sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+  const archivedCount = all.length - visible.length;
+
+  const archiveAll = () => {
+    if (!confirm(tr('{n} afgeronde toernooien en potjes (buiten mappen) naar het archief verplaatsen?', { n: loose.length }))) return;
+    dispatch({ type: 'TournamentsArchived', tournamentIds: loose.map((t) => t.id), archived: true });
+  };
+
   return (
     <Shell
       title={
@@ -31,61 +42,42 @@ export function TournamentsScreen() {
           <Icon name="bolt" /> {tr('Losse pot')}
         </button>
       </div>
+
+      {all.length > 0 && (
+        <div class="row home-tools">
+          <HomeViewToggle />
+          <span class="grow" />
+          <button class="btn ghost small" onClick={() => createFolder()}>
+            <Icon name="create_new_folder" /> {tr('Nieuwe map')}
+          </button>
+        </div>
+      )}
+
       {active.length > 0 && <h2>{tr('Bezig')}</h2>}
-      <ul class="list">
-        {active.map((t) => (
-          <Item key={t.id} t={t} />
-        ))}
-      </ul>
+      <TournamentItems items={active} />
+      {folders.length > 0 && <h2>{tr('Mappen')}</h2>}
+      <FolderItems folders={folders} />
       {done.length > 0 && <h2>{tr('Afgerond')}</h2>}
-      <ul class="list">
-        {done.map((t) => (
-          <Item key={t.id} t={t} />
-        ))}
-      </ul>
+      <TournamentItems items={done} />
       {singles.length > 0 && <h2>{tr('Losse potjes')}</h2>}
-      <ul class="list">
-        {singles.map((t) => (
-          <SingleItem key={t.id} t={t} />
-        ))}
-      </ul>
+      <TournamentItems items={singles} />
+
+      {(loose.length > 0 || archivedCount > 0) && (
+        <div class="row home-tools" style="margin-top:20px">
+          {loose.length > 0 && (
+            <button class="btn ghost small" onClick={archiveAll}>
+              <Icon name="archive" /> {tr('Afgeronde archiveren')}
+            </button>
+          )}
+          <span class="grow" />
+          {archivedCount > 0 && (
+            <a class="btn ghost small" href="#/archief">
+              <Icon name="inventory_2" /> {tr('Archief ({n})', { n: archivedCount })}
+            </a>
+          )}
+        </div>
+      )}
       {!all.length && <p class="empty">{tr('Nog geen toernooien of potjes. Voeg eerst spelers (en machines) toe en start een toernooi of een losse pot.')}</p>}
     </Shell>
-  );
-}
-
-function SingleItem({ t }: { t: Tournament }) {
-  const s = state.value;
-  const game = t.rounds[0]?.games[0];
-  if (!game) return null;
-  const names = (ids: string[]) => ids.map((id) => playerName(s, id)).join(' & ');
-  const vs = game.teams ? game.teams.map(names).join(' vs ') : game.playerIds.map((id) => playerName(s, id)).join(' · ');
-  const winner = game.result ? (game.teams ? names(game.teams.find((tm) => tm.includes(game.result![0]))!) : playerName(s, game.result[0])) : null;
-  return (
-    <li class="list-item card tap" onClick={() => go('t/' + t.id)}>
-      <div class="name">
-        {vs}
-        <div class="small muted">
-          {machineName(s, game.machineId)} · {t.name.replace(/^[^·]*· /, '')}
-        </div>
-      </div>
-      {winner ? <span class="badge"><Icon name="trophy" /> {winner}</span> : <span class="badge live">{tr('bezig')}</span>}
-    </li>
-  );
-}
-
-function Item({ t }: { t: Tournament }) {
-  const date = new Date(t.createdAt).toLocaleDateString(locale(), { day: 'numeric', month: 'short', year: 'numeric' });
-  return (
-    <li class="list-item card tap" onClick={() => go('t/' + t.id)}>
-      <div class="name">
-        {t.name}
-        <div class="small muted">
-          {tr(formatOf(t.format).label)} · {date} ·{' '}
-          {tr('{n} spelers · ronde {r}/{totaal}', { n: t.playerIds.length, r: Math.min(t.rounds.length, t.settings.rounds), totaal: t.settings.rounds })}
-        </div>
-      </div>
-      {t.status === 'active' ? <span class="badge live">{tr('live')}</span> : <span class="badge">{tr('klaar')}</span>}
-    </li>
   );
 }

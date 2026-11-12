@@ -45,6 +45,35 @@ export function setBackupReminderDays(d: ReminderDays) {
   save('backupReminderDays', String(d));
 }
 
+/** Standaardkeuzes: welke machines staan al aangevinkt bij een nieuw toernooi / bij "willekeurig" in een losse pot. */
+export type Preselect = 'none' | 'all';
+export const tournamentMachines = signal<Preselect>(load('tournamentMachines', ['none', 'all'] as const, 'none'));
+export const randomMachines = signal<Preselect>(load('randomMachines', ['none', 'all'] as const, 'none'));
+export function setTournamentMachines(v: Preselect) {
+  tournamentMachines.value = v;
+  save('tournamentMachines', v);
+}
+export function setRandomMachines(v: Preselect) {
+  randomMachines.value = v;
+  save('randomMachines', v);
+}
+
+/** Startscherm als lijst of als raster (tegels). */
+export type HomeView = 'list' | 'grid';
+export const homeView = signal<HomeView>(load('homeView', ['list', 'grid'] as const, 'list'));
+export function setHomeView(v: HomeView) {
+  homeView.value = v;
+  save('homeView', v);
+}
+
+/** Ranglijst als tabel, staafgrafiek of ratingverloop. */
+export type RankingView = 'table' | 'bars' | 'history';
+export const rankingView = signal<RankingView>(load('rankingView', ['table', 'bars', 'history'] as const, 'table'));
+export function setRankingView(v: RankingView) {
+  rankingView.value = v;
+  save('rankingView', v);
+}
+
 const media = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)') : null;
 const systemLight = signal(media?.matches ?? false);
 media?.addEventListener?.('change', (e) => (systemLight.value = e.matches));

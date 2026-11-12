@@ -1,3 +1,5 @@
+import { randomMachines } from '../../app/settings';
+import { corePlayerIds, toggleCoreSelection } from '../../lib/coreGroup';
 import { Icon } from '../components/Icon';
 import { locale, tr } from '../../i18n';
 import { useState } from 'preact/hooks';
@@ -40,7 +42,9 @@ export function NewSingleScreen({ from }: { from?: string }) {
   });
   const [machineMode, setMachineMode] = useState<'choose' | 'random'>(prev && prev.machineIds.length > 1 ? 'random' : 'choose');
   const [chosen, setChosen] = useState<Id | null>(prev && prev.machineIds.length === 1 ? prev.machineIds[0] : null);
-  const [pool, setPool] = useState<Set<Id>>(() => new Set(prev && prev.machineIds.length > 1 ? prev.machineIds : machines.map((m) => m.id)));
+  const [pool, setPool] = useState<Set<Id>>(() =>
+    new Set(prev && prev.machineIds.length > 1 ? prev.machineIds : randomMachines.value === 'all' ? machines.map((m) => m.id) : []),
+  );
   const [picked, setPicked] = useState<Id | null>(null);
 
   const togglePlayer = (id: Id) => {
@@ -55,6 +59,14 @@ export function NewSingleScreen({ from }: { from?: string }) {
     if (teamOf[id] === undefined) setTeamOf({ ...teamOf, [id]: a <= b ? 0 : 1 });
   };
 
+  // Nieuwe speler (via "Vaste groep") in het kleinste team zetten.
+  const togglePlayerTeam = (id: Id, next: Id[]) => {
+    if (teamOf[id] !== undefined) return;
+    const a = next.filter((p) => teamOf[p] === 0).length;
+    const b = next.filter((p) => teamOf[p] === 1).length;
+    teamOf[id] = a <= b ? 0 : 1;
+    setTeamOf({ ...teamOf });
+  };
   const team = (id: Id) => teamOf[id] ?? 0;
   const teams: Id[][] = [sel.filter((p) => team(p) === 0), sel.filter((p) => team(p) === 1)];
   const drawTeams = () => {
@@ -67,7 +79,14 @@ export function NewSingleScreen({ from }: { from?: string }) {
   const poolList = machines.filter((m) => pool.has(m.id)).map((m) => m.id);
   const roll = () => setPicked(pickRandom(poolList.filter((id) => id !== picked).length ? poolList.filter((id) => id !== picked) : poolList));
 
-  const valid = sel.length >= 2 && (mode === 'ffa' || (teams[0].length > 0 && teams[1].length > 0));
+  // Teams pas vanaf 3 spelers: met 2 is het gewoon een 1-tegen-1.
+  const valid = mode === 'ffa' ? sel.length >= 2 : sel.length >= 3 && teams[0].length > 0 && teams[1].length > 0;
+  const core = corePlayerIds(s);
+  const selectCore = () => {
+    const next = toggleCoreSelection(sel, core);
+    for (const id of next) if (!sel.includes(id)) togglePlayerTeam(id, next);
+    setSel(next);
+  };
 
   const start = () => {
     const machineId = machineMode === 'choose' ? chosen : (picked ?? pickRandom(poolList));
@@ -102,7 +121,14 @@ export function NewSingleScreen({ from }: { from?: string }) {
           </button>
         </div>
 
-        <h2>{tr('Spelers ({n})', { n: sel.length })}</h2>
+        <h2>
+          {tr('Spelers ({n})', { n: sel.length })}{' '}
+          {core.length > 0 && (
+            <button class="btn ghost small" onClick={selectCore}>
+              <Icon name="star" /> {tr('Vaste groep')}
+            </button>
+          )}
+        </h2>
         {!players.length && (
           <p class="muted">
             {tr('Nog geen spelers.')} <a href="#/spelers">{tr('Voeg eerst spelers toe')}</a>.
@@ -207,7 +233,7 @@ export function NewSingleScreen({ from }: { from?: string }) {
           {tr('Start pot')}
         </button>
         {!valid && (
-          <p class="small muted">{mode === 'teams' ? tr('Kies spelers en zet in elk team minstens één speler.') : tr('Kies minstens 2 spelers.')}</p>
+          <p class="small muted">{mode === 'teams' ? tr('Teams kan vanaf 3 spelers; zet in elk team minstens één speler.') : tr('Kies minstens 2 spelers.')}</p>
         )}
       </div>
     </Shell>

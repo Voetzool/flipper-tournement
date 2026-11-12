@@ -1,3 +1,4 @@
+import { OrganizeSheet } from '../components/TournamentItems';
 import { Icon } from '../components/Icon';
 import { tr } from '../../i18n';
 import { useState } from 'preact/hooks';
@@ -423,7 +424,9 @@ export function ResultSheet({ t, gameId, onClose }: { t: Tournament; gameId: str
 
 function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
   const [players, setPlayers] = useState(false);
+  const [organize, setOrganize] = useState(false);
   if (players) return <PlayersSheet t={t} onClose={onClose} />;
+  if (organize) return <OrganizeSheet t={t} onClose={onClose} />;
   return (
     <Sheet onClose={onClose}>
       <div class="stack">
@@ -454,6 +457,9 @@ function MenuSheet({ t, onClose }: { t: Tournament; onClose: () => void }) {
             <Icon name="undo" /> {tr('Toernooi heropenen')}
           </button>
         )}
+        <button class="btn block" onClick={() => setOrganize(true)}>
+          <Icon name="drive_file_move" /> {tr('Naar map of archief')}
+        </button>
         <button
           class="btn danger block"
           onClick={() => {

@@ -149,5 +149,17 @@ export function describeEvent(b: EventBody, s: AppState): string {
       return tr('{naam} heropend', { naam: t });
     case 'TournamentDeleted':
       return tr('{naam} verwijderd', { naam: t });
+    case 'PlayersCoreSet':
+      return tr('vaste groep gewijzigd');
+    case 'TournamentsArchived':
+      return b.archived ? tr('gearchiveerd') : tr('uit het archief gehaald');
+    case 'FolderCreated':
+      return tr('map {naam} gemaakt', { naam: b.name });
+    case 'FolderRenamed':
+      return tr('map hernoemd naar {naam}', { naam: b.name });
+    case 'FolderDeleted':
+      return tr('map verwijderd');
+    case 'TournamentsMoved':
+      return tr('verplaatst');
   }
 }

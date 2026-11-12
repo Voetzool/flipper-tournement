@@ -19,9 +19,25 @@ export function PlayersScreen() {
   return (
     <Shell title={tr('Spelers')}>
       {!active.length && <p class="empty">{tr('Nog geen spelers. Tik op + om iemand toe te voegen.')}</p>}
-      <ul class="list">
+      {active.length > 0 && (
+        <p class="small muted" style="margin:0 0 10px">
+          {tr('Tik op de ster om iemand in de vaste groep te zetten: die selecteer je bij een nieuw toernooi in één keer.')}
+        </p>
+      )}
+      <ul class="list compact">
         {active.map((p) => (
-          <li key={p.id} class="list-item card tap" onClick={() => go('speler/' + p.id)}>
+          <li key={p.id} class="list-item compact tap" onClick={() => go('speler/' + p.id)}>
+            <button
+              class={'star' + (p.core ? ' on' : '')}
+              aria-label={tr('Vaste groep')}
+              aria-pressed={!!p.core}
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch({ type: 'PlayersCoreSet', playerIds: [p.id], core: !p.core });
+              }}
+            >
+              <Icon name="star" fill={!!p.core} />
+            </button>
             <span class="name">{p.name}</span>
             {ratings.value.has(p.id) && <span class="muted">{Math.round(ratings.value.get(p.id)!.rating)}</span>}
             <span class="muted"><Icon name="chevron_right" /></span>

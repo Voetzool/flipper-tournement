@@ -174,10 +174,13 @@ main {
   grid-template-columns: repeat(5, 1fr);
   background: var(--nav-bg);
   border-top: 1px solid var(--line);
-  padding-bottom: var(--safe-bottom);
+  padding: 0 8px var(--safe-bottom);
 }
 
 .bottomnav a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -186,7 +189,7 @@ main {
   min-height: 64px;
   color: var(--muted);
   text-decoration: none;
-  font-size: min(12px, 3.1vw);
+  font-size: min(12px, 2.9vw);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -395,6 +398,42 @@ main {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 14px;
+}
+
+.list-item.compact {
+  min-height: 44px;
+  padding: 4px 10px 4px 4px;
+  gap: 6px;
+  border-radius: 12px;
+}
+
+.list.compact {
+  gap: 6px;
+}
+
+.list-item.compact .name {
+  font-size: 17px;
+}
+
+.star {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.star .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.star.on {
+  color: var(--yellow);
 }
 
 .list-item .name {
@@ -675,6 +714,10 @@ h2:first-child {
   padding: 0 8px;
 }
 
+.standings th:first-child {
+  text-align: center;
+}
+
 .standings td {
   background: var(--card);
   padding: 12px 8px;
@@ -925,10 +968,7 @@ h2:first-child {
   margin: 0;
   font-size: clamp(24px, 4.5vw, 56px);
   font-weight: 900;
-  background: linear-gradient(90deg, var(--pink), var(--yellow), var(--cyan));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
 }
 
 .scoreboard .sub {
@@ -1522,4 +1562,219 @@ textarea.input.notes {
 
 .wait-reason {
   margin: -4px 0 6px;
+}
+
+/* ---------- Startscherm: raster, mappen ---------- */
+
+.home-tools {
+  margin: 14px 0 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.home-tools .btn.small {
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.seg.mini {
+  flex: none;
+}
+
+.seg.mini button {
+  flex: none;
+  min-height: 40px;
+  width: 48px;
+  padding: 0;
+}
+
+.tile-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  min-height: 120px;
+}
+
+.tile .name {
+  flex: 1;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.tile.folder {
+  min-height: 0;
+}
+
+.tile.folder > .icon {
+  width: 32px;
+  height: 32px;
+  color: var(--cyan);
+}
+
+.list-item > .icon {
+  color: var(--cyan);
+}
+
+.item-end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+
+.tile .item-end {
+  justify-content: space-between;
+}
+
+.iconbtn.plain-icon {
+  min-width: 36px;
+  min-height: 36px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+
+/* ---------- Ranglijst: grafieken ---------- */
+
+/* Categorische kleuren voor lijnen (vaste volgorde; gevalideerd op de kaartkleur, licht en donker). */
+:root {
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --s5: #d55181;
+  --s6: #008300;
+  --s7: #9085e9;
+  --s8: #e66767;
+}
+
+:root[data-theme='light'] {
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s4: #eda100;
+  --s5: #e87ba4;
+  --s6: #008300;
+  --s7: #6250d6;
+  --s8: #e34948;
+}
+
+.bars {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 30%) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.bar-row.hover {
+  background: var(--card);
+}
+
+.bar-label {
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track {
+  position: relative;
+  height: 18px;
+}
+
+.bar-fill {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--chart);
+}
+
+.bar-rd {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--text);
+  opacity: 0.5;
+}
+
+.bar-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  min-width: 4.5em;
+  text-align: right;
+}
+
+.bar-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 6px 0 calc(30% + 16px);
+}
+
+.chart .series {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.legend {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 14px;
+}
+
+.legend li,
+.history-tip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.history-tip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+
+.export-buttons {
+  display: flex;
+  gap: 8px;
 }

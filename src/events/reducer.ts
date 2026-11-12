@@ -2,7 +2,7 @@ import { clone } from '../lib/clone';
 import type { AppState, Game, GameDraft, StoredEvent, Tournament } from './types';
 
 export function emptyState(): AppState {
-  return { players: new Map(), machines: new Map(), tournaments: new Map() };
+  return { players: new Map(), machines: new Map(), tournaments: new Map(), folders: new Map() };
 }
 
 /** Speelt alle actieve (niet ongedaan gemaakte) events af tot een nieuwe state. Puur: geen bijwerkingen. */
@@ -130,6 +130,38 @@ export function apply(state: AppState, e: StoredEvent): void {
     }
     case 'TournamentDeleted':
       state.tournaments.delete(b.tournamentId);
+      break;
+    case 'PlayersCoreSet':
+      for (const id of b.playerIds) {
+        const p = state.players.get(id);
+        if (p) p.core = b.core;
+      }
+      break;
+    case 'TournamentsArchived':
+      for (const id of b.tournamentIds) {
+        const t = state.tournaments.get(id);
+        if (t) t.archived = b.archived;
+      }
+      break;
+    case 'FolderCreated':
+      state.folders.set(b.folderId, { id: b.folderId, name: b.name, createdAt: e.at });
+      break;
+    case 'FolderRenamed': {
+      const f = state.folders.get(b.folderId);
+      if (f) f.name = b.name;
+      break;
+    }
+    case 'FolderDeleted':
+      state.folders.delete(b.folderId);
+      for (const t of state.tournaments.values()) if (t.folderId === b.folderId) delete t.folderId;
+      break;
+    case 'TournamentsMoved':
+      for (const id of b.tournamentIds) {
+        const t = state.tournaments.get(id);
+        if (!t) continue;
+        if (b.folderId && state.folders.has(b.folderId)) t.folderId = b.folderId;
+        else delete t.folderId;
+      }
       break;
   }
 }

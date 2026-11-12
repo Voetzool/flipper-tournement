@@ -172,6 +172,31 @@ Live: https://voetzool.github.io/flipper-tournement/ · Werkbranch: `claude/shar
   Stand (`TabRoute 'auto'`), de tab Ronde linkt naar `#/t/:id/ronde`.
 - Uitslag-sheet: plek 1 groen met vinkje (`.order-btn.win`), overige plekken neutraal; bij teams verliezend team vaag.
 
+## Ordenen, standaardkeuzes en ranglijst-weergaven (verbeterronde)
+- **Vaste groep**: `PlayersCoreSet {playerIds, core}` → `Player.core`. Ster per speler op het Spelers-scherm (compacte
+  rijen `.list-item.compact`). Knop "Vaste groep" bij Nieuw toernooi en Losse pot (`toggleCoreSelection` in
+  `src/lib/coreGroup.ts`: alles erbij, of als alles al gekozen is alleen de vaste groep eruit).
+- **Archief & mappen** (events zonder `tournamentId` → buiten de undo-stapel): `TournamentsArchived {tournamentIds,
+  archived}`, `FolderCreated/Renamed/Deleted`, `TournamentsMoved {tournamentIds, folderId|null}`; state `folders`,
+  `Tournament.archived/folderId`. Startscherm: Bezig (altijd, ook uit mappen) · Mappen · Afgerond · Losse potjes (alle
+  niet-gearchiveerde, buiten mappen) · "Afgeronde archiveren" · link Archief. `#/map/:id` (`FolderScreen`), `#/archief`
+  (`ArchiveScreen`). ⋮ per item en "Naar map of archief" in het toernooimenu → `OrganizeSheet`
+  (`src/ui/components/TournamentItems.tsx`). Archiveren alleen als klaar (`isDone`). Ratings/statistieken tellen
+  gearchiveerde toernooien gewoon mee.
+- **Weergave per apparaat** (`settings.ts`): `homeView` lijst/raster (`HomeViewToggle`, `.tile-grid`), `rankingView`
+  tabel/staaf/verloop, `tournamentMachines` en `randomMachines` (Geen = standaard, Alle) onder Instellingen →
+  Standaardkeuzes. Weergave-label "Auto".
+- **Losse pot met teams pas vanaf 3 spelers** (2-tegen-1 mag).
+- **Ranglijst**: `RatingBars` (staaf, ±RD-streep) en `RatingHistory` (max. 8 lijnen: vaste groep, anders top 8; legenda +
+  tik/hover-tooltip) in `src/ui/components/RankingCharts.tsx`. Lijnkleuren `--s1..--s8` (categorisch palet uit de
+  dataviz-skill, gevalideerd op #ffffff en #1b1b2e; licht: 3 kleuren < 3:1 → legenda + tabelweergave als relief).
+  Export: CSV (`rankingCsv`, puntkomma + BOM voor Excel) en PNG (`rankingPng`, canvas in themakleuren) via
+  `shareOrDownload` (`src/lib/share.ts`, ook gebruikt door de back-up).
+- Scorebord ververst alleen bij een wijziging (geen polling); wake lock blijft altijd aan (gebruikerswens). Titel in
+  gewone tekstkleur.
+- NB lokaal testen: vitest cachet transforms in `node_modules/.vitest-cache`; na nieuwe bronbestanden kan de i18n-test
+  (die `import.meta.glob` gebruikt) verouderd zijn → map weggooien.
+
 ## Pi-versie (server-modus, `server/`)
 - Zelfde app, gebouwd met `vite build --mode server` (`SERVER_MODE` in `src/lib/serverMode.ts`): base `/`, geen
   service worker (`VitePWA disable`), polyfills blijven. Data op de server; de telefoon-app (GitHub Pages) blijft los.
@@ -231,6 +256,7 @@ export/import, opslagstatus, installatie-uitleg, versie). Thema in `src/ui/theme
 - [x] **Fase 3** — kastencatalogus (OPDB), kastdetails/notities/rulesheet, info-tab "Kasten" in toernooi.
 - [ ] **Fase 4** (geparkeerd door gebruiker) — League/competitie: seizoen met meerdere avonden, punten optellen, slechtste avond(en) laten vallen.
 
+- [x] Verbeterronde: vaste groep, archief/mappen/raster, standaardkeuzes, ranglijst-grafieken + CSV/PNG, mobiel.
 - [x] Pi-versie: server op Raspberry Pi met eigen wifi, data op de Pi, live bijwerken tussen apparaten.
 - [x] Vooruit spelen in de volgende ronde + tab "Spelen".
 - [x] Losse ranked pot (iedereen voor zich of teams, kast zelf of willekeurig uit selectie).

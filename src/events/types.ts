@@ -63,7 +63,17 @@ export type EventBody =
   | { type: 'GameMachineChanged'; tournamentId: Id; gameId: Id; machineId: Id | null }
   | { type: 'TournamentFinished'; tournamentId: Id }
   | { type: 'TournamentReopened'; tournamentId: Id }
-  | { type: 'TournamentDeleted'; tournamentId: Id };
+  | { type: 'TournamentDeleted'; tournamentId: Id }
+  // Ordenen (bewust zonder `tournamentId`-veld: valt buiten de undo-stapel van een toernooi).
+  /** Spelers in of uit de "vaste groep" (spelers die er eigenlijk altijd zijn). */
+  | { type: 'PlayersCoreSet'; playerIds: Id[]; core: boolean }
+  /** Afgeronde toernooien/potjes naar het archief (of terug). */
+  | { type: 'TournamentsArchived'; tournamentIds: Id[]; archived: boolean }
+  | { type: 'FolderCreated'; folderId: Id; name: string }
+  | { type: 'FolderRenamed'; folderId: Id; name: string }
+  /** De inhoud van de map komt weer los op het startscherm. */
+  | { type: 'FolderDeleted'; folderId: Id }
+  | { type: 'TournamentsMoved'; tournamentIds: Id[]; folderId: Id | null };
 
 export type EventType = EventBody['type'];
 
@@ -119,6 +129,14 @@ export interface Player {
   name: string;
   archived: boolean;
   createdAt: number;
+  /** Hoort bij de vaste groep. */
+  core?: boolean;
+}
+
+export interface Folder {
+  id: Id;
+  name: string;
+  createdAt: number;
 }
 
 export interface Machine extends MachineDetails {
@@ -152,10 +170,13 @@ export interface Tournament {
   status: 'active' | 'finished';
   createdAt: number;
   finishedAt?: number;
+  archived?: boolean;
+  folderId?: Id;
 }
 
 export interface AppState {
   players: Map<Id, Player>;
   machines: Map<Id, Machine>;
   tournaments: Map<Id, Tournament>;
+  folders: Map<Id, Folder>;
 }

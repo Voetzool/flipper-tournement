@@ -1,3 +1,5 @@
+import { tournamentMachines } from '../../app/settings';
+import { corePlayerIds, toggleCoreSelection } from '../../lib/coreGroup';
 import { Icon } from '../components/Icon';
 import { clone } from '../../lib/clone';
 import { locale, tr } from '../../i18n';
@@ -33,7 +35,8 @@ export function NewTournamentScreen() {
 
   const [name, setName] = useState(defaultName);
   const [selPlayers, setSelPlayers] = useState<Set<string>>(new Set());
-  const [selMachines, setSelMachines] = useState<Set<string>>(() => new Set(machines.map((m) => m.id)));
+  const [selMachines, setSelMachines] = useState<Set<string>>(() => new Set(tournamentMachines.value === 'all' ? machines.map((m) => m.id) : []));
+  const core = corePlayerIds(s);
   const [settings, setSettings] = useState<RoundRobinSettings>(defaultSettings);
   const [format, setFormat] = useState<FormatId>('roundRobin');
   const h2h = format === 'headToHead';
@@ -120,6 +123,11 @@ export function NewTournamentScreen() {
             >
               {selPlayers.size === players.length ? tr('Geen') : tr('Iedereen')}
             </button>
+          )}{' '}
+          {core.length > 0 && (
+            <button class="btn ghost small" onClick={() => setSelPlayers(new Set(toggleCoreSelection([...selPlayers], core)))}>
+              <Icon name="star" /> {tr('Vaste groep')}
+            </button>
           )}
         </h2>
         {!players.length && (
@@ -135,7 +143,14 @@ export function NewTournamentScreen() {
           ))}
         </div>
 
-        <h2>{tr('Machines ({n})', { n: selMachines.size })}</h2>
+        <h2>
+          {tr('Machines ({n})', { n: selMachines.size })}{' '}
+          {machines.length > 0 && (
+            <button class="btn ghost small" onClick={() => setSelMachines(selMachines.size === machines.length ? new Set() : new Set(machines.map((m) => m.id)))}>
+              {selMachines.size === machines.length ? tr('Geen') : tr('Alle')}
+            </button>
+          )}
+        </h2>
         {!machines.length && (
           <p class="muted">
             {tr('Nog geen machines.')} <a href="#/kasten">{tr('Voeg machines toe')}</a> {tr('(mag ook zonder).')}

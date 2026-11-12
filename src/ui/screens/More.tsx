@@ -1,9 +1,11 @@
+import { shareOrDownload } from '../../lib/share';
 import { SERVER_MODE } from '../../lib/serverMode';
 import { locale, tr } from '../../i18n';
 import { useEffect, useState } from 'preact/hooks';
 import { events, lastBackupAt, markBackedUp, showToast, state, store } from '../../app/state';
 import { checkForUpdate, offlineReady } from '../../app/pwa';
 import { Icon, type IconName } from '../components/Icon';
+import { randomMachines, setRandomMachines, setTournamentMachines, tournamentMachines, type Preselect } from '../../app/settings';
 import { backupReminderDays, lang, REMINDER_CHOICES, setBackupReminderDays, setLang, setTheme, theme, type Lang, type ThemeChoice } from '../../app/settings';
 
 const REMINDER_LABELS: Record<number, string> = { 1: '1 dag', 3: '3 dagen', 7: '1 week', 14: '2 weken', 30: '1 maand', 0: 'Nooit' };
@@ -33,27 +35,10 @@ export function MoreScreen() {
     const json = JSON.stringify(makeBackup(events.value), null, 1);
     const name = backupFileName();
     const file = new File([json], name, { type: 'application/json' });
-    // Op telefoons: deelmenu (opslaan in Bestanden/Drive, mailen, WhatsApp). Anders: gewone download.
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: tr('Flipper back-up') });
-        await markBackedUp();
-        showToast(tr('Back-up gedeeld'));
-        return;
-      } catch (e) {
-        if ((e as Error).name === 'AbortError') return;
-      }
-    }
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    const how = await shareOrDownload(file, tr('Flipper back-up'));
+    if (how === 'cancelled') return;
     await markBackedUp();
-    showToast(tr('Back-up opgeslagen'));
+    showToast(how === 'shared' ? tr('Back-up gedeeld') : tr('Back-up opgeslagen'));
   };
 
   const importData = async (e: Event) => {
@@ -97,7 +82,7 @@ export function MoreScreen() {
         <div class="seg" role="radiogroup" aria-label={tr('Weergave')}>
           {(
             [
-              ['auto', 'Automatisch', 'brightness_auto'],
+              ['auto', 'Auto', 'brightness_auto'],
               ['light', 'Licht', 'light_mode'],
               ['dark', 'Donker', 'dark_mode'],
             ] as [ThemeChoice, string, IconName][]
@@ -108,6 +93,30 @@ export function MoreScreen() {
           ))}
         </div>
         <p class="small muted" style="margin:0">{tr('Automatisch volgt de instelling van je telefoon.')}</p>
+      </div>
+
+      <h2>{tr('Standaardkeuzes')}</h2>
+      <div class="card stack">
+        <div class="field">
+          <label>{tr('Machines aangevinkt bij een nieuw toernooi')}</label>
+          <div class="seg">
+            {(['none', 'all'] as Preselect[]).map((v) => (
+              <button key={v} class={tournamentMachines.value === v ? 'on' : ''} onClick={() => setTournamentMachines(v)}>
+                {v === 'all' ? tr('Alle') : tr('Geen')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div class="field">
+          <label>{tr('Machines aangevinkt bij willekeurig kiezen (losse pot)')}</label>
+          <div class="seg">
+            {(['none', 'all'] as Preselect[]).map((v) => (
+              <button key={v} class={randomMachines.value === v ? 'on' : ''} onClick={() => setRandomMachines(v)}>
+                {v === 'all' ? tr('Alle') : tr('Geen')}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <h2>{tr('Back-up')}</h2>
@@ -221,7 +230,7 @@ export function MoreScreen() {
         <>
           <h2>{tr('Raspberry Pi-versie')}</h2>
           <div class="card stack small">
-            <div>{tr('Wil je de gegevens op een Raspberry Pi bewaren en het scorebord op meerdere schermen tonen? Daar is een aparte versie voor.')}</div>
+            <div>{tr('Heb je een Raspberry Pi (een klein, goedkoop computertje)? Dan kun je die als centrale opslag gebruiken: iedereen voert scores in op een eigen telefoon of tablet en het scorebord staat op een laptop of tv. Alles is tegelijk en altijd gelijk, ook zonder internet. De handleiding legt stap voor stap uit wat je nodig hebt.')}</div>
             <a class="btn block" href={import.meta.env.BASE_URL + (lang.value === 'en' ? 'pi/en/index.html' : 'pi/index.html')} target="_blank" rel="noopener">
               {tr('Installatiehandleiding')}
             </a>
